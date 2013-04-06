@@ -62,14 +62,14 @@ public class MultiplyShift {
   
   public static void main(String args[]){
     long seeds[] = {2343,2299,6632,9862};
-    MultiplyShift matfamily = new MultiplyShift(10,seeds);
+    MultiplyShift hashfamily = new MultiplyShift(10,seeds);
     
     for(int v=0; v<256; v++){
       int vec[] = new int[10];
       for(int i=0;i<10;i++){
         vec[i] = v + i;
       }
-      long hashv[] = matfamily.hash(vec);
+      long hashv[] = hashfamily.hash(vec);
       System.out.print(v + ",");
       System.out.print("[");
       for(int i=0;i<seeds.length;i++){

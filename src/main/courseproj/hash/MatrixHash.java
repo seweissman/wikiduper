@@ -107,13 +107,13 @@ that it requires log(N)*log(M) random bits.
   public static void main(String args[]){
     long seeds[] = {2343,2299,6632,9862};
     int l = 2;
-    MatrixHash matfamily = new MatrixHash(128,16,seeds);
+    MatrixHash hashfamily = new MatrixHash(128,16,seeds);
     for(long v=0; v<256; v++){
       long vec[] = new long[10];
       for(int i=0;i<l;i++){
         vec[i] = v + i;
       }
-      long hashv[] = matfamily.hash(vec);
+      long hashv[] = hashfamily.hash(vec);
       System.out.print(v + ",");
       System.out.print("[");
       for(int i=0;i<seeds.length;i++){
