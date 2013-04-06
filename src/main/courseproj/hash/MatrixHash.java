@@ -4,7 +4,7 @@ import java.util.Random;
 
 
 /**
- * Folowing the scheme found here;
+ * Following the scheme found here;
  * http://www.cs.cmu.edu/~avrim/Randalgs97/lect0127
  *
  * Creates a family of hashes using a random matrix of mxn bits.
@@ -53,9 +53,9 @@ that it requires log(N)*log(M) random bits.
   // hash m sized things to n sized things
   /**
    * 
-   * @param m hash input size
-   * @param n has output size
-   * @param seeds One random seed for each hash fn in family.
+   * @param m   hash input size
+   * @param n   hash output size
+   * @param seeds   One random seed for each hash fn in family.
    */
   public MatrixHash(int m, int n, long seeds[]){
     rmatrix = new boolean[m][n][seeds.length];
