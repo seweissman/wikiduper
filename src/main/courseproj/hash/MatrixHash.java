@@ -82,9 +82,14 @@ that it requires log(N)*log(M) random bits.
    * 
    * @param v
    * @return
+   * @throws HashException 
    */
-  public long[] hash(long v[]){
+  public long[] hash(long v[]) throws HashException{
     // TODO: throw error if v is too long
+    if(v.length * Long.SIZE > m){
+      throw new HashException("Hash input of length > " + m + " bits.");      
+    }
+    
     long hashvec[] = new long[seeds.length];
     long x = 0;
     for(int s=0;s<seeds.length;s++){
@@ -104,6 +109,30 @@ that it requires log(N)*log(M) random bits.
     return hashvec;
   }
   
+  /**
+   * Hashes a variable length string input
+   * 
+   * @param str
+   * @return
+   * @throws HashException 
+   */
+  public long[] hash(String str) throws HashException{
+    byte b[] = str.getBytes();
+    if(8*b.length > m){
+      throw new HashException("Hash input " + str + " is of length > " + m + " bits.");      
+    }
+    long[] v = new long[8*b.length/Long.SIZE + 1];
+    
+    //System.out.println("n bytes = " + b.length);
+    //System.out.println("n long = " + v.length);
+    for(int i=0;i<b.length;i++){
+      v[i/Long.SIZE] |= (b[i] & 0xff) << (8*(i%Long.SIZE));
+    }
+    
+    return hash(v);
+  }
+
+  
   public static void main(String args[]){
     long seeds[] = {2343,2299,6632,9862};
     int l = 2;
@@ -113,14 +142,20 @@ that it requires log(N)*log(M) random bits.
       for(int i=0;i<l;i++){
         vec[i] = v + i;
       }
-      long hashv[] = hashfamily.hash(vec);
-      System.out.print(v + ",");
-      System.out.print("[");
-      for(int i=0;i<seeds.length;i++){
-        if(i != 0) System.out.print(", ");
-        System.out.print(hashv[i]);
+      long hashv[];
+      try {
+        hashv = hashfamily.hash(vec);
+        System.out.print(v + ",");
+        System.out.print("[");
+        for(int i=0;i<seeds.length;i++){
+          if(i != 0) System.out.print(", ");
+          System.out.print(hashv[i]);
+        }
+        System.out.println("]");
+      } catch (HashException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
-      System.out.println("]");
     }
     
   }
