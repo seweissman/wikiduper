@@ -54,6 +54,7 @@ public class MinHash extends Configured implements Tool {
    *   * implement k at a time handling of sentences
    *   * implement multiple minhash values returned per sentence (m groups of n hashes)
    *   * other shingling granularities?
+   *   * Write a class to extract results
    * 
    */
   private static class SentenceMapperRegex extends Mapper<LongWritable, Text, ArrayListOfLongsWritable, PairOfLongInt> {
@@ -148,25 +149,18 @@ public class MinHash extends Configured implements Tool {
 
 
   
-  // Reducer: sums up all the counts.
-
-  private static class MyReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
+  /**
+   * Emits groups of sentences that hash to the same value. Only emits if there is more than one value for the key. 
+   *
+   */
+  private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
 
 
     @Override
     public void reduce(ArrayListOfLongsWritable key, Iterable<PairOfLongInt> values, Context context)
         throws IOException, InterruptedException {
-      // Sum up values.
       Iterator<PairOfLongInt> iter = values.iterator();
       
-      /*
-      System.out.print("[");
-      for(int i=0;i<key.size();i++){
-        if(i != 0) System.out.print(", ");
-        System.out.print(key.get(i));  
-      }
-      System.out.println("]");
-      */
       boolean gt1 = false;
       
       while (iter.hasNext()) {
@@ -185,7 +179,7 @@ public class MinHash extends Configured implements Tool {
 
   private static final String INPUT = "input";
   private static final String OUTPUT = "output";
-  //private static final String NUM_REDUCERS = "numReducers";
+  //private static final String NUM_REDUCERS = "numReducers";`
 
   /**
    * Runs this tool.
@@ -245,7 +239,7 @@ public class MinHash extends Configured implements Tool {
 
     job.setMapperClass(SentenceMapperRegex.class);
     //job.setCombinerClass(MyReducer.class);
-    job.setReducerClass(MyReducer.class);
+    job.setReducerClass(GroupReducer.class);
     job.setNumReduceTasks(1);
     
     // Delete the output directory if it exists already.
