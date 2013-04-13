@@ -94,7 +94,7 @@ public class MinHash extends Configured implements Tool {
     }
     
     //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
-    Pattern sentenceregex = Pattern.compile(
+    static final Pattern sentenceregex = Pattern.compile(
         "# Match a sentence ending in punctuation or EOS.\n" +
         "[\\s]*    # Leading white space\n" + 
         "([A-Z\"]    # First char capital letter or quotation\n" +
