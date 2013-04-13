@@ -90,11 +90,11 @@ public class MinHash extends Configured implements Tool {
       }
     }
     
-    //http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
+    //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
     Pattern sentenceregex = Pattern.compile(
         "# Match a sentence ending in punctuation or EOS.\n" +
-        "[\\s]*" +
-        "([A-Z\"]    # First char is non-punct, non-ws\n" +
+        "[\\s]*    # Leading white space\n" + 
+        "([A-Z\"]    # First char capital letter or quotation\n" +
         "[^.!?]*      # Greedily consume up to punctuation.\n" +
         "(?:          # Group for unrolling the loop.\n" +
         "  [.!?]      # (special) inner punctuation ok if\n" +
@@ -103,7 +103,7 @@ public class MinHash extends Configured implements Tool {
         ")*           # Zero or more (special normal*)\n" +
         "[.!?]?       # Optional ending punctuation.\n" +
         "['\"]?)       # Optional closing quote.\n" +
-        "\\s*$?",
+        "\\s*$?       # Trailing white space\n",
         Pattern.MULTILINE | Pattern.COMMENTS);
 
     @Override
