@@ -36,13 +36,13 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
 public class MinHash extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(MinHash.class);
 
-  /*SentenceMapperRegex
+  /* SentenceMapperRegex
    * 
    * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
    * 
    * Pulls out sentences from text input using a regex. 
    * Emits one NHASH-length minhash signature per sentence.
-   * Each hash is NHASHOUTPUTBITS long.
+   * Each hash is NHASHOUTPUTBITS long. (So signature is NHASH*NHASHOUTPUTBITS long.)
    * Sentences are shingled by individual words. 
    * If sentences are less than MINLEN words, then they are skipped.
    * 
