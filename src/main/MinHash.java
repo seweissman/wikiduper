@@ -68,7 +68,10 @@ public class MinHash extends Configured implements Tool {
     static int MINLEN = 5;
     static MultiplyShiftHash hashfamily;
 
+    // The minhash signature
     static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(NHASH);
+    
+    // The document-sentence identifier
     static final PairOfLongInt DOCSENT = new PairOfLongInt();
     
     // seed list could be produced in job and passed as message
@@ -114,25 +117,31 @@ public class MinHash extends Configured implements Tool {
 
       // Assume each doc is on its own line; track sentence number by counting
       int sentencect = 0;
+      
+      // For each sentence in the input text:
       while(m.find()){
+        // Initialize the minhash vector
         for(int i=0;i<NHASH;i++){
           SIG.set(i, Long.MAX_VALUE);
         }
         String sentence = m.group(1);
         //System.out.println("Sentence: " + sentence);
         
-        // Shingle sentences by word
+        // Shingle sentence by word
         StringTokenizer itr = new StringTokenizer(sentence);
         int wordct = 0;
+        // Calculate hash vector for each shingle
         while (itr.hasMoreTokens()) {
           String word = itr.nextToken();
           long hashes[] = hashfamily.hash(word);
+          // Update the minhash signature
           for(int j=0;j<hashes.length;j++){
             if(hashes[j] < SIG.get(j)){
               SIG.set(j, hashes[j]);
             }
             //System.out.println("word: " + word + " " + hashes[j]);
           }
+          // Keep track of the word ct to avoid short sentences
           wordct++;
         }
         
@@ -140,6 +149,8 @@ public class MinHash extends Configured implements Tool {
           //System.out.println("minhash " + i + "= " + SIG.get(i));
         //}
         //System.out.println("SIG size = " + SIG.size());
+
+        // If the sentence meads min word ct requirements, emit the signature and the sentence/doc ID
         if(wordct > MINLEN){
           DOCSENT.set(key.get(), sentencect);
           context.write(SIG, DOCSENT);
