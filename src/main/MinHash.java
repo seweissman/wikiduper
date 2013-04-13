@@ -36,6 +36,26 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
 public class MinHash extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(MinHash.class);
 
+  /*SentenceMapperRegex
+   * 
+   * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
+   * 
+   * Pulls out sentences from text input using a regex. 
+   * Emits one NHASH-length minhash signature per sentence.
+   * Each hash is NHASHOUTPUTBITS long.
+   * Sentences are shingled by individual words. 
+   * If sentences are less than MINLEN words, then they are skipped.
+   * 
+   * 
+   * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
+   * input text and nsentence is the number of the sentence in the line. (starting from 0)
+   * 
+   * TODO:
+   *   * implement k at a time handling of sentences
+   *   * implement multiple minhash values returned per sentence (m groups of n hashes)
+   *   * other shingling granularities?
+   * 
+   */
   private static class SentenceMapperRegex extends Mapper<LongWritable, Text, ArrayListOfLongsWritable, PairOfLongInt> {
 
     static long rseed = 1123456;
@@ -98,7 +118,7 @@ public class MinHash extends Configured implements Tool {
         String sentence = m.group(1);
         //System.out.println("Sentence: " + sentence);
         
-        // Break up sentences by word
+        // Shingle sentences by word
         StringTokenizer itr = new StringTokenizer(sentence);
         int wordct = 0;
         while (itr.hasMoreTokens()) {
@@ -126,60 +146,7 @@ public class MinHash extends Configured implements Tool {
     }
   }
 
-/*  
-  private static class SentenceMapperWord extends Mapper<LongWritable, Text, ArrayListOfLongsWritable, IntWritable> {
 
-    private static StringBuffer sentence = new StringBuffer();
-    static HashSet<String> stopwordspunc = new HashSet<String>();
-    static Pattern sentenceend = Pattern.compile(".*[.!?]\\\"?$");
-    static Pattern capitalword = Pattern.compile("^\\\"?[A-Z].*");
-
-    static{
-      stopwordspunc.add("Inc.");
-      stopwordspunc.add("Dr.");
-      stopwordspunc.add("St.");
-      stopwordspunc.add("Ms.");
-      stopwordspunc.add("Mrs.");
-      stopwordspunc.add("Co.");
-      stopwordspunc.add("Mr.");
-      stopwordspunc.add("M.");
-      //...
-    }
-
-    @Override
-    public void map(LongWritable key, Text value, Context context)
-        throws IOException, InterruptedException {
-      String line = ((Text) value).toString();
-      //String line = "The contents of these volumes of 'Celebrated Crimes', as well as the motives which led to their inception, are unique. They are a series of stories based upon historical records, from the pen of Alexandre Dumas, pere, when he was not \"the elder,\" nor yet the author of D'Artagnan or Monte Cristo, but was a rising young dramatist and a lion in the literary set and world of fashion.";
-      //String line = "The cat is fat.";
-
-      StringTokenizer itr = new StringTokenizer(line);
-      sentence.setLength(0);
-      boolean newsentence = false;
-      String lastsentence = "";
-
-      while (itr.hasMoreTokens()) {
-        String w = itr.nextToken();
-
-        if(newsentence && !capitalword.matcher(w).matches()){
-          System.out.println("Bad Sentence:" + lastsentence + "<<<");
-          System.out.println("Word:" + w);
-        }
-        if(sentenceend.matcher(w).matches()){
-          sentence.append(w);
-          lastsentence = sentence.toString();
-          sentence.setLength(0);
-          newsentence = true;
-        }else{
-          newsentence = false;
-          sentence.append(w + " ");
-        }
-        
-      }
-
-    }
-  }
-*/
   
   // Reducer: sums up all the counts.
 
@@ -298,4 +265,8 @@ public class MinHash extends Configured implements Tool {
   public static void main(String[] args) throws Exception {
     ToolRunner.run(new MinHash(), args);
   }
+  
+  
+
+  
 }
