@@ -51,6 +51,8 @@ public class MinHash extends Configured implements Tool {
    * input text and nsentence is the number of the sentence in the line. (starting from 0)
    * 
    * TODO:
+   *   * Read initializing info (i.e. initial hash seeds) from Job parameters instead of hard coded.
+   *   * Test sentence parsing to see if regex needs tweaking.
    *   * implement k at a time handling of sentences
    *   * implement multiple minhash values returned per sentence (m groups of n hashes)
    *   * other shingling granularities?
