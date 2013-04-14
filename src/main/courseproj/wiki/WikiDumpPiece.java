@@ -24,11 +24,11 @@ import java.io.OutputStreamWriter;
 import org.apache.tools.bzip2.CBZip2InputStream;
 
 /**
- * Class for working with bz2-compressed Wikipedia article dump files on local
- * disk.
  * 
- * @author Jimmy Lin
- * @author Peter Exner
+ * To run:
+ * java -cp build:lib/commons-lang-2.6.jar:lib/cloud9-1.4.13.jar:lib/bliki-core-3.0.16.jar:/Users/weissman/apache-ant/apache-ant-1.9.0/lib/ant.jar:lib/hadoop-common-2.0.0-cdh4.2.0.jar 
+ * courseproj.wiki.WikiDumpPiece ~/corpora/enwiki-20130403-pages-articles-multistream.xml.bz2 2000000 testout.xml
+ * 
  */
 public class WikiDumpPiece {
 

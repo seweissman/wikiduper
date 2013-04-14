@@ -31,11 +31,7 @@ import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
 import edu.umd.cloud9.collection.wikipedia.language.WikipediaPageFactory;
 
 /**
- * Class for working with bz2-compressed Wikipedia article dump files on local
- * disk.
  * 
- * @author Jimmy Lin
- * @author Peter Exner
  */
 public class WikipediaPagesBz2InputStream {
 	private static int DEFAULT_STRINGBUFFER_CAPACITY = 1024;
