@@ -32,11 +32,11 @@ import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
 import edu.umd.cloud9.collection.wikipedia.language.WikipediaPageFactory;
 
 /**
- * Class for working with bz2-compressed Wikipedia article dump files on local
- * disk.
+ * To run:
  * 
- * @author Jimmy Lin
- * @author Peter Exner
+ * java -cp build:lib/commons-lang-2.6.jar:lib/cloud9-1.4.13.jar:lib/bliki-core-3.0.16.jar:/Users/weissman/apache-ant/apache-ant-1.9.0/lib/ant.jar:lib/hadoop-common-2.0.0-cdh4.2.0.jar 
+ *   courseproj.wiki.WikiPageTopicFilter ~/corpora/enwiki-20130403-pages-articles-multistream.xml.bz2 
+ *   en ~/corpora/enwiki-20130403-pages-articles-multistream-index.txt.bz2 Maryland > Maryland.txt
  */
 public class WikiPageTopicFilter {
 

@@ -181,8 +181,9 @@ public ArrayList<String> readPage(WikipediaPage page, long streamoffset, List<St
       }
 
     WikipediaPage.readPage(page, sb.toString());
-    System.out.println(sb.toString());
-    //pages.add(page.getContent());
+    // Useful for emitting XML:
+    //System.out.println(sb.toString());
+    pages.add(page.getContent());
   }
     return pages;
 }
