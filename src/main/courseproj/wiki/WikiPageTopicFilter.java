@@ -104,7 +104,10 @@ public class WikiPageTopicFilter {
         if(streamoffset != lastoffset){
           offsetmap.put(streamoffset, new HashSet<String> ());
           offsetmap.get(streamoffset).add(pageid);
+          lastoffset = streamoffset;
           //System.out.println("index line: " + s + " " + title + " " + streamoffset + " " + pageid);
+        }else{
+          offsetmap.get(streamoffset).add(pageid);
         }
         ct++;
         if(ct > maxresults){
