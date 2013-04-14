@@ -20,6 +20,9 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.tools.bzip2.CBZip2InputStream;
@@ -106,7 +109,8 @@ public boolean readNext(WikipediaPage page) throws IOException {
     return true;
   }
 
-public boolean readPage(WikipediaPage page, long streamoffset, String id) throws IOException {
+public ArrayList<String> readPage(WikipediaPage page, long streamoffset, List<String> idList) throws IOException {
+  ArrayList<String> pages = new ArrayList<String>();
   //System.out.println("in id = " + id);
   //System.out.println("in offset = " + streamoffset);
   //System.out.println("start offset = " + this.curroffset);
@@ -114,58 +118,73 @@ public boolean readPage(WikipediaPage page, long streamoffset, String id) throws
   long n = br.skip(skipn);
   this.curroffset += n;
   
-  while(n != 0 && skipn - n > 0){
+  while(skipn - n > 0){
     //System.out.println("asked skip = " + skipn + " actual = " + n);
     nextStream();
     skipn = streamoffset - this.curroffset;
     n = br.skip(skipn);
     this.curroffset += n;
   }
+  Pattern idpat = Pattern.compile(".*<id>([0-9]+)</id>.*");
   
+  //System.out.println("id list size " + idList.size());
+  for(String id: idList){
+  //System.out.println("Looking for id = " + id);
   //System.out.println("asked skip = " + skipn + " curroffset = " + this.curroffset);
   //fis.skip(streamoffset - this.curroffset);
-  String s = null;
-  StringBuffer sb = new StringBuffer(DEFAULT_STRINGBUFFER_CAPACITY);
-  int ct = 0;
-  while ((s = br.readLine()) != null || (nextStream() && (s = br.readLine()) != null)) {
-    if (s.endsWith("<page>")){
+    String s = null;
+    StringBuffer sb = new StringBuffer(DEFAULT_STRINGBUFFER_CAPACITY);
+    int ct = 0;
+    while ((s = br.readLine()) != null || (nextStream() && (s = br.readLine()) != null)) {
+      if (s.endsWith("<page>")){
 
-      ct++;
-      sb.setLength(0);
-      sb.append(s + "\n");
-      sb.append(br.readLine()); //title
-      sb.append(br.readLine()); //ns
-      s = br.readLine();
-      //System.out.println("id ? " + s);
-      //if(ct%1000 == 0){
-      //  System.out.println("ct = " + ct + " " + s);
-      //}
-      if(s.endsWith(id+"</id>"))
-       break;
+        ct++;
+        sb.setLength(0);
+        sb.append(s + "\n");
+        sb.append(br.readLine()); //title
+        sb.append(br.readLine()); //ns
+        s = br.readLine();
+        if(ct%1000 == 0){
+          //System.out.println("ct = " + ct + " " + s);
+
+          Matcher m = idpat.matcher(s);
+          if(m.matches() & m.groupCount() > 0){
+            String idstr = m.group(1);
+            //System.out.println("idstr " + idstr + " search id "+ id);
+            if(Long.parseLong(idstr) > Long.parseLong(id)){
+              return pages;
+            }
+          }
+        }
+        if(s.endsWith("</id>")){
+          if(s.endsWith(id+"</id>")){
+            break;
+          }
+        }
+      }
     }
-  }
 
   
-  if (s == null){
-    //System.out.println("s null");
-    fis.close();
-    br.close();
-    return false;
-  }
+    if (s == null){
+      //System.out.println("s null");
+      //fis.close();
+      //br.close();
+      return pages;
+    }
 
-  sb.append(s + "\n");
-
-  //Pattern idpat = Pattern.compile(".*<id>([0-9]+)</id>.*");
-  
-  while ((s = br.readLine()) != null) {
     sb.append(s + "\n");
-    if (s.endsWith("</page>"))
-      break;
+
+    while ((s = br.readLine()) != null) {
+      sb.append(s + "\n");
+      if (s.endsWith("</page>"))
+        break;
+      }
+
+    WikipediaPage.readPage(page, sb.toString());
+    System.out.println(sb.toString());
+    //pages.add(page.getContent());
   }
-
-  WikipediaPage.readPage(page, sb.toString());
-
-  return true;
+    return pages;
 }
 
 	public static void main(String[] args) throws Exception {

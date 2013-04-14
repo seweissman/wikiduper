@@ -60,21 +60,23 @@ public class WikiPageTopicFilter {
       //      System.out.println("id = " + id);
     //}
 		  ArrayList<Long> idList = new ArrayList<Long>();
+		  ArrayList<String> idListStr = new ArrayList<String>();
 		  for(String id: idSet){
 		    idList.add(Long.parseLong(id));
 		  }
 		  Collections.sort(idList);
 		  for(Long lid : idList){
+		    idListStr.add(lid.toString());
+		  }
 		    //while (stream.readPage(p,offset,lid.toString()) && !idSet.isEmpty()) {
 		    //System.out.println("id = " + lid);
-		    stream.readPage(p,offset,lid.toString());
+		  ArrayList<String> pages = stream.readPage(p,offset,idListStr);
 		    //if(Long.parseLong(p.getDocid())%1000 == 0) System.out.println(p.getDocid()); 
-		      if(idSet.contains(p.getDocid())){
-		        System.out.println(p.getContent().replace("\n", ""));
-		        idSet.remove(p.getDocid());
-		      }
-		  //}
+		  for(String page : pages){
+		   System.out.println(page.replace("\n", " "));
 		  }
+		  //}
+		  
 		  //System.out.println(p.getContent());
 		  //System.exit(-1);
 		}
@@ -82,7 +84,7 @@ public class WikiPageTopicFilter {
 	}
 	
 	private static HashMap<Long,HashSet<String>> getTermOffsets(String indexfile, String term, int maxresults) throws IOException {
-    BufferedReader br = null;
+	  BufferedReader br = null;
     FileInputStream fis = new FileInputStream(indexfile);
     byte[] ignoreBytes = new byte[2];
     fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
