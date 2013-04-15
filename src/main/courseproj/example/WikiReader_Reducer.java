@@ -11,19 +11,19 @@ import org.apache.hadoop.mapreduce.Reducer;
 //Reducer: sums up all the counts.
 public class WikiReader_Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 
-    // Reuse objects.
-    private final static IntWritable SUM = new IntWritable();
+  // Reuse objects.
+  private final static IntWritable SUM = new IntWritable();
 
-    @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context)
-            throws IOException, InterruptedException {
-        // Sum up values.
-        Iterator<IntWritable> iter = values.iterator();
-        int sum = 0;
-        while (iter.hasNext()) {
-            sum += iter.next().get();
-        }
-        SUM.set(sum);
-        context.write(key, SUM);
+  @Override
+  public void reduce(Text key, Iterable<IntWritable> values, Context context)
+      throws IOException, InterruptedException {
+    // Sum up values.
+    Iterator<IntWritable> iter = values.iterator();
+    int sum = 0;
+    while (iter.hasNext()) {
+      sum += iter.next().get();
     }
+    SUM.set(sum);
+    context.write(key, SUM);
+  }
 }
