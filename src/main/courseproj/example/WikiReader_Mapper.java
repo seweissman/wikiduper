@@ -1,10 +1,7 @@
 package courseproj.example;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
-
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -18,11 +15,6 @@ public class WikiReader_Mapper extends Mapper<Text, Text, Text, IntWritable> {
   @Override
   public void map(Text key, Text value, Context context)
       throws IOException, InterruptedException {
-    String keyy = key.toString();
-    String valuee = value.toString();
-    
-    System.out.println("\n\nKEY: " + keyy + "\n\n");
-    System.out.println("\n\nVALUE: " + valuee + "\n\n");
     KEY.set("article count");
     context.write(KEY, VALUE);
   }
