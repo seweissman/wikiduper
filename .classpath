@@ -80,7 +80,7 @@
 	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="lib/jwnl-1.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/kfs-0.3.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/maxent-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/mockito-all-1.8.5.jar"/>
 	<classpathentry kind="lib" path="lib/mrunit-0.8.0-incubating.jar"/>
