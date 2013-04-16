@@ -102,5 +102,6 @@
 	<classpathentry kind="lib" path="lib/stax-api-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/tools-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/xmlenc-0.52.jar"/>
+	<classpathentry kind="lib" path="lib/wikihadoop-0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
