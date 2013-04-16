@@ -1,7 +1,7 @@
+package courseproj.example;
+
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.StringTokenizer;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -14,12 +14,10 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -32,7 +30,7 @@ public class WikiReader extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(WikiReader.class);
 
   //Mapper: emits (token, 1) for every article occurrence.
-  public static class WikiReader_Mapper extends Mapper<Text, Text, Text, IntWritable> {
+  public static class MyMapper extends Mapper<Text, Text, Text, IntWritable> {
 
     // Reuse objects to save overhead of object creation.
     private final static Text KEY = new Text();
@@ -52,7 +50,7 @@ public class WikiReader extends Configured implements Tool {
   }
 
   //Reducer: sums up all the counts.
-  public static class WikiReader_Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+  public static class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 
     // Reuse objects.
     private final static IntWritable SUM = new IntWritable();
@@ -141,8 +139,8 @@ public class WikiReader extends Configured implements Tool {
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
 
-    job.setMapperClass(WikiReader_Mapper.class);
-    job.setReducerClass(WikiReader_Reducer.class);
+    job.setMapperClass(MyMapper.class);
+    job.setReducerClass(MyReducer.class);
 
     // Delete the output directory if it exists already.
     Path outputDir = new Path(outputPath);
