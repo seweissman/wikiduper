@@ -23,6 +23,9 @@ public class WikiReader_Reducer extends Reducer<Text, IntWritable, Text, IntWrit
     while (iter.hasNext()) {
       sum += iter.next().get();
     }
+    
+    System.out.println("\n\nTotal Count: " + sum);
+    
     SUM.set(sum);
     context.write(key, SUM);
   }

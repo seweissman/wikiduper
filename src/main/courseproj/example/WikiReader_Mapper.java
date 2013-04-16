@@ -19,7 +19,7 @@ public class WikiReader_Mapper extends Mapper<LongWritable, Text, Text, IntWrita
   public void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
     String line = ((Text) value).toString();
-
+    KEY.set("article count");
     context.write(KEY, VALUE);
   }
 }
