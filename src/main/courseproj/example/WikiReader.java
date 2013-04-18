@@ -16,9 +16,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -27,26 +24,28 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+
+import courseproj.example.WikipediaInput.Cloud9.WikipediaPage;
+import courseproj.example.WikipediaInput.Cloud9.WikipediaPageInputFormat;
 import cern.colt.Arrays;
-import org.apache.hadoop.mapred.JobConf;
 
 public class WikiReader extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(WikiReader.class);
 
     //Mapper: emits (token, 1) for every article occurrence.
-    private static class MyMapper extends Mapper<LongWritable, Text /*WikipediaPage*/, Text, IntWritable> {
+    private static class MyMapper extends Mapper<LongWritable, WikipediaPage, Text, IntWritable> {
         
         private static final Text KEY = new Text();
         private static final IntWritable VALUE = new IntWritable(1);
         
-        public void map(LongWritable key, Text /*WikipediaPage*/ p, Context context)
+        public void map(LongWritable key, WikipediaPage p, Context context)
                 throws IOException, InterruptedException {
             
-            //System.out.println(key);
-            System.out.println(p.toString() + "\n\n\n\n\n\n");
+            System.out.println("\n\nKEY: " + key + "\n\n");
+            System.out.println(p.toString() + "\n\n\n");
             KEY.set("TOTAL");
             context.write(KEY, VALUE);
-            /*
+            
             if (p.isRedirect()) {
                 KEY.set("REDIRECT");
             } else if (p.isDisambiguation()) {
@@ -62,8 +61,10 @@ public class WikiReader extends Configured implements Tool {
                 KEY.set("NON_ARTICLE");
             }
             
+            System.out.println("\n\nDIFFERENT KEY: " + KEY.toString() + "\n\n");
+            
             context.write(KEY, VALUE);
-            */
+            
         }
         
     }
@@ -144,23 +145,6 @@ public class WikiReader extends Configured implements Tool {
         LOG.info(" - output path: " + outputPath);
         LOG.info(" - number of reducers: " + reduceTasks);
         
-        /*
-         * Old way of doing things
-         */
-        /*
-        JobConf conf = new JobConf(getConf(), WikiReader.class);
-        conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
-        
-        conf.setMapOutputKeyClass(Text.class);
-        conf.setMapOutputValueClass(IntWritable.class);
-        conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(IntWritable.class);
-        
-        conf.setMapperClass(MyMapper.class);
-        conf.setReducerClass((Class<? extends org.apache.hadoop.mapred.Reducer>) MyReducer.class);
-        */
-        
         Configuration conf = getConf();
         Job job = Job.getInstance(conf);
         job.setJobName(WikiReader.class.getSimpleName());
@@ -168,7 +152,10 @@ public class WikiReader extends Configured implements Tool {
 
         job.setNumReduceTasks(reduceTasks);
         
-        //job.setInputFormatClass(WikipediaPageInputFormat.class);
+        
+        job.setInputFormatClass(WikipediaPageInputFormat.class);
+        
+        
         
         FileInputFormat.setInputPaths(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
