@@ -46,14 +46,9 @@ import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
 import edu.umd.cloud9.collection.wikipedia.WikipediaPageInputFormat;
 
 /**
- * Tool for counting the number of pages in a particular Wikipedia XML dump file. This program keeps
- * track of total number of pages, redirect pages, disambiguation pages, empty pages, actual
- * articles (including stubs), stubs, and non-articles ("File:", "Category:", "Wikipedia:", etc.).
- * This also provides a skeleton for MapReduce programs to process the collection. Specify input
- * path to the Wikipedia XML dump file with the {@code -input} flag.
- *
- * @author Jimmy Lin
- * @author Peter Exner
+ * @author Samet Ayhan
+ * @author Joshua Bradley
+ * @author Sarah Weissman
  */
 public class WikiReader extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(WikiReader.class);
@@ -99,7 +94,7 @@ public class WikiReader extends Configured implements Tool {
                 .hasArg().withDescription("XML dump file").create(INPUT_OPTION));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
                 .withDescription("two-letter language code").create(LANGUAGE_OPTION));
-
+        
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
         try {
@@ -142,10 +137,9 @@ public class WikiReader extends Configured implements Tool {
         if(language != null){
             conf.set("wiki.language", language);
         }
-
+        
         conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
-
         conf.setMapperClass(MyMapper.class);
 
         JobClient.runJob(conf);
@@ -153,8 +147,7 @@ public class WikiReader extends Configured implements Tool {
         return 0;
     }
 
-    public WikiReader() {
-    }
+    public WikiReader() {}
 
     public static void main(String[] args) throws Exception {
         ToolRunner.run(new WikiReader(), args);
