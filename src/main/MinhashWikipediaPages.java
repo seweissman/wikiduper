@@ -130,11 +130,29 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, Text> output,
                 Reporter reporter) throws IOException {
-            
+            if (p.isRedirect()) {
+                reporter.incrCounter(PageTypes.REDIRECT, 1);
+
+            } else if (p.isDisambiguation()) {
+                reporter.incrCounter(PageTypes.DISAMBIGUATION, 1);
+            } else if (p.isEmpty()) {
+                reporter.incrCounter(PageTypes.EMPTY, 1);
+            } else if (p.isArticle()) {
+                reporter.incrCounter(PageTypes.ARTICLE, 1);
+
+                if (p.isStub()) {
+                    reporter.incrCounter(PageTypes.STUB, 1);
+                }
+            } else {
+                reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
+            }
+            if(!p.isArticle()) return;   
+            //System.out.println(p.getTitle());
             String line = p.getContent().replace("\n", " ");
             Matcher m = sentenceregex.matcher(line);
 
             // Assume each doc is on its own line; track sentence number by counting
+            
             int sentencect = 0;
 
             // For each sentence in the input text:
@@ -150,8 +168,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
               int shinglect = 0;
               // Calculate hash vector for each shingle
               String hashval[] = new String[seeds.length];
-              // skip sentences that are too short
-              if(sentence.length() < SHINGLELEN) return;
+              // skip sentences that are too shor
+
+              if(sentence.length() < SHINGLELEN)
+                  continue;
               for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
                   String shingle = sentence.substring(i, i+SHINGLELEN);
                   long hash[] = hashfamily.hash(shingle);
@@ -196,10 +216,9 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 }
                 
               }
-              
-
               sentencect++;
             }
+            //System.out.println("done");           
           }
     
     public void configure(JobConf job) {
