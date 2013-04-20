@@ -163,7 +163,7 @@ public abstract class WikipediaPage extends Indexable {
    */
   public String getContent() {
     String s = getWikiMarkup();
-
+    if(s == null) return null;
     // Bliki doesn't seem to properly handle inter-language links, so remove manually.
     if(LANG_LINKS.matcher(s).matches()){
         s = LANG_LINKS.matcher(s).replaceAll(" ");
@@ -215,9 +215,9 @@ public abstract class WikipediaPage extends Indexable {
    * Returns the text of this page.
    */
   public String getWikiMarkup() {
-    if (textStart == -1)
+    if (textStart == -1 || textStart + 27 > textEnd)
       return null;
-
+    
     return page.substring(textStart + 27, textEnd);
   }
 

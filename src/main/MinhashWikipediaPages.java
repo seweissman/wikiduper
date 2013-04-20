@@ -130,6 +130,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, Text> output,
                 Reporter reporter) throws IOException {
+
             if (p.isRedirect()) {
                 reporter.incrCounter(PageTypes.REDIRECT, 1);
 
@@ -146,9 +147,11 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             } else {
                 reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
             }
-            if(!p.isArticle()) return;   
+            if(!p.isArticle() || p.isEmpty()) return;   
             //System.out.println(p.getTitle());
-            String line = p.getContent().replace("\n", " ");
+            String content = p.getContent();
+            if(content == null) return;
+            String line = content.replace("\n", " ");
             Matcher m = sentenceregex.matcher(line);
 
             // Assume each doc is on its own line; track sentence number by counting
@@ -218,7 +221,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
               }
               sentencect++;
             }
-            //System.out.println("done");           
           }
     
     public void configure(JobConf job) {
