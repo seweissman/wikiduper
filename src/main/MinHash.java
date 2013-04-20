@@ -59,13 +59,20 @@ public class MinHash extends Configured implements Tool {
    *   * Write a class to extract results
    * 
    */
-  private static class SentenceMapperRegex extends Mapper<LongWritable, Text, ArrayListOfLongsWritable, PairOfLongInt> {
-
+  //private static class SentenceMapperRegex extends Mapper<LongWritable, Text, ArrayListOfLongsWritable, PairOfLongInt> {
+  private static class SentenceMapperRegex extends Mapper<LongWritable, Text, ArrayListOfLongsWritable, Text> {
     static long rseed = 1123456;
     static long seeds[];
-    static int NHASH = 10;
-    static int NHASHOUTPUTBITS = 10;
-    static int MINLEN = 5;
+    static long sigseed; // Seed to use when randoly selecting signature vectors
+    static long MINHASH[];
+    
+    static int NHASH = 20; // Total number of hashes per sentence
+    static int K = 10; // Length of hash vector
+    static int N = 3; // Number of hashes per input sentence (N < NHASH)
+    static int NHASHOUTPUTBITS = 30;
+    static int SHINGLELEN = 20;
+    static int MINLEN = 20;
+    //static int NSENTENCE = 3; // Number of sentences to match at a time
     static MultiplyShiftHash hashfamily;
 
     // The minhash signature
@@ -73,6 +80,8 @@ public class MinHash extends Configured implements Tool {
     
     // The document-sentence identifier
     static final PairOfLongInt DOCSENT = new PairOfLongInt();
+    // for testing
+    static final Text SENTENCE = new Text();
     
     // seed list could be produced in job and passed as message
     static{
@@ -83,13 +92,15 @@ public class MinHash extends Configured implements Tool {
         seeds[ct] = r.nextLong();
         ct++;
       }
+      sigseed = r.nextLong();
       hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
+      MINHASH = new long[NHASH];
     }
     
     @Override 
     public void setup(Context context){
-      for(int i=0; i<NHASH; i++){
-        SIG.add(0);
+      for(int i=0; i<K; i++){
+          SIG.add(0);
       }
     }
     
@@ -117,44 +128,68 @@ public class MinHash extends Configured implements Tool {
 
       // Assume each doc is on its own line; track sentence number by counting
       int sentencect = 0;
-      
+
       // For each sentence in the input text:
       while(m.find()){
         // Initialize the minhash vector
         for(int i=0;i<NHASH;i++){
-          SIG.set(i, Long.MAX_VALUE);
+          MINHASH[i] = Long.MAX_VALUE;
         }
         String sentence = m.group(1);
         //System.out.println("Sentence: " + sentence);
-        
-        // Shingle sentence by word
-        StringTokenizer itr = new StringTokenizer(sentence);
-        int wordct = 0;
-        // Calculate hash vector for each shingle
-        while (itr.hasMoreTokens()) {
-          String word = itr.nextToken();
-          long hashes[] = hashfamily.hash(word);
-          // Update the minhash signature
-          for(int j=0;j<hashes.length;j++){
-            if(hashes[j] < SIG.get(j)){
-              SIG.set(j, hashes[j]);
-            }
-            //System.out.println("word: " + word + " " + hashes[j]);
-          }
-          // Keep track of the word ct to avoid short sentences
-          wordct++;
-        }
-        
-        //for(int i=0;i<NHASH;i++){
-          //System.out.println("minhash " + i + "= " + SIG.get(i));
-        //}
-        //System.out.println("SIG size = " + SIG.size());
 
-        // If the sentence meads min word ct requirements, emit the signature and the sentence/doc ID
-        if(wordct > MINLEN){
-          DOCSENT.set(key.get(), sentencect);
-          context.write(SIG, DOCSENT);
+        
+        int shinglect = 0;
+        // Calculate hash vector for each shingle
+        String hashval[] = new String[seeds.length];
+        // skip sentences that are too short
+        if(sentence.length() < SHINGLELEN) return;
+        for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
+            String shingle = sentence.substring(i, i+SHINGLELEN);
+            long hash[] = hashfamily.hash(shingle);
+            // Update the minhash signature
+            for(int j=0;j<hash.length;j++){
+                if(hash[j] < MINHASH[j]){
+                    MINHASH[j] = hash[j];
+                    hashval[j] = shingle;
+                }
+            //System.out.println("word: " + word + " " + hashes[j]);
+            }
+            // Keep track of the word ct to avoid short sentences
+            shinglect++;
         }
+        
+        /*
+        for(int i=0;i<MINHASH.length;i++){
+            System.out.print(MINHASH[i] + " ");
+        }
+        System.out.println();
+        for(int i=0;i<hashval.length;i++){
+            System.out.print(hashval[i] + " ");
+        }
+        System.out.println();
+        */
+
+        // If the sentence meads min shingle ct requirements, emit the signature and the sentence/doc ID
+        if(shinglect > MINLEN){
+            DOCSENT.set(key.get(), sentencect);
+            SENTENCE.set(sentence + " " + key.get() + ":" + sentencect);
+          
+          // generate N k-minhash-signatures
+          // start from same seed, otherwise doesn't work so well
+          Random r = new Random(sigseed);
+          for(int j=0; j<N; j++){
+              for(int i=0; i<K; i++){
+                  int x = r.nextInt(NHASH);
+                  SIG.set(i, MINHASH[x]);
+              }
+              //context.write(SIG, DOCSENT);
+              context.write(SIG, SENTENCE);
+          }
+          
+        }
+        
+
         sentencect++;
       }
     }
@@ -166,12 +201,12 @@ public class MinHash extends Configured implements Tool {
    * Emits groups of sentences that hash to the same value. Only emits if there is more than one value for the key. 
    *
    */
-  private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
-
-
+  //private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
+  private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, Text, ArrayListOfLongsWritable, Text> {
+/*
     @Override
     public void reduce(ArrayListOfLongsWritable key, Iterable<PairOfLongInt> values, Context context)
-        throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
       Iterator<PairOfLongInt> iter = values.iterator();
       
       boolean gt1 = false;
@@ -183,6 +218,21 @@ public class MinHash extends Configured implements Tool {
       }
       
     }
+    */
+      @Override
+     public void reduce(ArrayListOfLongsWritable key, Iterable<Text> values, Context context)
+                  throws IOException, InterruptedException {
+        Iterator<Text> iter = values.iterator();
+        
+        boolean gt1 = false;
+        
+        while (iter.hasNext()) {
+          Text val = iter.next();
+          if(iter.hasNext()) gt1 = true;
+          if(gt1) context.write(key, val);
+        }
+        
+      }
   }
 
   /**
@@ -248,7 +298,8 @@ public class MinHash extends Configured implements Tool {
     FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
     job.setOutputKeyClass(ArrayListOfLongsWritable.class);
-    job.setOutputValueClass(PairOfLongInt.class);
+    //job.setOutputValueClass(PairOfLongInt.class);
+    job.setOutputValueClass(Text.class);
 
     job.setMapperClass(SentenceMapperRegex.class);
     //job.setCombinerClass(MyReducer.class);
