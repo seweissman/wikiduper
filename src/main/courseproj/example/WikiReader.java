@@ -51,6 +51,13 @@ import courseproj.wikipedia.WikipediaPageInputFormat;
  * @author Joshua Bradley
  * @author Sarah Weissman
  */
+
+/*
+ * This short MR program just performs a count of the different type of articles found in wikipedia.
+ * Input: reads in a compressed .bz2 wiki dump file
+ * Output: a list of counts
+ * 
+ */
 public class WikiReader extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(WikiReader.class);
 
