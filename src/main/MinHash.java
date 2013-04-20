@@ -54,8 +54,6 @@ public class MinHash extends Configured implements Tool {
    *   * Read initializing info (i.e. initial hash seeds) from Job parameters instead of hard coded.
    *   * Test sentence parsing to see if regex needs tweaking.
    *   * implement k at a time handling of sentences
-   *   * implement multiple minhash values returned per sentence (m groups of n hashes)
-   *   * other shingling granularities?
    *   * Write a class to extract results
    * 
    */
