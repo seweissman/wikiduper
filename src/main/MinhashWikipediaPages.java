@@ -34,7 +34,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -109,7 +108,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
         // The document-sentence identifier
         static final PairOfLongInt DOCSENT = new PairOfLongInt();
-        // for testing
+        // for testing - output sentence and ID - we could output just an ID or a hash of the 
+        // entire sentence instead of the sentence itself in real implementation
         static final PairOfStrings SENTENCE_ID = new PairOfStrings();
 	    
 	    
@@ -153,7 +153,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             //System.out.println(p.getTitle());
             String content = p.getContent();
             if(content == null) return;
-            String line = content.replace("\n", " ");
+            String line = content.replace("\n", " ").replace("  ", " ").replace(",","");
             Matcher m = sentenceregex.matcher(line);
 
             // Assume each doc is on its own line; track sentence number by counting
@@ -244,8 +244,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         sigseed = r.nextLong();
         hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
         MINHASH = new long[NHASH];
-        for(int i=0; i<K; i++){
-            SIG.add(0);
+        if(SIG.size() != K){
+            for(int i=0; i<K; i++){
+                SIG.add(0);
+            }
         }
         
     }
@@ -276,6 +278,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     }
     */
 
+      // Uniquify the results so that we don't keep identical sentences (although these
+      // may be interesting in their own right
       static final HashMap<String,String> uniqueMap = new HashMap<String,String>();
       static final PairOfStrings SENTENCE_ID = new PairOfStrings();
       @Override
@@ -289,6 +293,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             PairOfStrings val = values.next();
             uniqueMap.put(val.getLeftElement(), val.getRightElement());
           }
+          // Only output if there is more than one after uniquing
           if(uniqueMap.size() > 1){
               for (String s : uniqueMap.keySet()){
                   SENTENCE_ID.set(s, uniqueMap.get(s));
