@@ -1,0 +1,54 @@
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: sigproc-sp.aux
+The style file: abbrv.bst
+Database file #1: sigproc.bib
+Warning--to sort, need author or key in faaWebsite:asdi
+Warning--to sort, need author or key in ibmWebsite:datawarehouse
+Warning--to sort, need author or key in ibmWebsite:messagebroker
+Warning--to sort, need author or key in ibmWebsite:mq
+Warning--to sort, need author or key in ibmWebsite:spss
+Warning--to sort, need author or key in ibmWebsite:cognos
+Warning--to sort, need author or key in noaaWebsite:aviationweather
+Warning--to sort, need author or key in noaaWebsite:rapidrefresh
+You've used 31 entries,
+            2118 wiz_defined-function locations,
+            664 strings with 8924 characters,
+and the built_in function-call counts, 10578 in all, are:
+= -- 994
+> -- 469
+< -- 12
++ -- 194
+- -- 158
+* -- 678
+:= -- 1600
+add.period$ -- 85
+call.type$ -- 31
+change.case$ -- 169
+chr.to.int$ -- 0
+cite$ -- 39
+duplicate$ -- 444
+empty$ -- 917
+format.name$ -- 158
+if$ -- 2362
+int.to.chr$ -- 0
+int.to.str$ -- 31
+missing$ -- 26
+newline$ -- 150
+num.names$ -- 46
+pop$ -- 245
+preamble$ -- 1
+purify$ -- 141
+quote$ -- 0
+skip$ -- 362
+stack$ -- 0
+substring$ -- 561
+swap$ -- 141
+text.length$ -- 12
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 118
+warning$ -- 8
+while$ -- 76
+width$ -- 33
+write$ -- 317
+(There were 8 warnings)
