@@ -19,7 +19,6 @@
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,7 +32,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -44,14 +42,15 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import courseproj.hash.MultiplyShiftHash;
-import edu.umd.cloud9.collection.wikipedia.*;
+import courseproj.wikipedia.WikipediaPage;
+import courseproj.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
 
@@ -87,32 +86,30 @@ public class MinhashWikipediaPages extends Configured implements Tool {
   };
 
   private static class SentenceMapperRegex extends MapReduceBase implements
-      Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfLongInt> {
+      Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, Text> {
 	  
-	    static long rseed;
-	    static long seeds[];
-	    static int NHASH;
-	    static int NHASHOUTPUTBITS;
-	    static int MINLEN;
-	    static MultiplyShiftHash hashfamily;
+        static long rseed;
+        static long seeds[];
+        static long sigseed; // Seed to use when randoly selecting signature vectors
+        static long MINHASH[];
+        
+        static int NHASH; // Total number of hashes per sentence
+        static int K; // Length of hash vector
+        static int N; // Number of hashes per input sentence (N < NHASH)
+        static int NHASHOUTPUTBITS;
+        static int SHINGLELEN;
+        static int MINLEN;
+        //static int NSENTENCE = 3; // Number of sentences to match at a time
+        static MultiplyShiftHash hashfamily;
 
-	    // The minhash signature
-	    static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(NHASH);
+        // The minhash signature
+        static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(K);
+        
+        // The document-sentence identifier
+        static final PairOfLongInt DOCSENT = new PairOfLongInt();
+        // for testing
+        static final Text SENTENCE = new Text();
 	    
-	    // The document-sentence identifier
-	    static final PairOfLongInt DOCSENT = new PairOfLongInt();
-	    
-	    // seed list could be produced in job and passed as message
-	    static{
-	      seeds = new long[NHASH];
-	      Random r = new Random(rseed);
-	      int ct = 0;
-	      while(ct < NHASH){
-	        seeds[ct] = r.nextLong();
-	        ct++;
-	      }
-	      hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
-	    }
 	    
 	    //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
 	    static final Pattern sentenceregex = Pattern.compile(
@@ -131,116 +128,145 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 	        Pattern.MULTILINE | Pattern.COMMENTS);
 	    
 
-    public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfLongInt> output,
-        Reporter reporter) throws IOException {
-      reporter.incrCounter(PageTypes.TOTAL, 1);
+        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, Text> output,
+                Reporter reporter) throws IOException {
+            
+            String line = p.getContent().replace("\n", " ");
+            Matcher m = sentenceregex.matcher(line);
 
-      if (p.isRedirect()) 
-      {
-        reporter.incrCounter(PageTypes.REDIRECT, 1);
-      } 
-      else if (p.isDisambiguation()) 
-      {
-        reporter.incrCounter(PageTypes.DISAMBIGUATION, 1);
-      } 
-      else if (p.isEmpty()) 
-      {
-        reporter.incrCounter(PageTypes.EMPTY, 1);
-      } 
-      else if (p.isArticle()) 
-      {
-        reporter.incrCounter(PageTypes.ARTICLE, 1);
+            // Assume each doc is on its own line; track sentence number by counting
+            int sentencect = 0;
 
-        if (p.isStub()) 
-        {
-          reporter.incrCounter(PageTypes.STUB, 1);
-        }
-        
-        String line = p.getContent();
-        Matcher m = sentenceregex.matcher(line);
-
-        // Assume each doc is on its own line; track sentence number by counting
-        int sentencect = 0;
-        
-        // For each sentence in the input text:
-        while(m.find()){
-          // Initialize the minhash vector
-          for(int i=0;i<NHASH;i++){
-            SIG.set(i, Long.MAX_VALUE);
-          }
-          String sentence = m.group(1);
-          //System.out.println("Sentence: " + sentence);
-          
-          // Shingle sentence by word
-          StringTokenizer itr = new StringTokenizer(sentence);
-          int wordct = 0;
-          // Calculate hash vector for each shingle
-          while (itr.hasMoreTokens()) {
-            String word = itr.nextToken();
-            long hashes[] = hashfamily.hash(word);
-            // Update the minhash signature
-            for(int j=0;j<hashes.length;j++){
-              if(hashes[j] < SIG.get(j)){
-                SIG.set(j, hashes[j]);
+            // For each sentence in the input text:
+            while(m.find()){
+              // Initialize the minhash vector
+              for(int i=0;i<NHASH;i++){
+                MINHASH[i] = Long.MAX_VALUE;
               }
-              //System.out.println("word: " + word + " " + hashes[j]);
-            }
-            // Keep track of the word ct to avoid short sentences
-            wordct++;
-          }
-          
-          //for(int i=0;i<NHASH;i++){
-            //System.out.println("minhash " + i + "= " + SIG.get(i));
-          //}
-          //System.out.println("SIG size = " + SIG.size());
+              String sentence = m.group(1);
+              //System.out.println("Sentence: " + sentence);
 
-          // If the sentence meads min word ct requirements, emit the signature and the sentence/doc ID
-          if(wordct > MINLEN){
-            DOCSENT.set(key.get(), sentencect);
-//            context.write(SIG, DOCSENT);
-            output.collect(SIG, DOCSENT);
+              
+              int shinglect = 0;
+              // Calculate hash vector for each shingle
+              String hashval[] = new String[seeds.length];
+              // skip sentences that are too short
+              if(sentence.length() < SHINGLELEN) return;
+              for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
+                  String shingle = sentence.substring(i, i+SHINGLELEN);
+                  long hash[] = hashfamily.hash(shingle);
+                  // Update the minhash signature
+                  for(int j=0;j<hash.length;j++){
+                      if(hash[j] < MINHASH[j]){
+                          MINHASH[j] = hash[j];
+                          hashval[j] = shingle;
+                      }
+                  //System.out.println("word: " + word + " " + hashes[j]);
+                  }
+                  // Keep track of the word ct to avoid short sentences
+                  shinglect++;
+              }
+              
+              /*
+              for(int i=0;i<MINHASH.length;i++){
+                  System.out.print(MINHASH[i] + " ");
+              }
+              System.out.println();
+              for(int i=0;i<hashval.length;i++){
+                  System.out.print(hashval[i] + " ");
+              }
+              System.out.println();
+              */
+
+              // If the sentence meads min shingle ct requirements, emit the signature and the sentence/doc ID
+              if(shinglect > MINLEN){
+                  DOCSENT.set(key.get(), sentencect);
+                  SENTENCE.set(sentence + " " + key.get() + ":" + sentencect);
+                
+                // generate N k-minhash-signatures
+                // start from same seed, otherwise doesn't work so well
+                Random r = new Random(sigseed);
+                for(int j=0; j<N; j++){
+                    for(int i=0; i<K; i++){
+                        int x = r.nextInt(NHASH);
+                        SIG.set(i, MINHASH[x]);
+                    }
+                    //context.write(SIG, DOCSENT);
+                    output.collect(SIG, SENTENCE);
+                }
+                
+              }
+              
+
+              sentencect++;
+            }
           }
-          sentencect++;
-        }
-        
-      } 
-      else 
-      {
-        reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
-      }
-    }
     
     public void configure(JobConf job) {
-        rseed = Long.parseLong(job.get("rseed"));
-        NHASH = Integer.parseInt(job.get("NHASH"));
-        NHASHOUTPUTBITS = Integer.parseInt(job.get("NHASHOUTPUTBITS"));
-        MINLEN = Integer.parseInt(job.get("MINLEN"));
+        rseed = job.getLong("rseed", 112345);
+        NHASH = job.getInt("NHASH", 6);
+        NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
+        MINLEN = job.getInt("MINLEN", 20);
+        K = job.getInt("K",  8);
+        N = job.getInt("N", 5);
+        SHINGLELEN = job.getInt("SHINGLELEN",15);
+
+        seeds = new long[NHASH];
+        Random r = new Random(rseed);
+        int ct = 0;
+        while(ct < NHASH){
+          seeds[ct] = r.nextLong();
+          ct++;
+        }
+        sigseed = r.nextLong();
+        hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
+        MINHASH = new long[NHASH];
+        for(int i=0; i<K; i++){
+            SIG.add(0);
+        }
         
-	    for(int i=0; i<NHASH; i++)
-	    {
-	    	SIG.add(0);
-		}
     }
   }
   
-  private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
+  /**
+   * Emits groups of sentences that hash to the same value. Only emits if there is more than one value for the key. 
+   *
+   */
+  //private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
+  private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, Text, ArrayListOfLongsWritable, Text> {
+/*
+    @Override
+      @Override
+      public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfLongInt> values,
+              OutputCollector<ArrayListOfLongsWritable, PairOfLongInt> output, Reporter reporter)
+              throws IOException {
+          boolean gt1 = false;
+          
+          while (values.hasNext()) {
+           PairOfLongInt val = values.next();
+            if(values.hasNext()) gt1 = true;
+            if(gt1) output.collect(key, val);
+          }
+          
+      }
+      
+    }
+    */
 
-	  public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfLongInt> values, OutputCollector<ArrayListOfLongsWritable, PairOfLongInt> output, Reporter reporter) 
-			  throws IOException {
-
-		  boolean gt1 = false;
-		  
-		  while (values.hasNext())
-		  {
-			  PairOfLongInt val = values.next();
-		      if(values.hasNext()) 
-		    	  gt1 = true;
-		      if(gt1) 
-		    	  output.collect(key, val);
-		  }
-	  }
+      @Override
+      public void reduce(ArrayListOfLongsWritable key, Iterator<Text> values,
+              OutputCollector<ArrayListOfLongsWritable, Text> output, Reporter reporter)
+              throws IOException {
+          boolean gt1 = false;
+          
+          while (values.hasNext()) {
+            Text val = values.next();
+            if(values.hasNext()) gt1 = true;
+            if(gt1) output.collect(key, val);
+          }
+          
+      }
   }
-
   private static final String INPUT = "input";
   private static final String OUTPUT = "output";
   private static final String LANGUAGE_OPTION = "wiki_language";
@@ -297,11 +323,14 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     JobConf conf = new JobConf(getConf(), MinhashWikipediaPages.class);
     conf.setJobName(String.format("MinhashWikipediaPages[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
     
-    conf.set("rseed", "1123456");
-    conf.set("NHASH", "10");
-    conf.set("NHASHOUTPUTBITS", "10");
-    conf.set("MINLEN", "5");
-
+    conf.setLong("rseed", 1123456);
+    conf.setInt("NHASH", 20);
+    conf.setInt("NHASHOUTPUTBITS", 30);
+    conf.setInt("MINLEN", 20);
+    conf.setInt("K",  8);
+    conf.setInt("N", 5);
+    conf.setInt("SHINGLELEN",15);
+    
     conf.setNumMapTasks(10);
     conf.setNumReduceTasks(0);
 
@@ -313,10 +342,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     }
     
     conf.setInputFormat(WikipediaPageInputFormat.class);
-    conf.setOutputFormat(NullOutputFormat.class);
+    conf.setOutputFormat(TextOutputFormat.class);
     
     conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
-    conf.setOutputValueClass(PairOfLongInt.class);
+    conf.setOutputValueClass(Text.class);
 
     conf.setMapperClass(SentenceMapperRegex.class);
     conf.setReducerClass(GroupReducer.class);
