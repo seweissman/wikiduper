@@ -1,7 +1,23 @@
+/*
+ * Cloud9: A MapReduce Library for Hadoop
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package courseproj.example;
 
 import java.io.IOException;
-import java.util.Iterator;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -9,116 +25,78 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextOutputFormat;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-import cern.colt.Arrays;
-import org.apache.hadoop.mapred.JobConf;
 
+import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
+import edu.umd.cloud9.collection.wikipedia.WikipediaPageInputFormat;
+
+/**
+ * @author Samet Ayhan
+ * @author Joshua Bradley
+ * @author Sarah Weissman
+ */
 public class WikiReader extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(WikiReader.class);
 
-    //Mapper: emits (token, 1) for every article occurrence.
-    private static class MyMapper extends Mapper<LongWritable, Text /*WikipediaPage*/, Text, IntWritable> {
-        
-        private static final Text KEY = new Text();
-        private static final IntWritable VALUE = new IntWritable(1);
-        
-        public void map(LongWritable key, Text /*WikipediaPage*/ p, Context context)
-                throws IOException, InterruptedException {
-            
-            //System.out.println(key);
-            System.out.println(p.toString() + "\n\n\n\n\n\n");
-            KEY.set("TOTAL");
-            context.write(KEY, VALUE);
-            /*
+    private static enum PageTypes {
+        TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
+    };
+
+    private static class MyMapper extends MapReduceBase implements
+    Mapper<LongWritable, WikipediaPage, Text, IntWritable> {
+
+        public void map(LongWritable key, WikipediaPage p, OutputCollector<Text, IntWritable> output,
+                Reporter reporter) throws IOException {
+            reporter.incrCounter(PageTypes.TOTAL, 1);
+
             if (p.isRedirect()) {
-                KEY.set("REDIRECT");
+                reporter.incrCounter(PageTypes.REDIRECT, 1);
+
             } else if (p.isDisambiguation()) {
-                KEY.set("DISAMBIGUATION");
+                reporter.incrCounter(PageTypes.DISAMBIGUATION, 1);
             } else if (p.isEmpty()) {
-                KEY.set("EMPTY");
+                reporter.incrCounter(PageTypes.EMPTY, 1);
             } else if (p.isArticle()) {
-                KEY.set("ARTICLE");
+                reporter.incrCounter(PageTypes.ARTICLE, 1);
+
                 if (p.isStub()) {
-                    KEY.set("ARTICLE");
+                    reporter.incrCounter(PageTypes.STUB, 1);
                 }
             } else {
-                KEY.set("NON_ARTICLE");
+                reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
             }
-            
-            context.write(KEY, VALUE);
-            */
         }
-        
     }
 
-    //Reducer: sums up all the counts.
-    public static class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    private static final String INPUT_OPTION = "input";
+    private static final String LANGUAGE_OPTION = "wiki_language";
 
-        // Reuse objects.
-        private final static IntWritable SUM = new IntWritable();
-
-        @Override
-        public void reduce(Text key, Iterable<IntWritable> values, Context context)
-                throws IOException, InterruptedException {
-            // Sum up values.
-            Iterator<IntWritable> iter = values.iterator();
-            int sum = 0;
-            while (iter.hasNext()) {
-                sum += iter.next().get();
-            }
-            
-            System.out.println("\n\n" + key.toString() + " : " + sum);
-            
-            SUM.set(sum);
-            context.write(key, SUM);
-        }
-        
-    }
-
-    /**
-     * Creates an instance of this tool.
-     */
-    public WikiReader() {}
-
-    private static final String INPUT = "input";
-    private static final String OUTPUT = "output";
-    private static final String NUM_REDUCERS = "numReducers";
-
-    /**
-     * Runs this tool.
-     */
-    @SuppressWarnings({ "static-access" })
+    @SuppressWarnings("static-access")
+    @Override
     public int run(String[] args) throws Exception {
-
         Options options = new Options();
-
-        options.addOption(OptionBuilder.withArgName("path").hasArg()
-                .withDescription("input path").create(INPUT));
-        options.addOption(OptionBuilder.withArgName("path").hasArg()
-                .withDescription("output path").create(OUTPUT));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("number of reducers").create(NUM_REDUCERS));
-
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("XML dump file").create(INPUT_OPTION));
+        options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
+                .withDescription("two-letter language code").create(LANGUAGE_OPTION));
+        
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
-
         try {
             cmdline = parser.parse(options, args);
         } catch (ParseException exp) {
@@ -126,75 +104,51 @@ public class WikiReader extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
-            System.out.println("args: " + Arrays.toString(args));
+        if (!cmdline.hasOption(INPUT_OPTION)) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
             ToolRunner.printGenericCommandUsage(System.out);
             return -1;
         }
 
-        String inputPath = cmdline.getOptionValue(INPUT);
-        String outputPath = cmdline.getOptionValue(OUTPUT);
-        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
+        String language = null;
+        if (cmdline.hasOption(LANGUAGE_OPTION)) {
+            language = cmdline.getOptionValue(LANGUAGE_OPTION);
+            if(language.length()!=2){
+                System.err.println("Error: \"" + language + "\" unknown language!");
+                return -1;
+            }
+        }
 
-        LOG.info("Tool: " + WikiReader.class.getSimpleName());
-        LOG.info(" - input path: " + inputPath);
-        LOG.info(" - output path: " + outputPath);
-        LOG.info(" - number of reducers: " + reduceTasks);
-        
-        /*
-         * Old way of doing things
-         */
-        /*
+        String inputPath = cmdline.getOptionValue(INPUT_OPTION);
+
+        LOG.info("Tool name: " + this.getClass().getName());
+        LOG.info(" - XML dump file: " + inputPath);
+        LOG.info(" - language: " + language);
+
         JobConf conf = new JobConf(getConf(), WikiReader.class);
+        conf.setJobName(String.format("WikiReader[%s: %s, %s: %s]", INPUT_OPTION, inputPath, LANGUAGE_OPTION, language));
+
+        conf.setNumMapTasks(10);
+        conf.setNumReduceTasks(0);
+
+        FileInputFormat.setInputPaths(conf, new Path(inputPath));
+
+        if(language != null){
+            conf.set("wiki.language", language);
+        }
+        
         conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
-        
-        conf.setMapOutputKeyClass(Text.class);
-        conf.setMapOutputValueClass(IntWritable.class);
-        conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(IntWritable.class);
-        
+        conf.setOutputFormat(NullOutputFormat.class);
         conf.setMapperClass(MyMapper.class);
-        conf.setReducerClass((Class<? extends org.apache.hadoop.mapred.Reducer>) MyReducer.class);
-        */
-        
-        Configuration conf = getConf();
-        Job job = Job.getInstance(conf);
-        job.setJobName(WikiReader.class.getSimpleName());
-        job.setJarByClass(WikiReader.class);
 
-        job.setNumReduceTasks(reduceTasks);
-        
-        //job.setInputFormatClass(WikipediaPageInputFormat.class);
-        
-        FileInputFormat.setInputPaths(job, new Path(inputPath));
-        FileOutputFormat.setOutputPath(job, new Path(outputPath));
-
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(IntWritable.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
-
-        job.setMapperClass(MyMapper.class);
-        job.setReducerClass(MyReducer.class);
-        
-        // Delete the output directory if it exists already.
-        Path outputDir = new Path(outputPath);
-        FileSystem.get(conf).delete(outputDir, true);
-
-        long startTime = System.currentTimeMillis();
-        job.waitForCompletion(true);
-        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        JobClient.runJob(conf);
 
         return 0;
     }
 
-    /**
-     * Dispatches command-line arguments to the tool via the {@code ToolRunner}.
-     */
+    public WikiReader() {}
+
     public static void main(String[] args) throws Exception {
         ToolRunner.run(new WikiReader(), args);
     }
