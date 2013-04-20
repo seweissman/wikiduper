@@ -65,16 +65,16 @@ public class MinHash extends Configured implements Tool {
     static long MINHASH[];
     
     static int NHASH = 20; // Total number of hashes per sentence
-    static int K = 10; // Length of hash vector
-    static int N = 3; // Number of hashes per input sentence (N < NHASH)
+    static int K = 8; // Length of hash vector
+    static int N = 5; // Number of hashes per input sentence (N < NHASH)
     static int NHASHOUTPUTBITS = 30;
-    static int SHINGLELEN = 20;
+    static int SHINGLELEN = 15;
     static int MINLEN = 20;
     //static int NSENTENCE = 3; // Number of sentences to match at a time
     static MultiplyShiftHash hashfamily;
 
     // The minhash signature
-    static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(NHASH);
+    static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(K);
     
     // The document-sentence identifier
     static final PairOfLongInt DOCSENT = new PairOfLongInt();

@@ -42,8 +42,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
-import edu.umd.cloud9.collection.wikipedia.WikipediaPageInputFormat;
+import courseproj.wikipedia.WikipediaPage;
+import courseproj.wikipedia.WikipediaPageInputFormat;
+
 
 /**
  * @author Samet Ayhan
@@ -63,7 +64,7 @@ public class WikiReader extends Configured implements Tool {
         public void map(LongWritable key, WikipediaPage p, OutputCollector<Text, IntWritable> output,
                 Reporter reporter) throws IOException {
             reporter.incrCounter(PageTypes.TOTAL, 1);
-
+            //System.out.println("PAGE: " + p.getContent());
             if (p.isRedirect()) {
                 reporter.incrCounter(PageTypes.REDIRECT, 1);
 
