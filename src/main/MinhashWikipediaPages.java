@@ -17,6 +17,7 @@
 
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -53,6 +54,7 @@ import courseproj.wikipedia.WikipediaPage;
 import courseproj.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
+import edu.umd.cloud9.io.pair.PairOfStrings;
 
 public class MinhashWikipediaPages extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
@@ -86,7 +88,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
   };
 
   private static class SentenceMapperRegex extends MapReduceBase implements
-      Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, Text> {
+      Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStrings> {
 	  
         static long rseed;
         static long seeds[];
@@ -108,7 +110,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         // The document-sentence identifier
         static final PairOfLongInt DOCSENT = new PairOfLongInt();
         // for testing
-        static final Text SENTENCE = new Text();
+        static final PairOfStrings SENTENCE_ID = new PairOfStrings();
 	    
 	    
 	    //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
@@ -128,7 +130,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 	        Pattern.MULTILINE | Pattern.COMMENTS);
 	    
 
-        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, Text> output,
+        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output,
                 Reporter reporter) throws IOException {
 
             if (p.isRedirect()) {
@@ -204,7 +206,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
               // If the sentence meads min shingle ct requirements, emit the signature and the sentence/doc ID
               if(shinglect > MINLEN){
                   DOCSENT.set(key.get(), sentencect);
-                  SENTENCE.set(sentence + " " + key.get() + ":" + sentencect);
+                  SENTENCE_ID.set(sentence,key.get() + ":" + sentencect);
                 
                 // generate N k-minhash-signatures
                 // start from same seed, otherwise doesn't work so well
@@ -215,7 +217,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         SIG.set(i, MINHASH[x]);
                     }
                     //context.write(SIG, DOCSENT);
-                    output.collect(SIG, SENTENCE);
+                    output.collect(SIG, SENTENCE_ID);
                 }
                 
               }
@@ -254,7 +256,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
    *
    */
   //private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
-  private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, Text, ArrayListOfLongsWritable, Text> {
+  private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStrings, ArrayListOfLongsWritable, PairOfStrings> {
 /*
     @Override
       @Override
@@ -274,16 +276,24 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     }
     */
 
+      static final HashMap<String,String> uniqueMap = new HashMap<String,String>();
+      static final PairOfStrings SENTENCE_ID = new PairOfStrings();
       @Override
-      public void reduce(ArrayListOfLongsWritable key, Iterator<Text> values,
-              OutputCollector<ArrayListOfLongsWritable, Text> output, Reporter reporter)
+      public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStrings> values,
+              OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output, Reporter reporter)
               throws IOException {
-          boolean gt1 = false;
+          uniqueMap.clear();
+          //boolean gt1 = false;
           
           while (values.hasNext()) {
-            Text val = values.next();
-            if(values.hasNext()) gt1 = true;
-            if(gt1) output.collect(key, val);
+            PairOfStrings val = values.next();
+            uniqueMap.put(val.getLeftElement(), val.getRightElement());
+          }
+          if(uniqueMap.size() > 1){
+              for (String s : uniqueMap.keySet()){
+                  SENTENCE_ID.set(s, uniqueMap.get(s));
+                  output.collect(key, SENTENCE_ID);
+              }
           }
           
       }
@@ -366,7 +376,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     conf.setOutputFormat(TextOutputFormat.class);
     
     conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
-    conf.setOutputValueClass(Text.class);
+    conf.setOutputValueClass(PairOfStrings.class);
 
     conf.setMapperClass(SentenceMapperRegex.class);
     conf.setReducerClass(GroupReducer.class);
