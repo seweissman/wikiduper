@@ -38,7 +38,7 @@
 \begin{document}
 
 
-\title{Similar Article Detection Using Minhash Technique on Wikipedia\titlenote{This effort is part of the CMSC828G, Data Intensive Computing with MapReduce, class project.}}
+\title{Similar Article Detection Using Locality Sensitive Hashing Technique on Wikipedia\titlenote{This effort is part of the CMSC828G, Data Intensive Computing with MapReduce, class project.}}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -108,20 +108,33 @@
 
 \maketitle
 \begin{abstract}
-In this paper, we describe a novel similarity detection algorithm that utilizes locality sensitive hashing technique on MapReduce framework. The algorithm has been designed and implemented to detect similar articles using large Wikipedia dumps, in compressed or uncompressed forms.
+The growth of Internet has enabled collaboration and cooperation on a large scale, resulting in an abundant number of near-duplicate web documents. The range of occurrences is even more evident within Wikipedia articles, due to its editing largely being open. Except for particularly sensitive and/or vandalism-prone pages that are "protected" to some degree from editing, the reader of an article can edit the text by copying from another article without needing approval. Although we are not inspired to measure the quality of Wikipedia articles, we are interested in finding near-duplicate occurrences at various granularity levels. 
+
+In this paper, we describe a novel similarity detection algorithm that utilizes locality sensitive hashing (LSH) technique on MapReduce framework. The algorithm has been designed and implemented to detect similar articles using large Wikipedia dumps, in compressed or uncompressed forms. Experimental results appear to support that our method is able to efficiently and effectively detect similar articles from large Wikipedia dumps.
 \end{abstract}
 
 % A category with the (minimum) three required fields
-\category{H.2.4}{Information Systems}{Database Management}[Systems]
+\category{H.3.3}{Information Storage and Retrieval}[Information Search and Retrieval]
 
 \terms{Algorithms, Design, Performance}
 
-\keywords{Big Data, Data Analytics, Data Warehouse, Data Stream Management} % NOT required for Proceedings
-
 \section{Introduction}
-Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia’s accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors [1]. Since Wikipedia may be edited anonymously, information is often freely copied between web sources or other Wikipedia articles. Additionally, many articles in Wikipedia lack citations. There is little mechanism for detecting and correcting such errors. One potential source of error on Wikipedia is factual information that varies over time and is not updated. Wilkinson found that the distribution of article edits has a long tail, meaning that a small number of articles have many edits while most articles have few, and that number of edits is directly related to article quality. Articles with low edits, and low editorial attention, are less likely to be updated when new information becomes available \cite{wilkinson:wiki}.
+The online encyclopedia Wikipedia is a multilingual, free resource with its 26 million articles. All these articles with over 4.2 million in the English Wikipedia alone, are written collaboratively by volunteers around the world. Almost all of its articles can be edited by anyone with access to the site, and it has about 100,000 active contributors. In light of these facts, it is clear that unprecedented example of such a large-scale collaboration may result in duplicate or near duplicate articles in relatively granular level such as at sentence or multi-gram granularity \cite{wiki:weblink}
 
-As a step toward identifying factual errors, we investigated the problem of finding near duplicate sentences on Wikipedia. Such near duplicate sentences may reflect factual information that has been updated in one article and not another, or merely inconsistencies that should be flagged and addressed. We used the MapReduce computing framework and locality sensitive hashing techniques to compare sentences and identify near duplicates.
+Furthermore, Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia’s accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors. Since Wikipedia may be edited anonymously, information is often freely copied between web sources or other Wikipedia articles. Additionally, many articles in Wikipedia lack citations. There is little mechanism for detecting and correcting such errors. One potential source of error on Wikipedia is factual information that varies over time and is not updated. Wilkinson found that the distribution of article edits has a long tail, meaning that a small number of articles have many edits while most articles have few, and that number of edits is directly related to article quality. Articles with low edits, and low editorial attention, are less likely to be updated when new information becomes available \cite{wilkinson:wiki}.
+
+As a step toward identifying factual errors, we investigated the problem of finding near duplicate sentences on Wikipedia. Such near duplicate sentences may reflect factual information that has been updated in one article and not another, or merely inconsistencies that should be flagged and addressed. 
+
+In order to come up with a novel algorithm that would allow us to detect near duplicate Wikipedia articles, we decided that we needed to answer the following questions, first:
+\begin{itemize}
+\item What is the most appropriate LSH technique to apply? Edit distance seems like a reasonable metric for near duplicate sentences, but no LSH family for edit distance is known to exist.
+\item Compare different sentence similarity techniques for effectiveness. 
+\item What is the appropriate granularity for analysis? Is comparing multiple consecutive sentences more effective than comparing single sentences? Similarly, what is the best shingle size?
+\item How well do techniques for detecting near duplicate documents work when applied at the sentence level?
+\item Do near duplicate sentences correspond to factual errors? Can these errors be automatically flagged or corrections suggested?
+\end{itemize}
+
+Along with these questions, we also considered the scalability and efficiency issues due to large size of Wikipedia dumps. To address these issues, we used the MapReduce computing framework and LSH techniques to group sentences with the same signatures and identify near duplicates.
 
 The rest of this paper is organized as follows: In Section 2, we present related work, in Section 3, we explain the algorithm utilizing locality sensitive hashing, in Section 4, we present the working application within MapReduce framework. In Section 5, we discuss our experiments with various Wikipedia datasets. The final section contains concluding remarks and future work.
 
