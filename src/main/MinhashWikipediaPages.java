@@ -56,44 +56,44 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
 public class MinhashWikipediaPages extends Configured implements Tool {
-  private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
-  
-  /* SentenceMapperRegex
-   * 
-   * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
-   * 
-   * Pulls out sentences from text input using a regex. 
-   * Emits one NHASH-length minhash signature per sentence.
-   * Each hash is NHASHOUTPUTBITS long. (So signature is NHASH*NHASHOUTPUTBITS long.)
-   * Sentences are shingled by individual words. 
-   * If sentences are less than MINLEN words, then they are skipped.
-   * 
-   * 
-   * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
-   * input text and nsentence is the number of the sentence in the line. (starting from 0)
-   * 
-   * TODO:
-   *   * Read initializing info (i.e. initial hash seeds) from Job parameters instead of hard coded.
-   *   * Test sentence parsing to see if regex needs tweaking.
-   *   * implement k at a time handling of sentences
-   *   * implement multiple minhash values returned per sentence (m groups of n hashes)
-   *   * other shingling granularities?
-   *   * Write a class to extract results
-   * 
-   */
+    private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
 
-  private static enum PageTypes {
-    TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
-  };
+    /* SentenceMapperRegex
+     * 
+     * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
+     * 
+     * Pulls out sentences from text input using a regex. 
+     * Emits one NHASH-length minhash signature per sentence.
+     * Each hash is NHASHOUTPUTBITS long. (So signature is NHASH*NHASHOUTPUTBITS long.)
+     * Sentences are shingled by individual words. 
+     * If sentences are less than MINLEN words, then they are skipped.
+     * 
+     * 
+     * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
+     * input text and nsentence is the number of the sentence in the line. (starting from 0)
+     * 
+     * TODO:
+     *   * Read initializing info (i.e. initial hash seeds) from Job parameters instead of hard coded.
+     *   * Test sentence parsing to see if regex needs tweaking.
+     *   * implement k at a time handling of sentences
+     *   * implement multiple minhash values returned per sentence (m groups of n hashes)
+     *   * other shingling granularities?
+     *   * Write a class to extract results
+     * 
+     */
 
-  private static class SentenceMapperRegex extends MapReduceBase implements
-      Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStrings> {
-	  
+    private static enum PageTypes {
+        TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
+    };
+    
+    private static class SentenceMapperRegex extends MapReduceBase implements
+    Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStrings> {
+        
         static long rseed;
         static long seeds[];
         static long sigseed; // Seed to use when randoly selecting signature vectors
         static long MINHASH[];
-        
+
         static int NHASH; // Total number of hashes per sentence
         static int K; // Length of hash vector
         static int N; // Number of hashes per input sentence (N < NHASH)
@@ -105,31 +105,31 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         // The minhash signature
         static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(K);
-        
+
         // The document-sentence identifier
         static final PairOfLongInt DOCSENT = new PairOfLongInt();
         // for testing - output sentence and ID - we could output just an ID or a hash of the 
         // entire sentence instead of the sentence itself in real implementation
         static final PairOfStrings SENTENCE_ID = new PairOfStrings();
-	    
-	    
-	    //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
-	    static final Pattern sentenceregex = Pattern.compile(
-	        "# Match a sentence ending in punctuation or EOS.\n" +
-	        "[\\s]*    # Leading white space\n" + 
-	        "([A-Z\"]    # First char capital letter or quotation\n" +
-	        "[^.!?]*      # Greedily consume up to punctuation.\n" +
-	        "(?:          # Group for unrolling the loop.\n" +
-	        "  [.!?]      # (special) inner punctuation ok if\n" +
-	        "  (?!['\"]?\\s|$)  # not followed by ws or EOS.\n" +
-	        "  [^.!?]*    # Greedily consume up to punctuation.\n" +
-	        ")*           # Zero or more (special normal*)\n" +
-	        "[.!?]?       # Optional ending punctuation.\n" +
-	        "['\"]?)       # Optional closing quote.\n" +
-	        "\\s*$?       # Trailing white space\n",
-	        Pattern.MULTILINE | Pattern.COMMENTS);
-	    
 
+
+        //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
+        static final Pattern sentenceregex = Pattern.compile(
+                "# Match a sentence ending in punctuation or EOS.\n" +
+                        "[\\s]*    # Leading white space\n" + 
+                        "([A-Z\"]    # First char capital letter or quotation\n" +
+                        "[^.!?]*      # Greedily consume up to punctuation.\n" +
+                        "(?:          # Group for unrolling the loop.\n" +
+                        "  [.!?]      # (special) inner punctuation ok if\n" +
+                        "  (?!['\"]?\\s|$)  # not followed by ws or EOS.\n" +
+                        "  [^.!?]*    # Greedily consume up to punctuation.\n" +
+                        ")*           # Zero or more (special normal*)\n" +
+                        "[.!?]?       # Optional ending punctuation.\n" +
+                        "['\"]?)       # Optional closing quote.\n" +
+                        "\\s*$?       # Trailing white space\n",
+                        Pattern.MULTILINE | Pattern.COMMENTS);
+        
+        
         public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output,
                 Reporter reporter) throws IOException {
 
@@ -149,6 +149,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             } else {
                 reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
             }
+            
             if(!p.isArticle() || p.isEmpty()) return;   
             //System.out.println(p.getTitle());
             String content = p.getContent();
@@ -157,42 +158,42 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             Matcher m = sentenceregex.matcher(line);
 
             // Assume each doc is on its own line; track sentence number by counting
-            
+
             int sentencect = 0;
 
             // For each sentence in the input text:
             while(m.find()){
-              // Initialize the minhash vector
-              for(int i=0;i<NHASH;i++){
-                MINHASH[i] = Long.MAX_VALUE;
-              }
-              String sentence = m.group(1);
-              //System.out.println("Sentence: " + sentence);
+                // Initialize the minhash vector
+                for(int i=0;i<NHASH;i++){
+                    MINHASH[i] = Long.MAX_VALUE;
+                }
+                String sentence = m.group(1);
+                //System.out.println("Sentence: " + sentence);
 
-              
-              int shinglect = 0;
-              // Calculate hash vector for each shingle
-              String hashval[] = new String[seeds.length];
-              // skip sentences that are too shor
 
-              if(sentence.length() < SHINGLELEN)
-                  continue;
-              for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
-                  String shingle = sentence.substring(i, i+SHINGLELEN);
-                  long hash[] = hashfamily.hash(shingle);
-                  // Update the minhash signature
-                  for(int j=0;j<hash.length;j++){
-                      if(hash[j] < MINHASH[j]){
-                          MINHASH[j] = hash[j];
-                          hashval[j] = shingle;
-                      }
-                  //System.out.println("word: " + word + " " + hashes[j]);
-                  }
-                  // Keep track of the word ct to avoid short sentences
-                  shinglect++;
-              }
-              
-              /*
+                int shinglect = 0;
+                // Calculate hash vector for each shingle
+                String hashval[] = new String[seeds.length];
+                // skip sentences that are too shor
+
+                if(sentence.length() < SHINGLELEN)
+                    continue;
+                for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
+                    String shingle = sentence.substring(i, i+SHINGLELEN);
+                    long hash[] = hashfamily.hash(shingle);
+                    // Update the minhash signature
+                    for(int j=0;j<hash.length;j++){
+                        if(hash[j] < MINHASH[j]){
+                            MINHASH[j] = hash[j];
+                            hashval[j] = shingle;
+                        }
+                        //System.out.println("word: " + word + " " + hashes[j]);
+                    }
+                    // Keep track of the word ct to avoid short sentences
+                    shinglect++;
+                }
+
+                /*
               for(int i=0;i<MINHASH.length;i++){
                   System.out.print(MINHASH[i] + " ");
               }
@@ -201,204 +202,204 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                   System.out.print(hashval[i] + " ");
               }
               System.out.println();
-              */
+                 */
 
-              // If the sentence meads min shingle ct requirements, emit the signature and the sentence/doc ID
-              if(shinglect > MINLEN){
-                  DOCSENT.set(key.get(), sentencect);
-                  SENTENCE_ID.set(sentence,key.get() + ":" + sentencect);
-                
-                // generate N k-minhash-signatures
-                // start from same seed, otherwise doesn't work so well
-                Random r = new Random(sigseed);
-                for(int j=0; j<N; j++){
-                    for(int i=0; i<K; i++){
-                        int x = r.nextInt(NHASH);
-                        SIG.set(i, MINHASH[x]);
+                // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
+                if(shinglect > MINLEN){
+                    DOCSENT.set(key.get(), sentencect);
+                    SENTENCE_ID.set(sentence,key.get() + ":" + sentencect);
+                    
+                    // generate N k-minhash-signatures
+                    // start from same seed, otherwise doesn't work so well
+                    Random r = new Random(sigseed);
+                    for(int j=0; j<N; j++){
+                        for(int i=0; i<K; i++){
+                            int x = r.nextInt(NHASH);
+                            SIG.set(i, MINHASH[x]);
+                        }
+                        //context.write(SIG, DOCSENT);
+                        output.collect(SIG, SENTENCE_ID);
                     }
-                    //context.write(SIG, DOCSENT);
-                    output.collect(SIG, SENTENCE_ID);
-                }
-                
-              }
-              sentencect++;
-            }
-          }
-    
-    public void configure(JobConf job) {
-        rseed = job.getLong("rseed", 112345);
-        NHASH = job.getInt("NHASH", 6);
-        NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
-        MINLEN = job.getInt("MINLEN", 20);
-        K = job.getInt("K",  8);
-        N = job.getInt("N", 5);
-        SHINGLELEN = job.getInt("SHINGLELEN",15);
 
-        seeds = new long[NHASH];
-        Random r = new Random(rseed);
-        int ct = 0;
-        while(ct < NHASH){
-          seeds[ct] = r.nextLong();
-          ct++;
-        }
-        sigseed = r.nextLong();
-        hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
-        MINHASH = new long[NHASH];
-        if(SIG.size() != K){
-            for(int i=0; i<K; i++){
-                SIG.add(0);
+                }
+                sentencect++;
             }
         }
-        
+
+        public void configure(JobConf job) {
+            rseed = job.getLong("rseed", 112345);
+            NHASH = job.getInt("NHASH", 6);
+            NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
+            MINLEN = job.getInt("MINLEN", 20);
+            K = job.getInt("K",  8);
+            N = job.getInt("N", 5);
+            SHINGLELEN = job.getInt("SHINGLELEN",15);
+
+            seeds = new long[NHASH];
+            Random r = new Random(rseed);
+            int ct = 0;
+            while(ct < NHASH){
+                seeds[ct] = r.nextLong();
+                ct++;
+            }
+            sigseed = r.nextLong();
+            hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
+            MINHASH = new long[NHASH];
+            if(SIG.size() != K){
+                for(int i=0; i<K; i++){
+                    SIG.add(0);
+                }
+            }
+
+        }
     }
-  }
-  
-  /**
-   * Emits groups of sentences that hash to the same value. Only emits if there is more than one value for the key. 
-   *
-   */
-  //private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
-  private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStrings, ArrayListOfLongsWritable, PairOfStrings> {
-/*
+
+    /**
+     * Emits groups of sentences that hash to the same value. Only emits if there is more than one value for the key. 
+     *
+     */
+    //private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
+    private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStrings, ArrayListOfLongsWritable, PairOfStrings> {
+        /*
     @Override
       @Override
       public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfLongInt> values,
               OutputCollector<ArrayListOfLongsWritable, PairOfLongInt> output, Reporter reporter)
               throws IOException {
           boolean gt1 = false;
-          
+
           while (values.hasNext()) {
            PairOfLongInt val = values.next();
             if(values.hasNext()) gt1 = true;
             if(gt1) output.collect(key, val);
           }
-          
+
       }
-      
+
     }
-    */
+         */
 
-      // Uniquify the results so that we don't keep identical sentences (although these
-      // may be interesting in their own right
-      static final HashMap<String,String> uniqueMap = new HashMap<String,String>();
-      static final PairOfStrings SENTENCE_ID = new PairOfStrings();
-      @Override
-      public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStrings> values,
-              OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output, Reporter reporter)
-              throws IOException {
-          uniqueMap.clear();
-          //boolean gt1 = false;
-          
-          while (values.hasNext()) {
-            PairOfStrings val = values.next();
-            uniqueMap.put(val.getLeftElement(), val.getRightElement());
-          }
-          // Only output if there is more than one after uniquing
-          if(uniqueMap.size() > 1){
-              for (String s : uniqueMap.keySet()){
-                  SENTENCE_ID.set(s, uniqueMap.get(s));
-                  output.collect(key, SENTENCE_ID);
-              }
-          }
-          
-      }
-  }
-  private static final String INPUT = "input";
-  private static final String OUTPUT = "output";
-  private static final String LANGUAGE_OPTION = "wiki_language";
-  
-  @SuppressWarnings("static-access")
-  @Override
-  public int run(String[] args) throws Exception {
-    Options options = new Options();
-    options.addOption(OptionBuilder.withArgName("path")
-        .hasArg().withDescription("bz2 input path").create(INPUT));
-    options.addOption(OptionBuilder.withArgName("path")
-            .hasArg().withDescription("output path").create(OUTPUT));
-    options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
-        .withDescription("two-letter language code").create(LANGUAGE_OPTION));
-    //options.addOption(OptionBuilder.withArgName("num").hasArg()
-    //  .withDescription("number of reducers").create(NUM_REDUCERS));
-    
-    CommandLine cmdline;
-    CommandLineParser parser = new GnuParser();
-    try {
-      cmdline = parser.parse(options, args);
-    } catch (ParseException exp) {
-      System.err.println("Error parsing command line: " + exp.getMessage());
-      return -1;
+        // Uniquify the results so that we don't keep identical sentences (although these
+        // may be interesting in their own right
+        static final HashMap<String,String> uniqueMap = new HashMap<String,String>();
+        static final PairOfStrings SENTENCE_ID = new PairOfStrings();
+        @Override
+        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStrings> values,
+                OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output, Reporter reporter)
+                        throws IOException {
+            uniqueMap.clear();
+            //boolean gt1 = false;
+
+            while (values.hasNext()) {
+                PairOfStrings val = values.next();
+                uniqueMap.put(val.getLeftElement(), val.getRightElement());
+            }
+            // Only output if there is more than one after uniquing
+            if(uniqueMap.size() > 1){
+                for (String s : uniqueMap.keySet()){
+                    SENTENCE_ID.set(s, uniqueMap.get(s));
+                    output.collect(key, SENTENCE_ID);
+                }
+            }
+
+        }
+    }
+    private static final String INPUT = "input";
+    private static final String OUTPUT = "output";
+    private static final String LANGUAGE_OPTION = "wiki_language";
+
+    @SuppressWarnings("static-access")
+    @Override
+    public int run(String[] args) throws Exception {
+        Options options = new Options();
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("bz2 input path").create(INPUT));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("output path").create(OUTPUT));
+        options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
+                .withDescription("two-letter language code").create(LANGUAGE_OPTION));
+        //options.addOption(OptionBuilder.withArgName("num").hasArg()
+        //  .withDescription("number of reducers").create(NUM_REDUCERS));
+
+        CommandLine cmdline;
+        CommandLineParser parser = new GnuParser();
+        try {
+            cmdline = parser.parse(options, args);
+        } catch (ParseException exp) {
+            System.err.println("Error parsing command line: " + exp.getMessage());
+            return -1;
+        }
+
+        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.setWidth(120);
+            formatter.printHelp(this.getClass().getName(), options);
+            ToolRunner.printGenericCommandUsage(System.out);
+            return -1;
+        }
+
+        String language = null;
+        if (cmdline.hasOption(LANGUAGE_OPTION)) {
+            language = cmdline.getOptionValue(LANGUAGE_OPTION);
+            if(language.length()!=2){
+                System.err.println("Error: \"" + language + "\" unknown language!");
+                return -1;
+            }
+        }
+
+        String inputPath = cmdline.getOptionValue(INPUT);
+        String outputPath = cmdline.getOptionValue(OUTPUT);
+        //int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ?
+        //  Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
+
+        LOG.info("Tool name: " + this.getClass().getName());
+        LOG.info(" - bz2 file: " + inputPath);
+        LOG.info(" - output file: " + outputPath);
+        LOG.info(" - language: " + language);
+
+        JobConf conf = new JobConf(getConf(), MinhashWikipediaPages.class);
+        conf.setJobName(String.format("MinhashWikipediaPages[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
+
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 30);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("K",  8);
+        conf.setInt("N", 5);
+        conf.setInt("SHINGLELEN",15);
+
+        conf.setNumMapTasks(10);
+        conf.setNumReduceTasks(0);
+
+        FileInputFormat.setInputPaths(conf, new Path(inputPath));
+        FileOutputFormat.setOutputPath(conf, new Path(outputPath));
+
+        if(language != null){
+            conf.set("wiki.language", language);
+        }
+
+        conf.setInputFormat(WikipediaPageInputFormat.class);
+        conf.setOutputFormat(TextOutputFormat.class);
+
+        conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
+        conf.setOutputValueClass(PairOfStrings.class);
+
+        conf.setMapperClass(SentenceMapperRegex.class);
+        conf.setReducerClass(GroupReducer.class);
+        conf.setNumReduceTasks(1);
+
+        // Delete the output directory if it exists already.
+        Path outputDir = new Path(outputPath);
+        FileSystem.get(conf).delete(outputDir, true);
+
+        JobClient.runJob(conf);
+
+        return 0;
     }
 
-    if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
-      HelpFormatter formatter = new HelpFormatter();
-      formatter.setWidth(120);
-      formatter.printHelp(this.getClass().getName(), options);
-      ToolRunner.printGenericCommandUsage(System.out);
-      return -1;
+    public MinhashWikipediaPages() {}
+
+    public static void main(String[] args) throws Exception {
+        ToolRunner.run(new MinhashWikipediaPages(), args);
     }
-    
-    String language = null;
-    if (cmdline.hasOption(LANGUAGE_OPTION)) {
-      language = cmdline.getOptionValue(LANGUAGE_OPTION);
-      if(language.length()!=2){
-        System.err.println("Error: \"" + language + "\" unknown language!");
-        return -1;
-      }
-    }
-
-    String inputPath = cmdline.getOptionValue(INPUT);
-    String outputPath = cmdline.getOptionValue(OUTPUT);
-    //int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ?
-      //  Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
-
-    LOG.info("Tool name: " + this.getClass().getName());
-    LOG.info(" - bz2 file: " + inputPath);
-    LOG.info(" - output file: " + outputPath);
-    LOG.info(" - language: " + language);
-    
-    JobConf conf = new JobConf(getConf(), MinhashWikipediaPages.class);
-    conf.setJobName(String.format("MinhashWikipediaPages[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
-    
-    conf.setLong("rseed", 1123456);
-    conf.setInt("NHASH", 20);
-    conf.setInt("NHASHOUTPUTBITS", 30);
-    conf.setInt("MINLEN", 20);
-    conf.setInt("K",  8);
-    conf.setInt("N", 5);
-    conf.setInt("SHINGLELEN",15);
-    
-    conf.setNumMapTasks(10);
-    conf.setNumReduceTasks(0);
-
-    FileInputFormat.setInputPaths(conf, new Path(inputPath));
-    FileOutputFormat.setOutputPath(conf, new Path(outputPath));
-
-    if(language != null){
-      conf.set("wiki.language", language);
-    }
-    
-    conf.setInputFormat(WikipediaPageInputFormat.class);
-    conf.setOutputFormat(TextOutputFormat.class);
-    
-    conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
-    conf.setOutputValueClass(PairOfStrings.class);
-
-    conf.setMapperClass(SentenceMapperRegex.class);
-    conf.setReducerClass(GroupReducer.class);
-    conf.setNumReduceTasks(1);
-    
-    // Delete the output directory if it exists already.
-    Path outputDir = new Path(outputPath);
-    FileSystem.get(conf).delete(outputDir, true);
-
-    JobClient.runJob(conf);
-
-    return 0;
-  }
-
-  public MinhashWikipediaPages() {}
-
-  public static void main(String[] args) throws Exception {
-    ToolRunner.run(new MinhashWikipediaPages(), args);
-  }
 }

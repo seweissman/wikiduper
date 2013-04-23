@@ -28,131 +28,131 @@ import org.apache.log4j.Logger;
 import cern.colt.Arrays;
 
 public class WordCount extends Configured implements Tool {
-  private static final Logger LOG = Logger.getLogger(WordCount.class);
+    private static final Logger LOG = Logger.getLogger(WordCount.class);
 
-  // Mapper: emits (token, 1) for every word occurrence.
-  private static class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+    // Mapper: emits (token, 1) for every word occurrence.
+    private static class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
-    // Reuse objects to save overhead of object creation.
-    private final static IntWritable ONE = new IntWritable(1);
-    private final static Text WORD = new Text();
+        // Reuse objects to save overhead of object creation.
+        private final static IntWritable ONE = new IntWritable(1);
+        private final static Text WORD = new Text();
 
-    @Override
-    public void map(LongWritable key, Text value, Context context)
-        throws IOException, InterruptedException {
-      String line = ((Text) value).toString();
-      StringTokenizer itr = new StringTokenizer(line);
-      while (itr.hasMoreTokens()) {
-        WORD.set(itr.nextToken());
-        context.write(WORD, ONE);
-      }
-    }
-  }
-
-  // Reducer: sums up all the counts.
-  private static class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-
-    // Reuse objects.
-    private final static IntWritable SUM = new IntWritable();
-
-    @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context)
-        throws IOException, InterruptedException {
-      // Sum up values.
-      Iterator<IntWritable> iter = values.iterator();
-      int sum = 0;
-      while (iter.hasNext()) {
-        sum += iter.next().get();
-      }
-      SUM.set(sum);
-      context.write(key, SUM);
-    }
-  }
-
-  /**
-   * Creates an instance of this tool.
-   */
-  public WordCount() {}
-
-  private static final String INPUT = "input";
-  private static final String OUTPUT = "output";
-  private static final String NUM_REDUCERS = "numReducers";
-
-  /**
-   * Runs this tool.
-   */
-  @SuppressWarnings({ "static-access" })
-  public int run(String[] args) throws Exception {
-    Options options = new Options();
-
-    options.addOption(OptionBuilder.withArgName("path").hasArg()
-        .withDescription("input path").create(INPUT));
-    options.addOption(OptionBuilder.withArgName("path").hasArg()
-        .withDescription("output path").create(OUTPUT));
-    options.addOption(OptionBuilder.withArgName("num").hasArg()
-        .withDescription("number of reducers").create(NUM_REDUCERS));
-
-    CommandLine cmdline;
-    CommandLineParser parser = new GnuParser();
-
-    try {
-      cmdline = parser.parse(options, args);
-    } catch (ParseException exp) {
-      System.err.println("Error parsing command line: " + exp.getMessage());
-      return -1;
+        @Override
+        public void map(LongWritable key, Text value, Context context)
+                throws IOException, InterruptedException {
+            String line = ((Text) value).toString();
+            StringTokenizer itr = new StringTokenizer(line);
+            while (itr.hasMoreTokens()) {
+                WORD.set(itr.nextToken());
+                context.write(WORD, ONE);
+            }
+        }
     }
 
-    if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
-      System.out.println("args: " + Arrays.toString(args));
-      HelpFormatter formatter = new HelpFormatter();
-      formatter.setWidth(120);
-      formatter.printHelp(this.getClass().getName(), options);
-      ToolRunner.printGenericCommandUsage(System.out);
-      return -1;
+    // Reducer: sums up all the counts.
+    private static class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+
+        // Reuse objects.
+        private final static IntWritable SUM = new IntWritable();
+
+        @Override
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            // Sum up values.
+            Iterator<IntWritable> iter = values.iterator();
+            int sum = 0;
+            while (iter.hasNext()) {
+                sum += iter.next().get();
+            }
+            SUM.set(sum);
+            context.write(key, SUM);
+        }
     }
 
-    String inputPath = cmdline.getOptionValue(INPUT);
-    String outputPath = cmdline.getOptionValue(OUTPUT);
-    int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ?
-        Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
+    /**
+     * Creates an instance of this tool.
+     */
+    public WordCount() {}
 
-    LOG.info("Tool: " + WordCount.class.getSimpleName());
-    LOG.info(" - input path: " + inputPath);
-    LOG.info(" - output path: " + outputPath);
-    LOG.info(" - number of reducers: " + reduceTasks);
+    private static final String INPUT = "input";
+    private static final String OUTPUT = "output";
+    private static final String NUM_REDUCERS = "numReducers";
 
-    Configuration conf = getConf();
-    Job job = Job.getInstance(conf);
-    job.setJobName(WordCount.class.getSimpleName());
-    job.setJarByClass(WordCount.class);
+    /**
+     * Runs this tool.
+     */
+    @SuppressWarnings({ "static-access" })
+    public int run(String[] args) throws Exception {
+        Options options = new Options();
 
-    job.setNumReduceTasks(reduceTasks);
+        options.addOption(OptionBuilder.withArgName("path").hasArg()
+                .withDescription("input path").create(INPUT));
+        options.addOption(OptionBuilder.withArgName("path").hasArg()
+                .withDescription("output path").create(OUTPUT));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("number of reducers").create(NUM_REDUCERS));
 
-    FileInputFormat.setInputPaths(job, new Path(inputPath));
-    FileOutputFormat.setOutputPath(job, new Path(outputPath));
+        CommandLine cmdline;
+        CommandLineParser parser = new GnuParser();
 
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+        try {
+            cmdline = parser.parse(options, args);
+        } catch (ParseException exp) {
+            System.err.println("Error parsing command line: " + exp.getMessage());
+            return -1;
+        }
 
-    job.setMapperClass(MyMapper.class);
-    job.setCombinerClass(MyReducer.class);
-    job.setReducerClass(MyReducer.class);
+        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
+            System.out.println("args: " + Arrays.toString(args));
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.setWidth(120);
+            formatter.printHelp(this.getClass().getName(), options);
+            ToolRunner.printGenericCommandUsage(System.out);
+            return -1;
+        }
 
-    // Delete the output directory if it exists already.
-    Path outputDir = new Path(outputPath);
-    FileSystem.get(conf).delete(outputDir, true);
+        String inputPath = cmdline.getOptionValue(INPUT);
+        String outputPath = cmdline.getOptionValue(OUTPUT);
+        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ?
+                Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
 
-    long startTime = System.currentTimeMillis();
-    job.waitForCompletion(true);
-    LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+                LOG.info("Tool: " + WordCount.class.getSimpleName());
+                LOG.info(" - input path: " + inputPath);
+                LOG.info(" - output path: " + outputPath);
+                LOG.info(" - number of reducers: " + reduceTasks);
 
-    return 0;
-  }
+                Configuration conf = getConf();
+                Job job = Job.getInstance(conf);
+                job.setJobName(WordCount.class.getSimpleName());
+                job.setJarByClass(WordCount.class);
 
-  /**
-   * Dispatches command-line arguments to the tool via the {@code ToolRunner}.
-   */
-  public static void main(String[] args) throws Exception {
-    ToolRunner.run(new WordCount(), args);
-  }
+                job.setNumReduceTasks(reduceTasks);
+
+                FileInputFormat.setInputPaths(job, new Path(inputPath));
+                FileOutputFormat.setOutputPath(job, new Path(outputPath));
+
+                job.setOutputKeyClass(Text.class);
+                job.setOutputValueClass(IntWritable.class);
+
+                job.setMapperClass(MyMapper.class);
+                job.setCombinerClass(MyReducer.class);
+                job.setReducerClass(MyReducer.class);
+
+                // Delete the output directory if it exists already.
+                Path outputDir = new Path(outputPath);
+                FileSystem.get(conf).delete(outputDir, true);
+
+                long startTime = System.currentTimeMillis();
+                job.waitForCompletion(true);
+                LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+
+                return 0;
+    }
+
+    /**
+     * Dispatches command-line arguments to the tool via the {@code ToolRunner}.
+     */
+    public static void main(String[] args) throws Exception {
+        ToolRunner.run(new WordCount(), args);
+    }
 }
