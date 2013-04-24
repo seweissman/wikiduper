@@ -154,7 +154,12 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             //System.out.println(p.getTitle());
             String content = p.getContent();
             if(content == null) return;
-            String line = content.replace("\n", " ").replace("  ", " ").replace(",","");
+            String line = content
+                    .replace("\n", " ")
+                    .replace("  ", " ")
+                    .replace(",","")
+                    .replace("(b.", "(b")
+                    .replace("(d.", "(d");
             Matcher m = sentenceregex.matcher(line);
 
             // Assume each doc is on its own line; track sentence number by counting
@@ -368,8 +373,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setInt("N", 5);
         conf.setInt("SHINGLELEN",15);
 
-        conf.setNumMapTasks(10);
-        conf.setNumReduceTasks(0);
+        conf.setNumMapTasks(4);
+        conf.setNumReduceTasks(4);
 
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
@@ -386,7 +391,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         conf.setMapperClass(SentenceMapperRegex.class);
         conf.setReducerClass(GroupReducer.class);
-        conf.setNumReduceTasks(1);
 
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
