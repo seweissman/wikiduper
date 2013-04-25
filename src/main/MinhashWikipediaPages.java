@@ -100,6 +100,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         static int NHASHOUTPUTBITS;
         static int SHINGLELEN;
         static int MINLEN;
+        static int MAXLEN;
         //static int NSENTENCE = 3; // Number of sentences to match at a time
         static MultiplyShiftHash hashfamily;
 
@@ -210,7 +211,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                  */
 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-                if(shinglect > MINLEN){
+                if(shinglect > MINLEN && shinglect < MAXLEN){
                     DOCSENT.set(key.get(), sentencect);
                     SENTENCE_ID.set(sentence,key.get() + ":" + sentencect);
                     
@@ -236,6 +237,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             NHASH = job.getInt("NHASH", 6);
             NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
             MINLEN = job.getInt("MINLEN", 20);
+            MAXLEN = job.getInt("MAXLEN", 600);
             K = job.getInt("K",  8);
             N = job.getInt("N", 5);
             SHINGLELEN = job.getInt("SHINGLELEN",15);
@@ -369,6 +371,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 30);
         conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 20);
         conf.setInt("K",  8);
         conf.setInt("N", 5);
         conf.setInt("SHINGLELEN",15);
