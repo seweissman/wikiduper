@@ -33,7 +33,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -54,7 +53,6 @@ import courseproj.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
-import edu.umd.cloud9.io.pair.PairOfWritables;
 
 public class MinhashWikipediaPages extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
@@ -110,11 +108,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         // The document-sentence identifier
         static final PairOfStringInt DOCSENT = new PairOfStringInt();
-        // for testing - output sentence and ID - we could output just an ID or a hash of the 
-        // entire sentence instead of the sentence itself in real implementation
-        static final Text SENTENCE = new Text();
-        static final PairOfWritables<Text, PairOfStringInt> SENTENCE_ID = new PairOfWritables<Text, PairOfStringInt>();
-
 
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         static final Pattern sentenceregex = Pattern.compile(
@@ -202,8 +195,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
                 if(shinglect > MINLEN && shinglect < MAXLEN){
                     DOCSENT.set(p.getDocid(), sentencect);
-                    SENTENCE.set(sentence);
-                    SENTENCE_ID.set(SENTENCE, DOCSENT);
                     
                     // generate N k-minhash-signatures
                     // start from same seed, otherwise doesn't work so well
