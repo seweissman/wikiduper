@@ -1,45 +1,20 @@
-/*
- * Cloud9: A MapReduce Library for Hadoop
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You may
- * obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
- */
-
-
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import courseproj.wiki.WikipediaPagesBz2InputStream;
-import courseproj.wikipedia.WikipediaForwardIndex;
 import courseproj.wikipedia.WikipediaPage;
 import courseproj.wikipedia.language.WikipediaPageFactory;
+
 
 /**
  * Tool for providing command-line access to sentences in wikipedia articles given a docid. This does
@@ -109,8 +84,20 @@ public class RetrieveWikipediaArticleSentence extends Configured implements Tool
         String input = cmdline.getOptionValue(INPUT);
         String docID = cmdline.getOptionValue(DOCID);
         int sentID = Integer.parseInt(cmdline.getOptionValue(SENTENCEID));
-
-
+        
+        // check for invalid Wikipedia article ID
+        if (Integer.parseInt(docID) < 0) {
+            System.out.println("ERROR: Invalid wikipedia article ID parameter.");
+            return -1;
+        }
+        
+        // check for invalid sentence ID
+        if (sentID < 0) {
+            System.out.println("ERROR: Invalid sentence ID parameter.");
+            return -1;
+        }
+        
+        
         // Open up stream to the wiki dump
         WikipediaPage p = WikipediaPageFactory.createWikipediaPage("en");
         WikipediaPagesBz2InputStream stream = new WikipediaPagesBz2InputStream(input);
@@ -118,7 +105,7 @@ public class RetrieveWikipediaArticleSentence extends Configured implements Tool
         // search the wiki dump for the correct article
         while (stream.readNext(p)){
 
-            if (p.getDocid().compareTo(docID) == 0) {
+            if (p.getDocid().equals(docID)) {
 
                 int sentenceCount = 0;
                 String content = p.getContent();
