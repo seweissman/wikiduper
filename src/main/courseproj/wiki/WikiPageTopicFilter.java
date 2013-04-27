@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.tools.bzip2.CBZip2InputStream;
 
-import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
-import edu.umd.cloud9.collection.wikipedia.language.WikipediaPageFactory;
+import courseproj.wikipedia.WikipediaPage;
+import courseproj.wikipedia.language.WikipediaPageFactory;
+
 
 /**
  * To run:
@@ -60,7 +62,7 @@ public class WikiPageTopicFilter {
       //      System.out.println("id = " + id);
     //}
 		  ArrayList<Long> idList = new ArrayList<Long>();
-		  ArrayList<String> idListStr = new ArrayList<String>();
+		  List<String> idListStr = new ArrayList<String>();
 		  for(String id: idSet){
 		    idList.add(Long.parseLong(id));
 		  }
