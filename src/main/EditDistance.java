@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +59,21 @@ public class EditDistance {
 		    return distance[s1.length()][s2.length()];
 	}
 	
+    static HashSet<String> getConnectedComponent(String entity, HashMap<String, HashSet<String>> matchmap){
+        HashSet<String> component = new HashSet<String>();
+        component.add(entity);
+        if(matchmap.isEmpty() || !matchmap.containsKey(entity)){
+            return component;
+        }
+
+        HashSet <String> matches = matchmap.remove(entity);
+        for(String m : matches){
+            HashSet<String> c = getConnectedComponent(m, matchmap);
+            component.addAll(c);
+        }
+        return component;
+    }  
+	
 	public static void main(String args[]){
 		
 		  if(args.length != 1){
@@ -65,10 +81,14 @@ public class EditDistance {
 				System.exit(-1);
 			}
 		    Pattern linepat = Pattern.compile("(\\[[-0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
-		    ArrayList<ArrayList<String>> clusterlist = new ArrayList<ArrayList<String>>();
+		    //ArrayList<ArrayList<String>> clusterlist = new ArrayList<ArrayList<String>>();
+		    HashMap<String, HashSet<String>> matchmap = new HashMap<String, HashSet<String>>();
+		    HashMap<String, HashSet<String>> nomatchmap = new HashMap<String, HashSet<String>>();
+		    
 		    FileInputStream fin;
    		    int clusterct = 0;
-
+            int uniquematchct = 0;
+            int uniquefalseposct = 0;
 		    try {
 			  fin = new FileInputStream(args[0]);
 			  BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
@@ -93,8 +113,50 @@ public class EditDistance {
 	                }
 	                if(!sigcurr.equals(sig)){
 	                    clusterct++;
-	                    clusterlist.add(cluster);
-	                    cluster = new ArrayList<String>();
+	                    if(clusterct % 1000 == 0) System.out.println("clusterct = " + clusterct);
+	                    for(int i=0; i<cluster.size();i++){
+	                            String m1 = cluster.get(i);
+	                            for(int j=i+1;j<cluster.size();j++){                 
+	                                String m2 = cluster.get(j);
+	                                long dl = Math.max(m1.length(), m2.length()) - Math.min(m1.length(), m2.length());
+	                                long d = dist(m1,m2);
+	                                long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
+	                                
+	                                if(score > 25){
+	                                    //System.out.println(m1 + ">>>>>>" + m2  + ">>>>>> " + score);
+	                                    if(!nomatchmap.containsKey(m1)){
+                                            nomatchmap.put(m1, new HashSet<String> ());
+                                          }
+                                    
+                                        if(!nomatchmap.containsKey(m2)){
+                                            nomatchmap.put(m2, new HashSet<String> ());
+                                            }
+                                        if(!(nomatchmap.get(m2).contains(m1) || nomatchmap.get(m1).contains(m2))){
+                                            uniquefalseposct++;
+                                        }
+                                        nomatchmap.get(m2).add(m1);
+                                        nomatchmap.get(m1).add(m2);
+	                                }else{
+	                                    
+	                                
+	                                    if(!matchmap.containsKey(m1)){
+                                            matchmap.put(m1, new HashSet<String> ());
+                                          }
+                                    
+                                        if(!matchmap.containsKey(m2)){
+                                            matchmap.put(m2, new HashSet<String> ());
+                                            }
+                                        if(!(matchmap.get(m2).contains(m1) || matchmap.get(m1).contains(m2))){
+                                            uniquematchct++;
+                                        }
+                                        matchmap.get(m2).add(m1);
+                                        matchmap.get(m1).add(m2);
+	                                }
+	                            }
+	                        }
+	                    //clusterlist.add(cluster);
+	                    //cluster = new ArrayList<String>();
+	                    cluster.clear();
 	                }
 	                sigcurr = sig;
 	                cluster.add(sentence);
@@ -112,42 +174,58 @@ public class EditDistance {
 		 			// TODO Auto-generated catch block
 		 			e.printStackTrace();
 		     }
-			
-			System.out.println("Cluster ct: " + clusterct);
-		
-			long matchct = 0;
-			long badct = 0;
-			HashMap<Long,Long> histogram = new HashMap<Long,Long>();
-			for(ArrayList<String >cluster : clusterlist){
-				for(int i=0; i<cluster.size();i++){
-					String entity1 = cluster.get(i);
-					for(int j=i+1;j<cluster.size();j++){
-						matchct++;
-						String entity2 = cluster.get(j);
-						long dl = Math.max(entity1.length(), entity2.length()) - Math.min(entity1.length(), entity2.length());
-						long d = dist(entity1,entity2);
-						long score = Math.round(100*(d - dl + 1)*1.0/Math.max(entity1.length(), entity2.length()));
-						//System.out.println(entity1 + ", " + entity2 + ", " + d + ", " + dl + ", " + Math.ceil( 100*score));
-						if(score > 0){
-							if(!histogram.containsKey(score)){
-								histogram.put(score, 0l);
-							}
-							histogram.put(score, histogram.get(score)+1);
-						}
-						//if(dl > d){
-							//System.out.println("Weird lines:");
-							//System.out.println(entity1 + ", " + entity2 + ", " + d + ", " + dl + ", " + Math.ceil( 100*score));
-						//}
-						
-						if(score > 25){
-							badct++;
-						}
-					}
-					
-					
-				}
-				//System.out.println();
-			}
+		    
+		    
+            System.out.println("N unique input matchess: " +  uniquematchct);
+            System.out.println("N unique input false positives: " + uniquefalseposct);
+            System.exit(-1);            
+		    int componentct = 0;
+		    HashMap<Long,Long> histogram = new HashMap<Long,Long>();
+            long matchct = 0;
+            long badct = 0;
+		    while(!matchmap.isEmpty()){
+	            String[] matchentities = matchmap.keySet().toArray(new String[0]);
+	            String entity = matchentities[0];
+	            HashSet<String> comp = getConnectedComponent(entity, matchmap);
+	            //System.out.println("entity = " + entity);
+	            String cluster[] = comp.toArray(new String[0]);
+	            componentct++;
+	            System.out.println("componentct = " + componentct + " " + comp.size());
+
+	            int clustdisplayct = 0;
+	            for(String m : cluster){
+	                if(clustdisplayct > 20) break;
+	                System.out.println("item = " + m);
+	                clustdisplayct++;
+	            }
+
+	            for(int i=0; i<cluster.length;i++){
+                    String entity1 = cluster[i];
+                    for(int j=i+1;j<cluster.length;j++){
+                        matchct++;
+                        String entity2 = cluster[j];
+                        long dl = Math.max(entity1.length(), entity2.length()) - Math.min(entity1.length(), entity2.length());
+                        long d = dist(entity1,entity2);
+                        long score = Math.round(100*(d - dl + 1)*1.0/Math.max(entity1.length(), entity2.length()));
+                        //System.out.println(entity1 + ", " + entity2 + ", " + d + ", " + dl + ", " + Math.ceil( 100*score));
+                        if(score > 0){
+                            if(!histogram.containsKey(score)){
+                                histogram.put(score, 0l);
+                            }
+                            histogram.put(score, histogram.get(score)+1);
+                        }
+                        //if(dl > d){
+                            //System.out.println("Weird lines:");
+                            //System.out.println(entity1 + ", " + entity2 + ", " + d + ", " + dl + ", " + Math.ceil( 100*score));
+                        //}
+                        
+                        if(score > 25){
+                            badct++;
+                        }
+                    }
+                 }
+	            System.out.println("matchct = " + matchct + " ,'badct = " + badct);
+		    }
 			for(long i=0;i<=100;i++){
 				if(histogram.containsKey(i)){
 					System.out.println(i+","+histogram.get(i));
@@ -155,13 +233,16 @@ public class EditDistance {
 					System.out.println(i+","+0);
 				}
 			}
-			
-			System.out.println("Total pairs: " + matchct);
-			System.out.println("Bad pairs: " + badct);
+            System.out.println("N input buckets: " + clusterct);            
+            System.out.println("Total pairs: " + matchct);
+            System.out.println("Bad pairs: " + badct);
+            System.out.println("N components: " + componentct);
+
 			System.out.println("FP rate: " + badct*1.0/matchct);
-		String s1 = "abcedfgh";
-		String s2 = "bcdefg";
-		System.out.println("distance: " + EditDistance.dist(s1, s2));
+		//String s1 = "abcedfgh";
+		//String s2 = "bcdefg";
+		//System.out.println("distance: " + EditDistance.dist(s1, s2));
 	}
 
+	
 }
