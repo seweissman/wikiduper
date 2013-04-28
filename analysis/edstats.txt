@@ -621,7 +621,7 @@ b k n l
 30 8 10 10 0.02478
 30 10 10 15 0.01694
 
-hoth:
+hoth: part-all-15
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -739,7 +739,7 @@ FP rate: 0.23714799117051488
 distance: 4
 
 
-hoth:
+hoth: part-all-10
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -868,7 +868,7 @@ local:
 
 6.1 G of output -- too big
 
-local:
+local: sentences/part-00000
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -985,7 +985,7 @@ Bad pairs: 7310
 FP rate: 0.01116574331621049
 distance: 4
 
-hoth:
+hoth: part-all-10-10
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -1101,7 +1101,7 @@ Bad pairs: 4345
 FP rate: 0.01507236120939655
 distance: 4
 
-hoth:
+hoth: part-all-5
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
