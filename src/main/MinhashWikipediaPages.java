@@ -15,9 +15,7 @@
  */
 
 
-
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -52,8 +50,8 @@ import courseproj.hash.MultiplyShiftHash;
 import courseproj.wikipedia.WikipediaPage;
 import courseproj.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
-import edu.umd.cloud9.io.pair.PairOfLongInt;
-import edu.umd.cloud9.io.pair.PairOfStrings;
+import edu.umd.cloud9.io.array.ArrayListWritable;
+import edu.umd.cloud9.io.pair.PairOfStringInt;
 
 public class MinhashWikipediaPages extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
@@ -87,7 +85,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     };
     
     private static class SentenceMapperRegex extends MapReduceBase implements
-    Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStrings> {
+    Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
         static long seeds[];
@@ -108,11 +106,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(K);
 
         // The document-sentence identifier
-        static final PairOfLongInt DOCSENT = new PairOfLongInt();
-        // for testing - output sentence and ID - we could output just an ID or a hash of the 
-        // entire sentence instead of the sentence itself in real implementation
-        static final PairOfStrings SENTENCE_ID = new PairOfStrings();
-
+        static final PairOfStringInt DOCSENT = new PairOfStringInt();
 
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         static final Pattern sentenceregex = Pattern.compile(
@@ -131,7 +125,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output,
+        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
                 Reporter reporter) throws IOException {
 
             if (p.isRedirect()) {
@@ -151,8 +145,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
             }
             
-            if(!p.isArticle() || p.isEmpty()) return;   
-            //System.out.println(p.getTitle());
+            if(!p.isArticle() || p.isEmpty()) return;
             String content = p.getContent();
             if(content == null) return;
             String line = content
@@ -163,7 +156,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     .replace("(d.", "(d");
             Matcher m = sentenceregex.matcher(line);
 
-            // Assume each doc is on its own line; track sentence number by counting
+            // Assume a whole Wikipedia article has been passed to the mapper; track sentence number by counting
 
             int sentencect = 0;
 
@@ -174,13 +167,12 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     MINHASH[i] = Long.MAX_VALUE;
                 }
                 String sentence = m.group(1);
-                //System.out.println("Sentence: " + sentence);
 
 
                 int shinglect = 0;
                 // Calculate hash vector for each shingle
                 String hashval[] = new String[seeds.length];
-                // skip sentences that are too shor
+                // skip sentences that are too short
 
                 if(sentence.length() < SHINGLELEN)
                     continue;
@@ -198,22 +190,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     // Keep track of the word ct to avoid short sentences
                     shinglect++;
                 }
-
-                /*
-              for(int i=0;i<MINHASH.length;i++){
-                  System.out.print(MINHASH[i] + " ");
-              }
-              System.out.println();
-              for(int i=0;i<hashval.length;i++){
-                  System.out.print(hashval[i] + " ");
-              }
-              System.out.println();
-                 */
-
+                
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
                 if(shinglect > MINLEN && shinglect < MAXLEN){
-                    DOCSENT.set(key.get(), sentencect);
-                    SENTENCE_ID.set(sentence,key.get() + ":" + sentencect);
+                    DOCSENT.set(p.getDocid(), sentencect);
                     
                     // generate N k-minhash-signatures
                     // start from same seed, otherwise doesn't work so well
@@ -224,7 +204,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                             SIG.set(i, MINHASH[x]);
                         }
                         //context.write(SIG, DOCSENT);
-                        output.collect(SIG, SENTENCE_ID);
+                        output.collect(SIG, DOCSENT);
                     }
 
                 }
@@ -262,57 +242,42 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     }
 
     /**
-     * Emits groups of sentences that hash to the same value. Only emits if there is more than one value for the key. 
+     * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    //private static class GroupReducer extends Reducer<ArrayListOfLongsWritable, PairOfLongInt, ArrayListOfLongsWritable, PairOfLongInt> {
-    private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStrings, ArrayListOfLongsWritable, PairOfStrings> {
-        /*
-    @Override
-      @Override
-      public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfLongInt> values,
-              OutputCollector<ArrayListOfLongsWritable, PairOfLongInt> output, Reporter reporter)
-              throws IOException {
-          boolean gt1 = false;
+    private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> {
 
-          while (values.hasNext()) {
-           PairOfLongInt val = values.next();
-            if(values.hasNext()) gt1 = true;
-            if(gt1) output.collect(key, val);
-          }
-
-      }
-
-    }
-         */
-
-        // Uniquify the results so that we don't keep identical sentences (although these
-        // may be interesting in their own right
-        static final HashMap<String,String> uniqueMap = new HashMap<String,String>();
-        static final PairOfStrings SENTENCE_ID = new PairOfStrings();
+        // collect all sentences that have hashed to the same hash signature
+        static final ArrayListWritable<PairOfStringInt> nearDuplicateSentenceList = new ArrayListWritable<PairOfStringInt>();
         @Override
-        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStrings> values,
-                OutputCollector<ArrayListOfLongsWritable, PairOfStrings> output, Reporter reporter)
+        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStringInt> values,
+                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> output, Reporter reporter)
                         throws IOException {
-            uniqueMap.clear();
-            //boolean gt1 = false;
-
+            
             while (values.hasNext()) {
-                PairOfStrings val = values.next();
-                uniqueMap.put(val.getLeftElement(), val.getRightElement());
-            }
-            // Only output if there is more than one after uniquing
-            if(uniqueMap.size() > 1){
-                for (String s : uniqueMap.keySet()){
-                    SENTENCE_ID.set(s, uniqueMap.get(s));
-                    output.collect(key, SENTENCE_ID);
+                PairOfStringInt val = values.next();
+                
+                // WARNING -- you must explicitly add a "new" pairOfStringInt pair, otherwise the ArrayListWritable never gets bigger than size 1
+                // this may possibly be a bug in the PairOfStringInt class or somewhere else in Cloud9
+                // calling .add on the list DOES NOT create a new PairOfStringInt
+                if (!nearDuplicateSentenceList.contains(val)) {
+                    nearDuplicateSentenceList.add(new PairOfStringInt(val.getLeftElement(), val.getRightElement()));
                 }
             }
-
+            
+            // Only output if there is more than one sentence in the hash
+            if(nearDuplicateSentenceList.size() > 1){
+                output.collect(key, nearDuplicateSentenceList);
+            }
+            
+            nearDuplicateSentenceList.clear();
         }
     }
+    
+    
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
+    private static final String NUM_REDUCERS = "numReducers";
     private static final String LANGUAGE_OPTION = "wiki_language";
 
     @SuppressWarnings("static-access")
@@ -325,8 +290,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 .hasArg().withDescription("output path").create(OUTPUT));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
                 .withDescription("two-letter language code").create(LANGUAGE_OPTION));
-        //options.addOption(OptionBuilder.withArgName("num").hasArg()
-        //  .withDescription("number of reducers").create(NUM_REDUCERS));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("number of reducers").create(NUM_REDUCERS));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -345,7 +310,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             return -1;
         }
 
-        String language = null;
+        String language = "en";
         if (cmdline.hasOption(LANGUAGE_OPTION)) {
             language = cmdline.getOptionValue(LANGUAGE_OPTION);
             if(language.length()!=2){
@@ -356,8 +321,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        //int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ?
-        //  Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
+        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
 
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - bz2 file: " + inputPath);
@@ -377,7 +341,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setInt("SHINGLELEN",15);
 
         conf.setNumMapTasks(4);
-        conf.setNumReduceTasks(4);
+        conf.setNumReduceTasks(reduceTasks);
 
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
@@ -385,15 +349,18 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         if(language != null){
             conf.set("wiki.language", language);
         }
-
-        conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
-
-        conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setOutputValueClass(PairOfStrings.class);
-
+        
         conf.setMapperClass(SentenceMapperRegex.class);
         conf.setReducerClass(GroupReducer.class);
+        
+        conf.setInputFormat(WikipediaPageInputFormat.class);
+        conf.setOutputFormat(TextOutputFormat.class);
+        
+        conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
+        conf.setMapOutputValueClass(PairOfStringInt.class);
+        
+        conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
+        conf.setOutputValueClass(ArrayListWritable.class);
 
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);

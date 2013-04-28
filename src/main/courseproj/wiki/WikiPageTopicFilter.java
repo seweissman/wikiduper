@@ -42,88 +42,80 @@ import courseproj.wikipedia.language.WikipediaPageFactory;
  */
 public class WikiPageTopicFilter {
 
-	public static void main(String[] args) throws Exception {
-		if (args.length != 4) {
-			System.err.println("usage: [dump file] [language] [index] [term]");
-			System.exit(-1);
-		}
-	  
-		HashMap<Long, HashSet<String>> offsetmap = getTermOffsets(args[2],args[3],1000);
-	  
-		WikipediaPage p = WikipediaPageFactory.createWikipediaPage(args[1]);
-		
-		WikipediaPagesBz2InputStream stream = new WikipediaPagesBz2InputStream(args[0]);
-	  ArrayList<Long> offsetList = new ArrayList<Long>(offsetmap.keySet());
-		Collections.sort(offsetList);
-		for(long offset: offsetList){
-		  //System.out.println("offset = " + offset);
-		  HashSet<String> idSet = offsetmap.get(offset);
-      //for(String id: idSet){
-      //      System.out.println("id = " + id);
-    //}
-		  ArrayList<Long> idList = new ArrayList<Long>();
-		  List<String> idListStr = new ArrayList<String>();
-		  for(String id: idSet){
-		    idList.add(Long.parseLong(id));
-		  }
-		  Collections.sort(idList);
-		  for(Long lid : idList){
-		    idListStr.add(lid.toString());
-		  }
-		    //while (stream.readPage(p,offset,lid.toString()) && !idSet.isEmpty()) {
-		    //System.out.println("id = " + lid);
-		  ArrayList<String> pages = stream.readPage(p,offset,idListStr);
-		    //if(Long.parseLong(p.getDocid())%1000 == 0) System.out.println(p.getDocid()); 
-		  for(String page : pages){
-		   System.out.println(page.replace("\n", " "));
-		  }
-		  //}
-		  
-		  //System.out.println(p.getContent());
-		  //System.exit(-1);
-		}
-
-	}
-	
-	private static HashMap<Long,HashSet<String>> getTermOffsets(String indexfile, String term, int maxresults) throws IOException {
-	  BufferedReader br = null;
-    FileInputStream fis = new FileInputStream(indexfile);
-    byte[] ignoreBytes = new byte[2];
-    fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
-    br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis)));
-    String s = null;
-    HashMap<Long,HashSet<String>> offsetmap = new HashMap<Long,HashSet<String>>();
-    Pattern termpat = Pattern.compile(".*" + term + ".*");
-    String title;
-    long streamoffset;
-    String pageid;
-    long lastoffset = -1;
-    int ct = 0;
-    while((s = br.readLine()) != null){
-      String index[] = s.split(":");
-      title = index[2];
-      if(termpat.matcher(title).matches()){
-        streamoffset = Long.parseLong(index[0]);
-        pageid = index[1];
-        if(streamoffset != lastoffset){
-          offsetmap.put(streamoffset, new HashSet<String> ());
-          offsetmap.get(streamoffset).add(pageid);
-          lastoffset = streamoffset;
-          //System.out.println("index line: " + s + " " + title + " " + streamoffset + " " + pageid);
-        }else{
-          offsetmap.get(streamoffset).add(pageid);
+    public static void main(String[] args) throws Exception {
+        if (args.length != 4) {
+            System.err.println("usage: [dump file] [language] [index] [term]");
+            System.exit(-1);
         }
-        ct++;
-        if(ct > maxresults){
-          return offsetmap;
-        }
-        
 
-      }
+        HashMap<Long, HashSet<String>> offsetmap = getTermOffsets(args[2],args[3],1000);
+
+        WikipediaPage p = WikipediaPageFactory.createWikipediaPage(args[1]);
+
+        WikipediaPagesBz2InputStream stream = new WikipediaPagesBz2InputStream(args[0]);
+        ArrayList<Long> offsetList = new ArrayList<Long>(offsetmap.keySet());
+        Collections.sort(offsetList);
+        for(long offset: offsetList){
+            HashSet<String> idSet = offsetmap.get(offset);
+            ArrayList<Long> idList = new ArrayList<Long>();
+            List<String> idListStr = new ArrayList<String>();
+            for(String id: idSet){
+                idList.add(Long.parseLong(id));
+            }
+            Collections.sort(idList);
+            for(Long lid : idList){
+                idListStr.add(lid.toString());
+            }
+            //while (stream.readPage(p,offset,lid.toString()) && !idSet.isEmpty()) {
+            //System.out.println("id = " + lid);
+            ArrayList<String> pages = stream.readPage(p,offset,idListStr);
+            //if(Long.parseLong(p.getDocid())%1000 == 0) System.out.println(p.getDocid()); 
+            for(String page : pages){
+                System.out.println(page.replace("\n", " "));
+            }
+            //}
+        }
+
     }
-    //System.out.println("returning\n");
-    return offsetmap;
-  }
 
-  
+    private static HashMap<Long,HashSet<String>> getTermOffsets(String indexfile, String term, int maxresults) throws IOException {
+        BufferedReader br = null;
+        FileInputStream fis = new FileInputStream(indexfile);
+        byte[] ignoreBytes = new byte[2];
+        fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
+        br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis)));
+        String s = null;
+        HashMap<Long,HashSet<String>> offsetmap = new HashMap<Long,HashSet<String>>();
+        Pattern termpat = Pattern.compile(".*" + term + ".*");
+        String title;
+        long streamoffset;
+        String pageid;
+        long lastoffset = -1;
+        int ct = 0;
+        while((s = br.readLine()) != null){
+            String index[] = s.split(":");
+            title = index[2];
+            if(termpat.matcher(title).matches()){
+                streamoffset = Long.parseLong(index[0]);
+                pageid = index[1];
+                if(streamoffset != lastoffset){
+                    offsetmap.put(streamoffset, new HashSet<String> ());
+                    offsetmap.get(streamoffset).add(pageid);
+                    lastoffset = streamoffset;
+                }else{
+                    offsetmap.get(streamoffset).add(pageid);
+                }
+                ct++;
+                if(ct > maxresults){
+                    return offsetmap;
+                }
+
+
+            }
+        }
+
+        return offsetmap;
+    }
+
+
 }
