@@ -64,7 +64,7 @@ public class EditDistance {
 				System.out.println("Usage: EditDistance <filein>\n");
 				System.exit(-1);
 			}
-		    Pattern linepat = Pattern.compile("(\\[[0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
+		    Pattern linepat = Pattern.compile("(\\[[-0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
 		    ArrayList<ArrayList<String>> clusterlist = new ArrayList<ArrayList<String>>();
 		    FileInputStream fin;
    		    int clusterct = 0;
