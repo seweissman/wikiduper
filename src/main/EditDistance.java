@@ -122,7 +122,7 @@ public class EditDistance {
 	                                long d = dist(m1,m2);
 	                                long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
 	                                
-	                                if(score > 25){
+	                                if(score > 10){
 	                                    //System.out.println(m1 + ">>>>>>" + m2  + ">>>>>> " + score);
 	                                    if(!nomatchmap.containsKey(m1)){
                                             nomatchmap.put(m1, new HashSet<String> ());
@@ -132,8 +132,10 @@ public class EditDistance {
                                             nomatchmap.put(m2, new HashSet<String> ());
                                             }
                                         if(!(nomatchmap.get(m2).contains(m1) || nomatchmap.get(m1).contains(m2))){
+                                            System.out.println(m1 + "\t" + m2);
                                             uniquefalseposct++;
                                         }
+
                                         nomatchmap.get(m2).add(m1);
                                         nomatchmap.get(m1).add(m2);
 	                                }else{
@@ -159,7 +161,15 @@ public class EditDistance {
 	                    cluster.clear();
 	                }
 	                sigcurr = sig;
-	                cluster.add(sentence);
+	                
+	                sentence = sentence.replace("External Links", "")
+	                        .replace("External links", "")
+	                        .replace("References","")
+	                        .replace("Official site","")
+	                        .replace("official site", "");
+	                if(sentence.length() > 100){
+	                    cluster.add(sentence);
+	                }
 
 
 		        //System.out.println("entity = " + entity);
