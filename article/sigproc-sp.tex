@@ -93,7 +93,7 @@
 \alignauthor Sarah Weissman\\
        \affaddr{University of Maryland, College of Information Studies}\\
        \affaddr{College Park, Maryland 20740}\\
-       \email{sweissman@umd.edu}
+       \email{sew@umd.edu}
 }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
@@ -160,13 +160,58 @@ Bendersky et al. examined two information flow representations: the timeline and
 In order to handle large Wikipedia dumps with the order of tens or hundreds of gigabytes and even a few terabytes, we used MapReduce framework in this work, that was introduced by Dean and Ghemawat \cite{dean:mapreduce}. The implementation is able to stream the compressed bz2 dumps and feed into mappers and reducers for further processing, which will be detailed in the following sections.
 
 \section{Algorithm Utilizing Locality Sensitive Hashing}
+
 In this section, we introduce the algorithm that utilizes the locality sensitive hashing.
 
-\subsection{Design}
-We explain the design here...
+In order to measure document similarity we use a common LSH technique known as minhashing \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case input documents are sentences. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate $\{min_{s \in S}(F_i(s)\}$, the set of minimum hashes over the hash family. The signature on a document d is a vector of $K$ minhashes from the set of minimum hashes. In order to minimize false negatives we apply the technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
 
-\subsection{Implementation}
-We explain the implementation here...
+\subsection{Design}
+Since signature techniques such as LSH are easily parallelized we designed our algorithm around the MapReduce framework. 
+
+Describe MapReduce.
+
+Because the minhash technique is parametrized by several values, including shingle length, signature vector size and number of signatures calculated, these values can also be considered as inputs for the MapReduce algorithm.
+
+\begin{table}
+MapReduce pseudocode:
+\begin{verbatim}
+initialize(){
+ # configure and set up algorithm parameters
+ # F = hash family;
+ # L = shingle length;
+ # K = vector length;
+ # N = number of signatures to emit;
+}
+
+map(docid d, wikipage p){
+  int sentence ct = 0;
+  while s = nextSentence(p){
+    shingles = shingleSet(s,L);
+    minhashes = new List(|F|);
+    for i = 1 ... |F|:
+      minhashes[i] = Infinity;
+    for g in shingles:
+      for i = 1 ... |F|:
+        minhashes[i] = min(F_i(g),minhashes[i]);
+    for i = 1 ... N:
+      sig = select(K, minhahses);
+      emit(sig,(docid,sentencect));
+    sentencect++;
+  }
+}
+\end{verbatim}
+
+\begin{verbatim}
+reduce(signature sig, sentenceids [(d1,s1),(d2,s2) ...]){
+  if [[(d1,s1),(d2,s2) ... ]| > 1:
+    emit(sig, [(d1,s1), (d2,s2), ...]);
+}
+\end{verbatim}
+\end{table}
+
+\subsection{Implementation Details}
+
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift''  \cite{} hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
 
 \section{Working Application}
 We explain the working application here...
@@ -180,10 +225,15 @@ We explain the working application here...
 \section{Experiments and Discussion}
 In this section, we discuss some of the issues we encountered regarding data representation, and archived data loading. We also present the performance optimizations we realized.
 
-\subsection{Optimizations}	 
+\subsection{Optimization}
+
 We explain optimizations here...
 
-\subsubsection{Optimization-1}
+\subsubsection{Parameter Optimization}
+
+As mentioned above the minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
+
+
 An optimization we realized...
 
 \subsubsection{Optimization-2}
