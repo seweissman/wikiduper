@@ -218,9 +218,9 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
             MINLEN = job.getInt("MINLEN", 20);
             MAXLEN = job.getInt("MAXLEN", 600);
-            K = job.getInt("K",  8);
-            N = job.getInt("N", 5);
-            SHINGLELEN = job.getInt("SHINGLELEN",15);
+            K = job.getInt("K",  10);
+            N = job.getInt("N", 10);
+            SHINGLELEN = job.getInt("SHINGLELEN",12);
 
             seeds = new long[NHASH];
             Random r = new Random(rseed);
