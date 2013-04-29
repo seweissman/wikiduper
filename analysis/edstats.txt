@@ -622,6 +622,9 @@ b k n l
 30 10 10 15 0.01694
 
 hoth: part-all-15
+N unique input matchess: 179907
+N unique input false positives: 154661
+Fp rate 0.46227074914517
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -740,6 +743,9 @@ distance: 4
 
 
 hoth: part-all-10
+N unique input matchess: 223074
+N unique input false positives: 12137
+fp rate = 0.05160047786881
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -869,6 +875,9 @@ local:
 6.1 G of output -- too big
 
 local: sentences/part-00000
+N unique input matchess: 184838
+N unique input false positives: 6600
+fp rate 0.0344759138729
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -986,6 +995,9 @@ FP rate: 0.01116574331621049
 distance: 4
 
 hoth: part-all-10-10
+N unique input matchess: 96383
+N unique input false positives: 3541
+fp rate 0.03543693206837
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -1102,6 +1114,9 @@ FP rate: 0.01507236120939655
 distance: 4
 
 hoth: part-all-5
+N unique input matchess: 228453
+N unique input false positives: 73247
+fp rate = 0.24278090818694
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 64);
@@ -1219,6 +1234,155 @@ FP rate: 0.12050683063188981
 distance: 4
 
 
+hoth:
+N unique input matchess: 215020
+N unique input false positives: 30362
+clusterct = 64000
+fp rate: 0.12373360719205
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",5);
+
+hoth:
+N unique input matchess: 106951
+N unique input false positives: 4709
+Fp rate: 0.0421726670249
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",8);
+
+hoth:
+N unique input matchess: 90926
+N unique input false positives: 1228
+Fp rate: 0.01332552032467
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",12);
+
+
+hoth:
+N unique input matchess: 113373
+N unique input false positives: 3145
+fp rate: 0.02699153778815
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",11);
+
+hoth:
+N unique input matchess: 67282
+N unique input false positives: 1984
+fp rate: 0.02864320157076
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",13);
+
+hoth:
+N unique input matchess: 85563
+N unique input false positives: 11368
+fp rate: 0.11727567210679
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",16);
+
+hoth:
+N unique input matchess: 82764
+N unique input false positives: 3069
+fp rate: 0.03575547866205
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",14);
+
+hoth:
+N unique input matchess: 78394
+N unique input false positives: 3293
+fp rate: 0.0403124120117
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",15);
+
+
+hoth2:
+N unique input matchess: 128899
+N unique input false positives: 5358
+(/ 5358.0 (+ 5358.0 128899))
+fp rate: 0.039908533633255625
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",9);
+
+hoth1:
+N unique input matchess: 119127
+N unique input false positives: 10724
+(/ 10724.0 (+ 10724 119127.0))
+fp rate: 0.08258696505995333
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  9);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",8);
+
+hoth:
+
+        conf.setLong("rseed", 1123456);
+        conf.setInt("NHASH", 20);
+        conf.setInt("NHASHOUTPUTBITS", 64);
+        conf.setInt("MINLEN", 20);
+        conf.setInt("MAXLEN", 600);
+        conf.setInt("K",  9);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",9);
+
+
+
+
 b   k  n   l   score   bad   pair   cluster
 30  8  5   15  0.06744 11458 169879 29083
 30  8  10  15  0.20469 89212 435849 72144
@@ -1235,5 +1399,47 @@ b   k  n   l   score   bad    pair   cluster
 64 10  10  30  too big to run
 64 10  10  15  0.01117   7310 654681 53239
 64 10  10  10  0.01507   4345 288276 45119
+
+
+Dedup-ed stats:
+b   k  n   l   fp rate   bad    match   cluster
+64 10  10  30  too big to run
+64 10  10  16  0.11726  11368 85563
+--64 10  10  15  0.03448  6600  184838--
+64 10  10  15  0.04031  3293  78394
+64 10  10  14  0.03576  3069  82764
+64 10  10  13  0.02864  1984  67282
+64 10  10  12  0.01333  1228  90926
+64 10  10  11  0.02699  3145  113373
+64 10  10  10  0.03544  3541  96383
+64 10  10  9   0.03991  5358  128899
+64 10  10  8   0.04217  4709  106951
+64 10  10  5   0.12373  30362 215020
+
+64 10  12  12
+
+64  9  10  16  
+64  9  10  15  
+64  9  10  14  
+64  9  10  13  
+64  9  10  12  
+64  9  10  11  
+64  9  10  10  
+64  9  10  9
+64  9  10  8   0.08259 10724  119127
+64  9  10  5   
+
+64  8  10  16  
+64  8  10  15  0.46227 154661 179907
+64  8  10  14  
+64  8  10  13  
+64  8  10  12  
+64  8  10  11  
+64  8  10  10  0.05160  12137  223074
+64  8  10  9
+64  8  10  8   
+64  8  10  5   0.24278  73247  228453
+
+
 
 
