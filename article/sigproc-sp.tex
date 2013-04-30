@@ -222,6 +222,73 @@ We explain the working application here...
 \caption{Workflow within MapReduce Framework.}
 \end{figure}
 
+\section{Parameter Tuning}
+
+As mentioned above the minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
+
+\subsection{Jaccard Similarity and Edit Distance}
+
+Jaccard similarity is a measure of set similarity while our stated goal is to find sentences in Wikipedia that have been copied from one article to another and possibly edited. A more natural measure to use for this application is edit distance. There is no known locality sensitive hashing family for edit distance \citation{}.
+
+In order to estimate Jaccard similarity of sentences $X$ and $Y$ in terms of edit distance we assume that $X$ and $Y$ are both of length $N$ and that their shingle sets are of maximum size (i.e. all shingles are unique). Also assume that $X$ and $Y$ have edit distance $e$.  Additionally, to simplify our calculations, we assume that edits are localized so that no shingle overlaps more than one edit.
+
+(WLOG) Let $S$ be the set of shingles for X and let $S_o$ be the set of shingles of X that overlap edits. The maximum number of unique shingles for a sentence of length $N$ is $N - L + 1 = |S|$. Also, we can see that $e \le |S_o| \le e + L - 1$. Since edits at the start or end of the sentence will overlap with fewer shingles than edit mid-sentence.
+
+Now we can define $|X \cup Y|$ and $|X \cap Y|$ in terms $S$ and $S_o$ as follows:
+\begin{eqnarray*}
+|X \cap Y| & = & |S| - |S_o| \\
+|X \cup Y| & = & 2*|S_o| + |X \cap Y| \\
+           & = & |S_o| + |S|
+\end{eqnarray*}
+
+Plugging in the values above for $|S_o|$ and $|S|$ we get:
+
+\begin{eqnarray*}
+E + N - L + 1  \le & |X \cup Y| & \le E + N \\
+N - L + 1 - E  \ge & |X \cap Y| & \ge N - 2L - E + 2 \\
+\end{eqnarray*}
+\begin{eqnarray*}
+\frac{N - L - E + 1 }{N - L + e + 1} >= & J(X,Y) & >= \frac{N - 2L - E + 2}{N + E}
+\end{eqnarray*}
+
+Note that, at least under this set of assumptions, the Jaccard similarity is always less than the ``edit similarity'' (1 - normalized edit distance):
+
+\begin{eqnarray*}
+J(X,Y) & <= & \frac{N - E}{E + N - L + 1} - \frac{L - 1}{E + N - L + 1} \\
+       & <= & \frac{N - E}{N} \\ 
+       & =  & 1 - \frac{E}{N}
+\end{eqnarray*}
+
+Finally we can divide through the equations for J(X,Y) by N, which gives us:
+
+\begin{eqnarray*}
+\frac{1 - l - e}{1 - l + e} >= J(X,Y) >= \frac{1 - 2l - e}{1 + e}
+\end{eqnarray*}
+
+where $l$ is relative shingle size and $e$ is normalized edit distance.
+
+Note that as relative shingle size goes to 0 there is a nice convergence for Jaccard similarity:
+\[\lim_{l->0}J(X,Y) = \frac{1 - e}{1 + e}\]
+
+\begin{figure*}
+\centering
+\epsfig{file=jac-ed-chart.eps,height=4in,width=6in}
+\caption{Jaccard Similarity vs. normalized edit distance.}
+\label{jac-ed}
+\end{figure*}
+
+As we would expect, Jaccard similarity decreases as edit distance increases, but it also decreases as shingle length increases. Figure \ref{fig:jac-ed} shows Jaccard Similarity plotted against edit distance for $l = .05$ and $l = .2$. At $l = .05$ and $e = .2$ our estimate for Jaccard similarity has already fallen to the range [0.58,0.65]. Clearly setting $l$ too high can increase the false positive rate, but setting $l$ too low will increase the false positive rate, since it will increase the size of the intersection of the shingle sets.
+
+\subsection{False positives}
+
+\begin{figure*}
+\centering
+\epsfig{file=edgrid.eps,width=7in}
+\caption{}
+\label{ed-grid}
+\end{figure*}
+
+
 \section{Experiments and Discussion}
 In this section, we discuss some of the issues we encountered regarding data representation, and archived data loading. We also present the performance optimizations we realized.
 
@@ -229,10 +296,7 @@ In this section, we discuss some of the issues we encountered regarding data rep
 
 We explain optimizations here...
 
-\subsubsection{Parameter Optimization}
-
-As mentioned above the minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
-
+\subsubsection{Optimization1}
 
 An optimization we realized...
 
