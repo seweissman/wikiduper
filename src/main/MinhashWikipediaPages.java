@@ -40,8 +40,10 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapred.Reducer;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -354,7 +356,14 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setReducerClass(GroupReducer.class);
         
         conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
+        //conf.setInputFormat(SequenceFileInputFormat.class);
+        conf.setOutputFormat(SequenceFileOutputFormat.class);
+        //conf.setOutputFormat(TextOutputFormat.class);
+        
+        conf.set("mapreduce.map.memory.mb", "2048");
+        conf.set("mapreduce.map.java.opts", "-Xmx2048m");
+        conf.set("mapreduce.reduce.memory.mb", "2048");
+        conf.set("mapreduce.reduce.java.opts", "-Xmx2048m"); 
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setMapOutputValueClass(PairOfStringInt.class);
