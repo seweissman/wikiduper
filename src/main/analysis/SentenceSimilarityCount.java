@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -18,17 +20,20 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import org.apache.pig.parser.AliasMasker.keyvalue_return;
 
 import cern.colt.Arrays;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
@@ -49,20 +54,22 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         private static final PairOfInts VALUE = new PairOfInts();
 
         @Override
-        public void map(ArrayListOfLongsWritable hashSignature, ArrayListWritable<PairOfStringInt> sentences, Context context)
+        public void map(ArrayListOfLongsWritable key, ArrayListWritable<PairOfStringInt> sentences, Context context)
                 throws IOException, InterruptedException {
-
+            
+            //System.out.println(sentences.toString());
             
             // for each sentence, emit all other sentences
             for (PairOfStringInt sentenceID : sentences) {
                 int wikiArticleID = Integer.parseInt(sentenceID.getLeftElement());
+                //System.out.println("\tKEY: " + wikiArticleID);
                 
+                KEY.set(wikiArticleID);
                 for (PairOfStringInt otherSentence : sentences) {
-                    
                     if (otherSentence.compareTo(sentenceID) != 0) {
-                        KEY.set(wikiArticleID);
                         VALUE.set(Integer.parseInt(otherSentence.getLeftElement()), otherSentence.getRightElement());
                         
+                        //System.out.println("\t\tVALUE: " + VALUE.toString());
                         context.write(KEY,  VALUE);
                     }
                 }
@@ -76,8 +83,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         private static final IntWritable VALUE = new IntWritable();
         
         private static final Object2IntFrequencyDistribution<Integer> COUNTS = new Object2IntFrequencyDistributionEntry<Integer>();
-        private static final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-        private static final Collection<PairOfInts> collection = new ArrayList<PairOfInts>();
+        public static final Map<PairOfInts, Integer> collection = new HashMap<PairOfInts, Integer>();
         
         @Override
         public void reduce(IntWritable wikiID, Iterable<PairOfInts> values, Context context)
@@ -86,24 +92,36 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
             Iterator<PairOfInts> iter = values.iterator();
+            
             while (iter.hasNext()) {
                 PairOfInts sentID = iter.next();
-                if (!collection.contains(sentID)) {
-                    collection.add(sentID);
+                // make sure we don't count the same exact sentence twice!
+                if (!collection.containsKey(sentID)) {
+                    collection.put(sentID,  1);
                     
                     // count the number of sentences from a particular article that have been hashed to the same value
                     // as a sentence in the wiki article with id = wikiID
-                    COUNTS.increment(sentID.getLeftElement());
+                    if (COUNTS.contains(sentID.getLeftElement())) {
+                        COUNTS.increment(sentID.getLeftElement());
+                    }
+                    else {
+                        COUNTS.set(sentID.getLeftElement(), 1);
+                    }
+                    
                 }
             }
             
+            //System.out.println("Wiki Article: " + wikiID.get());
             for (Integer otherWikiArticle: COUNTS.keySet()) {
                 KEY.set(wikiID.get(), otherWikiArticle);
                 VALUE.set(COUNTS.get(otherWikiArticle));
                 
+                //System.out.println("\t" + otherWikiArticle + " " + VALUE.get());
                 context.write(KEY, VALUE);
             }
             
+            collection.clear();
+            COUNTS.clear();
         }
     }
     
@@ -174,14 +192,14 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         
         // set input/output format of the job
-        job.setInputFormatClass(TextInputFormat.class);
+        job.setInputFormatClass(SequenceFileInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
         
         // set output key/value data types
-        job.setMapOutputKeyClass(PairOfStringInt.class);
-        job.setMapOutputValueClass(IntWritable.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(BytesWritable.class);
+        job.setMapOutputKeyClass(IntWritable.class);
+        job.setMapOutputValueClass(PairOfInts.class);
+        job.setOutputKeyClass(PairOfInts.class);
+        job.setOutputValueClass(IntWritable.class);
         
         // define Mapper and Reducer
         job.setMapperClass(MyMapper.class);

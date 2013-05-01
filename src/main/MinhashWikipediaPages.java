@@ -40,8 +40,10 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapred.Reducer;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -69,14 +71,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
      * 
      * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
      * input text and nsentence is the number of the sentence in the line. (starting from 0)
-     * 
-     * TODO:
-     *   * Read initializing info (i.e. initial hash seeds) from Job parameters instead of hard coded.
-     *   * Test sentence parsing to see if regex needs tweaking.
-     *   * implement k at a time handling of sentences
-     *   * implement multiple minhash values returned per sentence (m groups of n hashes)
-     *   * other shingling granularities?
-     *   * Write a class to extract results
      * 
      */
 
@@ -354,7 +348,14 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setReducerClass(GroupReducer.class);
         
         conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
+        conf.setOutputFormat(SequenceFileOutputFormat.class);
+        //conf.setOutputFormat(TextOutputFormat.class);
+        
+        // Set heap space - using old API
+        conf.set("mapred.job.map.memory.mb", "2048");
+        conf.set("mapred.map.child.java.opts", "-Xmx2048m");
+        conf.set("mapred.job.reduce.memory.mb", "2048");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setMapOutputValueClass(PairOfStringInt.class);
