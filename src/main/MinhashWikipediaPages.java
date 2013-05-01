@@ -360,10 +360,19 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         //conf.setOutputFormat(TextOutputFormat.class);
         
+        // set heap space
+        /* Heap Space settings - NEW API
         conf.set("mapreduce.map.memory.mb", "2048");
         conf.set("mapreduce.map.java.opts", "-Xmx2048m");
         conf.set("mapreduce.reduce.memory.mb", "2048");
-        conf.set("mapreduce.reduce.java.opts", "-Xmx2048m"); 
+        conf.set("mapreduce.reduce.java.opts", "-Xmx2048m");
+        */
+        
+        // Heap Space settings - OLD API
+        conf.set("mapred.job.map.memory.mb", "2048");
+        conf.set("mapred.map.child.java.opts", "-Xmx2048m");
+        conf.set("mapred.job.reduce.memory.mb", "2048");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setMapOutputValueClass(PairOfStringInt.class);
