@@ -72,14 +72,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
      * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
      * input text and nsentence is the number of the sentence in the line. (starting from 0)
      * 
-     * TODO:
-     *   * Read initializing info (i.e. initial hash seeds) from Job parameters instead of hard coded.
-     *   * Test sentence parsing to see if regex needs tweaking.
-     *   * implement k at a time handling of sentences
-     *   * implement multiple minhash values returned per sentence (m groups of n hashes)
-     *   * other shingling granularities?
-     *   * Write a class to extract results
-     * 
      */
 
     private static enum PageTypes {
@@ -356,19 +348,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setReducerClass(GroupReducer.class);
         
         conf.setInputFormat(WikipediaPageInputFormat.class);
-        //conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         //conf.setOutputFormat(TextOutputFormat.class);
         
-        // set heap space
-        /* Heap Space settings - NEW API
-        conf.set("mapreduce.map.memory.mb", "2048");
-        conf.set("mapreduce.map.java.opts", "-Xmx2048m");
-        conf.set("mapreduce.reduce.memory.mb", "2048");
-        conf.set("mapreduce.reduce.java.opts", "-Xmx2048m");
-        */
-        
-        // Heap Space settings - OLD API
+        // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
         conf.set("mapred.map.child.java.opts", "-Xmx2048m");
         conf.set("mapred.job.reduce.memory.mb", "2048");
