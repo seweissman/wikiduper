@@ -53,6 +53,7 @@ import courseproj.hash.MultiplyShiftHash;
 import courseproj.wikipedia.WikipediaPage;
 import courseproj.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
+import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
 
 public class MinhashWikipediaPages extends Configured implements Tool {
@@ -244,6 +245,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
+    /*
     private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, PairOfStringInt, PairOfStringInt> {
 
         // collect all sentences that have hashed to the same hash signature
@@ -268,6 +270,31 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             
                 }
             }
+        }
+    }
+    */
+    /**
+     * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
+     *
+     */
+    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> {
+
+        // collect all sentences that have hashed to the same hash signature
+        static final ArrayListWritable<PairOfStringInt> nearDuplicateSentenceList = new ArrayListWritable<PairOfStringInt>();
+        @Override
+        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStringInt> values,
+                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> output, Reporter reporter)
+                        throws IOException {
+            nearDuplicateSentenceList.clear();
+
+            while (values.hasNext()) {
+                PairOfStringInt val = values.next().clone();
+                nearDuplicateSentenceList.add(val);
+            }
+            
+            if(nearDuplicateSentenceList.size() == 1) return;
+            output.collect(key, nearDuplicateSentenceList);
+
         }
     }
     

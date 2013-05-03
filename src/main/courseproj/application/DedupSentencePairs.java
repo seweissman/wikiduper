@@ -47,6 +47,8 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
+import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
+import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfInts;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
 
@@ -55,28 +57,35 @@ public class DedupSentencePairs extends Configured implements Tool {
 
 
     private static class DedupMapper extends MapReduceBase implements
-    Mapper<PairOfStringInt, PairOfStringInt, ArrayListOfIntsWritable, IntWritable> {
+    Mapper<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>, ArrayListOfIntsWritable, IntWritable> {
         
         static final IntWritable ONE = new IntWritable();
         static final ArrayListOfIntsWritable sentences = new ArrayListOfIntsWritable();
-        
-        public void map(PairOfStringInt p1, PairOfStringInt p2, OutputCollector<ArrayListOfIntsWritable, IntWritable> output,
+        public void map(ArrayListOfLongsWritable key, ArrayListWritable<PairOfStringInt> sentenceList, OutputCollector<ArrayListOfIntsWritable, IntWritable> output,
                 Reporter reporter) throws IOException {
+            PairOfStringInt p1;
+            PairOfStringInt p2;
 
-            if(p1.compareTo(p2) < 0){
-                sentences.add(Integer.parseInt(p1.getLeftElement()));
-                sentences.add(p1.getRightElement());
-                sentences.add(Integer.parseInt(p2.getLeftElement()));
-                sentences.add(p2.getRightElement());
-            }else{
-                sentences.add(Integer.parseInt(p2.getLeftElement()));
-                sentences.add(p2.getRightElement());
-                sentences.add(Integer.parseInt(p1.getLeftElement()));
-                sentences.add(p1.getRightElement());
+            for(int i = 0; i < sentenceList.size();i++){
+                p1 = sentenceList.get(i);
+                for(int j=i+1;j < sentenceList.size();j++){
+                    p2 = sentenceList.get(j);
+                    if(p1.compareTo(p2) < 0){
+                        sentences.add(Integer.parseInt(p1.getLeftElement()));
+                        sentences.add(p1.getRightElement());
+                        sentences.add(Integer.parseInt(p2.getLeftElement()));
+                        sentences.add(p2.getRightElement());
+                    }else{
+                        sentences.add(Integer.parseInt(p2.getLeftElement()));
+                        sentences.add(p2.getRightElement());
+                        sentences.add(Integer.parseInt(p1.getLeftElement()));
+                        sentences.add(p1.getRightElement());
+                    }
+
+                    output.collect(sentences, ONE);
+                    sentences.clear();
+                }
             }
-
-            output.collect(sentences, ONE);
-            sentences.clear();
         }
         public void configure(JobConf job) {
             ONE.set(1);
