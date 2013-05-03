@@ -1,3 +1,5 @@
+package courseproj.application;
+
 /*
  * Cloud9: A MapReduce Library for Hadoop
  *
