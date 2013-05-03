@@ -390,8 +390,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setMapOutputValueClass(PairOfStringInt.class);
         
-        conf.setOutputKeyClass(PairOfStringInt.class);
-        conf.setOutputValueClass(PairOfStringInt.class);
+        conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
+        conf.setOutputValueClass(ArrayListWritable.class);
 
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
