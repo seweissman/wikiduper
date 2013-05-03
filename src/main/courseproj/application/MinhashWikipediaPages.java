@@ -358,11 +358,12 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
         conf.setInt("NHASHOUTPUTBITS", 30);
-        conf.setInt("MINLEN", 20);
+        //conf.setInt("MINLEN", 20);
+        conf.setInt("MINLEN", 75);
         conf.setInt("MAXLEN", 600);
-        conf.setInt("K",  8);
-        conf.setInt("N", 5);
-        conf.setInt("SHINGLELEN",15);
+        conf.setInt("K",  10);
+        conf.setInt("N", 10);
+        conf.setInt("SHINGLELEN",12);
 
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(reduceTasks);
