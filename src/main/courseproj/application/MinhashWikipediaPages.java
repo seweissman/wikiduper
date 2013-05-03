@@ -1,3 +1,5 @@
+package courseproj.application;
+
 /*
  * Cloud9: A MapReduce Library for Hadoop
  *
@@ -16,6 +18,7 @@
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -41,9 +44,7 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.Reducer;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -58,7 +59,7 @@ import edu.umd.cloud9.io.pair.PairOfStringInt;
 public class MinhashWikipediaPages extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
 
-    /* SentenceMapperRegex
+    /* SignatureeMapper
      * 
      * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
      * 
@@ -78,7 +79,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
     };
     
-    private static class SentenceMapperRegex extends MapReduceBase implements
+    private static class SignatureMapper extends MapReduceBase implements
     Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
@@ -168,8 +169,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 String hashval[] = new String[seeds.length];
                 // skip sentences that are too short
 
-                if(sentence.length() < SHINGLELEN)
-                    continue;
+                if(sentence.length() >= SHINGLELEN){
+
                 for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
                     String shingle = sentence.substring(i, i+SHINGLELEN);
                     long hash[] = hashfamily.hash(shingle);
@@ -202,10 +203,14 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     }
 
                 }
+            }
                 sentencect++;
             }
         }
 
+        
+        
+        
         public void configure(JobConf job) {
             rseed = job.getLong("rseed", 112345);
             NHASH = job.getInt("NHASH", 6);
@@ -235,11 +240,44 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         }
     }
 
+ 
     /**
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class GroupReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> {
+    /*
+    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, PairOfStringInt, PairOfStringInt> {
+
+        // collect all sentences that have hashed to the same hash signature
+        //static final ArrayListWritable<PairOfStringInt> nearDuplicateSentenceList = new ArrayListWritable<PairOfStringInt>();
+        ArrayList<PairOfStringInt> sentenceList = new ArrayList<PairOfStringInt>();
+        @Override
+        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStringInt> values,
+                OutputCollector<PairOfStringInt, PairOfStringInt> output, Reporter reporter)
+                        throws IOException {
+            sentenceList.clear();
+
+            while (values.hasNext()) {
+                PairOfStringInt val = values.next().clone();
+                sentenceList.add(val);
+            }
+            
+            if(sentenceList.size() == 1) return;
+
+            for(int i=0;i<sentenceList.size();i++){
+                for(int j=i+1;j<sentenceList.size();j++){
+                    output.collect(sentenceList.get(i), sentenceList.get(j));
+            
+                }
+            }
+        }
+    }
+    */
+    /**
+     * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
+     *
+     */
+    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> {
 
         // collect all sentences that have hashed to the same hash signature
         static final ArrayListWritable<PairOfStringInt> nearDuplicateSentenceList = new ArrayListWritable<PairOfStringInt>();
@@ -247,24 +285,16 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStringInt> values,
                 OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> output, Reporter reporter)
                         throws IOException {
-            
-            while (values.hasNext()) {
-                PairOfStringInt val = values.next();
-                
-                // WARNING -- you must explicitly add a "new" pairOfStringInt pair, otherwise the ArrayListWritable never gets bigger than size 1
-                // this may possibly be a bug in the PairOfStringInt class or somewhere else in Cloud9
-                // calling .add on the list DOES NOT create a new PairOfStringInt
-                if (!nearDuplicateSentenceList.contains(val)) {
-                    nearDuplicateSentenceList.add(new PairOfStringInt(val.getLeftElement(), val.getRightElement()));
-                }
-            }
-            
-            // Only output if there is more than one sentence in the hash
-            if(nearDuplicateSentenceList.size() > 1){
-                output.collect(key, nearDuplicateSentenceList);
-            }
-            
             nearDuplicateSentenceList.clear();
+
+            while (values.hasNext()) {
+                PairOfStringInt val = values.next().clone();
+                nearDuplicateSentenceList.add(val);
+            }
+            
+            if(nearDuplicateSentenceList.size() == 1) return;
+            output.collect(key, nearDuplicateSentenceList);
+
         }
     }
     
@@ -344,8 +374,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             conf.set("wiki.language", language);
         }
         
-        conf.setMapperClass(SentenceMapperRegex.class);
-        conf.setReducerClass(GroupReducer.class);
+        conf.setMapperClass(SignatureMapper.class);
+        conf.setReducerClass(SignatureReducer.class);
         
         conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
