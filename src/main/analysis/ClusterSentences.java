@@ -1,65 +1,23 @@
 
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EditDistance {
-
+public class ClusterSentences {
 	
-	static public long dist(String s1, String s2){
-		long distance[][] = new long[s1.length()+1][s2.length()+1];
-		for(int i=0;i<=s1.length();i++){
-			distance[i][0] = i;
-		}
-
-		for(int j=0;j<=s2.length();j++){
-			distance[0][j] = j;
-		}
-
-		for(int i=1;i<=s1.length();i++){
-			int cost;
-			for(int j=1;j<=s2.length();j++){
-			    if(s1.substring(i-1,i).equals(s2.substring(j-1,j))){
-					cost = 0;
-			    }else{
-					cost = 1;
-			    }
-
-			    distance[i][j] = Math.min(distance[i-1][j] + 1,
-					     Math.min(distance[i][j-1] + 1,
-						 		distance[i-1][j-1] + cost));
-			    //System.out.println("i= " + i + " j= " + j);
-			    //System.out.println(s1.substring(i-1,i) + " " + s2.substring(j-1,j));
-			    if(i>1 && j>1 && s1.substring(i-1,i).equals(s2.substring(j-2,j-1))
-			       && s1.substring(i-2,i-1).equals(s2.substring(j-1,j))){
-			    	distance[i][j] = Math.min(distance[i][j],distance[i-1][j-2] + cost);
-			    }
-
-			    //# Some way to weight differences at beginning of addressss more?
-			    //#if($i < length($s1/2) && $j < length($s2/2)){
-				//#$d{$i}{$j} += 1;
-			    //#}
-			}
-	    }
-/*
-		     for(int i=0;i<=s1.length();i++){
-		     	for(int j=0;j<=s2.length();j++){
-		     	    System.out.println("d["+i+"]["+j+"] = " + distance[i][j]);
-		     	}
-		    }
-*/
-		    return distance[s1.length()][s2.length()];
-	}
-	
-    static HashSet<String> getConnectedComponent(String entity, HashMap<String, HashSet<String>> matchmap){
+    static HashSet<String> getConnectedComponent(String entity, TreeMap<String, HashSet<String>> matchmap){
         HashSet<String> component = new HashSet<String>();
         component.add(entity);
         if(matchmap.isEmpty() || !matchmap.containsKey(entity)){
@@ -76,37 +34,39 @@ public class EditDistance {
 	
 	public static void main(String args[]){
 		
-		  if(args.length != 1){
-				System.out.println("Usage: EditDistance <filein>\n");
+		  if(args.length != 2){
+				System.out.println("Usage: ClusterSentences <filein> <file out>\n");
 				System.exit(-1);
 			}
-		    Pattern linepat = Pattern.compile("(\\[[-0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
+		  Pattern linepat = Pattern.compile("(\\[[-0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
 		    //ArrayList<ArrayList<String>> clusterlist = new ArrayList<ArrayList<String>>();
-		    HashMap<String, HashSet<String>> matchmap = new HashMap<String, HashSet<String>>();
+		  TreeMap<String, HashSet<String>> matchmap = new TreeMap<String, HashSet<String>>();
 		    HashMap<String, HashSet<String>> nomatchmap = new HashMap<String, HashSet<String>>();
 		    
 		    FileInputStream fin;
    		    int clusterct = 0;
             int uniquematchct = 0;
             int uniquefalseposct = 0;
+            int nonuniquematchct = 0;
+            int nonuniquefalseposct = 0;
 		    try {
-			  fin = new FileInputStream(args[0]);
-			  BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
+	              fin = new FileInputStream(args[0]);
+	              BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
 		      String line;
 		      ArrayList<String> cluster = new ArrayList<String>();
-			  String sigcurr = null;
-		      while((line = bin.readLine()) != null){
+		      String sigcurr = null;
+			  while((line = bin.readLine()) != null){
                   Matcher m = linepat.matcher(line);
                   String sig = "";
                   String sentence = "";
                   if(m.matches()){
                       sig = m.group(1);
-					  sentence = m.group(2);
-					  //System.out.println("sig = " + sig + " , sentence = " + sentence);
-					}else{
-					    System.out.println("Bad line: " + line);
-					    System.exit(-1);
-					}
+                      sentence = m.group(2);
+                      //System.out.println("sig = " + sig + " , sentence = " + sentence);
+                    }else{
+                        System.out.println("Bad line: " + line);
+                        System.exit(-1);
+                    }
 
 					if(sigcurr == null){
 	                      sigcurr = sig;  
@@ -118,11 +78,18 @@ public class EditDistance {
 	                            String m1 = cluster.get(i);
 	                            for(int j=i+1;j<cluster.size();j++){                 
 	                                String m2 = cluster.get(j);
+	                                if((nomatchmap.containsKey(m1) && nomatchmap.get(m1).contains(m2))
+	                                        || (nomatchmap.containsKey(m2) && nomatchmap.get(m2).contains(m1))
+	                                        || (matchmap.containsKey(m2) && matchmap.get(m2).contains(m1))
+	                                        || (matchmap.containsKey(m1) && matchmap.get(m1).contains(m2))){
+	                                    continue;
+	                                }
 	                                long dl = Math.max(m1.length(), m2.length()) - Math.min(m1.length(), m2.length());
-	                                long d = dist(m1,m2);
+	                                long d = EditDistance.dist(m1,m2);
 	                                long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
-	                                
-	                                if(score > 10){
+	                                /*
+	                                if(score > 5){
+	                                    nonuniquefalseposct++;
 	                                    //System.out.println(m1 + ">>>>>>" + m2  + ">>>>>> " + score);
 	                                    if(!nomatchmap.containsKey(m1)){
                                             nomatchmap.put(m1, new HashSet<String> ());
@@ -132,14 +99,15 @@ public class EditDistance {
                                             nomatchmap.put(m2, new HashSet<String> ());
                                             }
                                         if(!(nomatchmap.get(m2).contains(m1) || nomatchmap.get(m1).contains(m2))){
-                                            System.out.println(m1 + "\t" + m2);
+                                            //System.out.println(m1 + "\t" + m2);
                                             uniquefalseposct++;
                                         }
 
                                         nomatchmap.get(m2).add(m1);
                                         nomatchmap.get(m1).add(m2);
 	                                }else{
-	                                    
+	                                */
+	                                    nonuniquematchct++;
 	                                
 	                                    if(!matchmap.containsKey(m1)){
                                             matchmap.put(m1, new HashSet<String> ());
@@ -153,7 +121,7 @@ public class EditDistance {
                                         }
                                         matchmap.get(m2).add(m1);
                                         matchmap.get(m1).add(m2);
-	                                }
+	                              //  }
 	                            }
 	                        }
 	                    //clusterlist.add(cluster);
@@ -186,63 +154,42 @@ public class EditDistance {
 		     }
 		    
 		    
+            System.out.println("Cluster count:" +  clusterct);
             System.out.println("N unique input matchess: " +  uniquematchct);
             System.out.println("N unique input false positives: " + uniquefalseposct);
-            System.exit(-1);            
+            System.out.println("N non-unique input matchess: " +  nonuniquematchct);
+            System.out.println("N non-unique input false positives: " + nonuniquefalseposct);
+            //System.exit(-1);            
 		    int componentct = 0;
-		    HashMap<Long,Long> histogram = new HashMap<Long,Long>();
             long matchct = 0;
             long badct = 0;
-		    while(!matchmap.isEmpty()){
-	            String[] matchentities = matchmap.keySet().toArray(new String[0]);
-	            String entity = matchentities[0];
-	            HashSet<String> comp = getConnectedComponent(entity, matchmap);
-	            //System.out.println("entity = " + entity);
-	            String cluster[] = comp.toArray(new String[0]);
-	            componentct++;
-	            System.out.println("componentct = " + componentct + " " + comp.size());
+            FileOutputStream fout;
+            try {
+                fout = new FileOutputStream(args[1]);
+                BufferedWriter bout = new BufferedWriter(new OutputStreamWriter(fout));
+                while(!matchmap.isEmpty()){
+                    String entity = matchmap.firstKey();
+                    HashSet<String> comp = getConnectedComponent(entity, matchmap);
+                    // System.out.println("entity = " + entity);
+                    bout.write(comp.toString());
 
-	            int clustdisplayct = 0;
-	            for(String m : cluster){
-	                if(clustdisplayct > 20) break;
-	                System.out.println("item = " + m);
-	                clustdisplayct++;
-	            }
+                    bout.write("\n");
+                    componentct++;
+                    //System.out.println("componentct = " + componentct + " " + comp.size());
+                    //System.out.println("matchct = " + matchct + " ,'badct = " + badct);
+                }
 
-	            for(int i=0; i<cluster.length;i++){
-                    String entity1 = cluster[i];
-                    for(int j=i+1;j<cluster.length;j++){
-                        matchct++;
-                        String entity2 = cluster[j];
-                        long dl = Math.max(entity1.length(), entity2.length()) - Math.min(entity1.length(), entity2.length());
-                        long d = dist(entity1,entity2);
-                        long score = Math.round(100*(d - dl + 1)*1.0/Math.max(entity1.length(), entity2.length()));
-                        //System.out.println(entity1 + ", " + entity2 + ", " + d + ", " + dl + ", " + Math.ceil( 100*score));
-                        if(score > 0){
-                            if(!histogram.containsKey(score)){
-                                histogram.put(score, 0l);
-                            }
-                            histogram.put(score, histogram.get(score)+1);
-                        }
-                        //if(dl > d){
-                            //System.out.println("Weird lines:");
-                            //System.out.println(entity1 + ", " + entity2 + ", " + d + ", " + dl + ", " + Math.ceil( 100*score));
-                        //}
-                        
-                        if(score > 25){
-                            badct++;
-                        }
-                    }
-                 }
-	            System.out.println("matchct = " + matchct + " ,'badct = " + badct);
-		    }
-			for(long i=0;i<=100;i++){
-				if(histogram.containsKey(i)){
-					System.out.println(i+","+histogram.get(i));
-				}else{
-					System.out.println(i+","+0);
-				}
-			}
+            	
+            	bout.close();
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch blopck
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+		    
+		    
             System.out.println("N input buckets: " + clusterct);            
             System.out.println("Total pairs: " + matchct);
             System.out.println("Bad pairs: " + badct);
