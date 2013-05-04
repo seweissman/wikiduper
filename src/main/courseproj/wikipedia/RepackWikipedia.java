@@ -196,7 +196,7 @@ public class RepackWikipedia extends Configured implements Tool {
     if(language != null){
       conf.set("wiki.language", language);
     }
-
+    
     conf.setInputFormat(WikipediaPageInputFormat.class);
     conf.setOutputFormat(SequenceFileOutputFormat.class);
     conf.setOutputKeyClass(IntWritable.class);
