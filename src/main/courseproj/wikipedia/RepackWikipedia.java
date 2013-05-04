@@ -43,7 +43,12 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+
+import courseproj.wikipedia.WikipediaDocnoMapping;
+import courseproj.wikipedia.WikipediaPage;
+import courseproj.wikipedia.WikipediaPageInputFormat;
 import courseproj.wikipedia.language.WikipediaPageFactory;
+
 
 /**
  * Tool for repacking Wikipedia XML dumps into <code>SequenceFiles</code>.
