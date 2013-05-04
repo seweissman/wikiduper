@@ -145,6 +145,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             if(!p.isArticle() || p.isEmpty()) return;
             String content = p.getContent();
             if(content == null) return;
+            if(p.getDocid() == null) return;
             String line = content
                     .replace("\n", " ")
                     .replace("  ", " ")
