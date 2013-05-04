@@ -34,6 +34,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -44,6 +45,7 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.Reducer;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -80,7 +82,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     };
     
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    Mapper<IntWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
         static long seeds[];
@@ -120,7 +122,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
+        public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
                 Reporter reporter) throws IOException {
 
             if (p.isRedirect()) {
@@ -345,7 +347,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
+        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
 
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - bz2 file: " + inputPath);
@@ -378,7 +380,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setMapperClass(SignatureMapper.class);
         conf.setReducerClass(SignatureReducer.class);
         
-        conf.setInputFormat(WikipediaPageInputFormat.class);
+        //conf.setInputFormat(WikipediaPageInputFormat.class);
+        conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         //conf.setOutputFormat(TextOutputFormat.class);
         
