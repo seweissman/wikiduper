@@ -58,14 +58,14 @@ public class DedupSentencePairs extends Configured implements Tool {
 
     private static class DedupMapper extends MapReduceBase implements
     Mapper<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>, ArrayListOfIntsWritable, IntWritable> {
-        
+        static final int MAXSIZE = 20;
         static final IntWritable ONE = new IntWritable();
         static final ArrayListOfIntsWritable sentences = new ArrayListOfIntsWritable();
         public void map(ArrayListOfLongsWritable key, ArrayListWritable<PairOfStringInt> sentenceList, OutputCollector<ArrayListOfIntsWritable, IntWritable> output,
                 Reporter reporter) throws IOException {
             PairOfStringInt p1;
             PairOfStringInt p2;
-
+            if(sentenceList.size() > MAXSIZE) return;
             for(int i = 0; i < sentenceList.size();i++){
                 p1 = sentenceList.get(i);
                 for(int j=i+1;j < sentenceList.size();j++){

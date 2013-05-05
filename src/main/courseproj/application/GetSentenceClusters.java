@@ -218,6 +218,7 @@ public class GetSentenceClusters extends Configured implements Tool {
 */
     
     private static final String PAIRFILE = "pairfile";
+    private static final String CLUSTERMAP = "clustermap";
     //private static final String INDEXFILE = "indexfile";
     //private static final String MAPFILE = "mapfile";
     private static final String INPUT = "input";
@@ -239,6 +240,8 @@ public class GetSentenceClusters extends Configured implements Tool {
                 .withDescription("number of reducers").create(NUM_REDUCERS));
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("pair file").create(PAIRFILE));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("cluster map file").create(CLUSTERMAP));
         //options.addOption(OptionBuilder.withArgName("path")
           //      .hasArg().withDescription("index file").create(INDEXFILE));
         //options.addOption(OptionBuilder.withArgName("path")
@@ -253,7 +256,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(PAIRFILE)){
+        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(PAIRFILE) || !cmdline.hasOption(CLUSTERMAP)){
                 //|| !cmdline.hasOption(INDEXFILE) || !cmdline.hasOption(MAPFILE)) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
@@ -273,7 +276,8 @@ public class GetSentenceClusters extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        String pairPath = cmdline.getOptionValue(PAIRFILE);
+        //String pairPath = cmdline.getOptionValue(PAIRFILE);
+        String clusterPath = cmdline.getOptionValue(CLUSTERMAP);
         //String indexPath = cmdline.getOptionValue(INDEXFILE);
         //String mapPath = cmdline.getOptionValue(MAPFILE);
         
@@ -291,14 +295,15 @@ public class GetSentenceClusters extends Configured implements Tool {
         
         /* Get Clusters from MinhashWikipediaPages pair output */
         
-        String docmapFile = "docmap.out";
+        //String docmapFile = "docmap.out";
         //String remoteDocmapFile = "docmap2.out";
-        getClusters(pairPath,conf,docmapFile);
+        //getClusters(pairPath,conf,docmapFile);
+        //System.exit(-1);
         //FileSystem fs = FileSystem.get(conf);
         //fs.copyFromLocalFile(new Path(docmapFile), new Path(remoteDocmapFile));
         
-        conf.set("docmapfile", docmapFile);
-        conf.setJobName(String.format("MinhashWikipediaPages[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
+        conf.set("docmapfile", clusterPath);
+        conf.setJobName(String.format("GetSentenceClusters[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
 
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(reduceTasks);
@@ -389,7 +394,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             
             writer.close();
             fs.close();
-            //System.out.println("N components: " + componentct);
+            System.out.println("N components: " + componentct);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -400,8 +405,11 @@ public class GetSentenceClusters extends Configured implements Tool {
      
     try {
         FileSystem fs = FileSystem.get(conf);
+        System.out.println("filein = " + filein);
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
         for(FileStatus filestatus : infiles){
+            System.out.println(filestatus.getPath().toString());
+            try{
             FSDataInputStream in = fs.open(filestatus.getPath());
             SequenceFile.Reader reader;
             reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
@@ -420,9 +428,10 @@ public class GetSentenceClusters extends Configured implements Tool {
                 p2 = new PairOfInts();
             }
           reader.close();
+          }catch (EOFException e) {
+           // For some reason it doesn't know when the input stream is done??
+          }
         }
-    }catch (EOFException e) {
-        // For some reason it doesn't know when the input stream is done??
     }catch (IOException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
