@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 
 public class ClassifyClusters {
     private static enum ClusterTypes {
-        FACTUAL_ERROR, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
+        FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     };	
     private static int typecounts[];
-
+    private static int clusterct = 0;
     public static void main(String args[]){
 		
 	    if(args.length != 1){
@@ -34,7 +34,7 @@ public class ClassifyClusters {
 	    for(int i=0; i<clist.length;i++){
 	        typecounts[i] = 0;
 	    }
-   		int clusterct = 0;
+
 		try {
 
             File file = new File(args[0]);
@@ -69,7 +69,7 @@ public class ClassifyClusters {
 	                }
 					
 	                if(!clustcurr.equals(clust)){
-	                    clusterct++;
+                        clusterct++;
 	                    if(clusterct % 1000 == 0) System.out.println("clusterct = " + clusterct);
 	                    if(sentenceset.size() > 1){
 	                        for(String s : sentenceset){
@@ -147,6 +147,7 @@ public class ClassifyClusters {
             for(int i=0;i<typecounts.length;i++){
                 System.out.println(clist[i] + " " + typecounts[i]);
             }
+            System.out.println("Number of clusters analyzed: " + clusterct);
             System.exit(-1);
         }
     }
