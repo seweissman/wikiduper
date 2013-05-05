@@ -1,0 +1,157 @@
+package analysis;
+
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class ClassifyClusters {
+    private static enum ClusterTypes {
+        FACTUAL_ERROR, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
+    };	
+    private static int typecounts[];
+
+    public static void main(String args[]){
+		
+	    if(args.length != 1){
+	        System.out.println("Usage: FilterClusters <cluster output file>n");
+			System.exit(-1);
+	    }
+		Pattern linepat = Pattern.compile("([0-9]+)\t(.*)\t(.*)$");
+		    
+		FileInputStream fin;
+		
+		ClusterTypes clist[] = ClusterTypes.values();
+		typecounts = new int[clist.length];
+	    for(int i=0; i<clist.length;i++){
+	        typecounts[i] = 0;
+	    }
+   		int clusterct = 0;
+		try {
+
+            File file = new File(args[0]);
+            System.out.println("Reading files " + args[0] + "...");
+            fin = new FileInputStream(file);
+            BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
+	        String line;
+	        HashSet<String> titleset = new HashSet<String>();
+	        HashSet<String> lineset = new HashSet<String>();
+	        TreeSet<String> sentenceset = new TreeSet<String>();
+	        String clustcurr = null;
+	        while((line = bin.readLine()) != null){
+	                Matcher m = linepat.matcher(line);
+	                String clust = "";
+	                String title = "";
+	                String sentence = "";
+	                if(m.matches()){
+	                    clust = m.group(1);
+	                    title = m.group(2);
+	                    sentence = m.group(3);
+	                    if(sentence.startsWith("See also") || sentence.startsWith("References")
+                              || sentence.startsWith("List of") || title.startsWith("List of")){
+	                        continue;
+                        }
+                    }else{
+                        System.out.println("Bad line: " + line);
+                        System.exit(-1);
+                    }
+
+					if(clustcurr == null){
+	                      clustcurr = clust;  
+	                }
+					
+	                if(!clustcurr.equals(clust)){
+	                    clusterct++;
+	                    if(clusterct % 1000 == 0) System.out.println("clusterct = " + clusterct);
+	                    if(sentenceset.size() > 1){
+	                        for(String s : sentenceset){
+	                            System.out.println(s);
+	                        }
+	                        classifyCluster();
+	                    }else{
+	                        // sentences are identical
+	                        typecounts[ClusterTypes.IDENTICAL.ordinal()] += 1;
+	                    }
+	                    titleset.clear();
+	                    sentenceset.clear();
+	                    lineset.clear();
+	                }
+	                
+	                clustcurr = clust;
+                    lineset.add(line);
+                    titleset.add(title);
+                    sentenceset.add(sentence);
+	            }
+	              bin.close();
+	              fin.close();
+
+		 	 } catch (FileNotFoundException e) {
+		 		// TODO Auto-generated catch block
+		 		e.printStackTrace();
+		 	 } catch (IOException e) {
+		 			// TODO Auto-generated catch block
+		 			e.printStackTrace();
+		     }
+		    
+		    
+            System.out.println("N input buckets: " + clusterct);            
+            //System.out.println("Bad pairs: " + badct);
+            //System.out.println("N components: " + componentct);
+
+			//System.out.println("FP rate: " + badct*1.0/matchct);
+
+	}
+
+	public static void promptTypes(ClusterTypes clist[]){
+	    for(int i=0; i< clist.length - 1; i++){
+	        ClusterTypes type = clist[i];
+	        System.out.println((i+1) + " " + type);
+        }
+	    System.out.println("\"q\" to exit");
+
+	}
+	
+    public static void classifyCluster() throws IOException{
+        String input;
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+        ClusterTypes clist[] = ClusterTypes.values();
+        promptTypes(clist);
+
+        while(true){
+            input = stdin.readLine();
+            if(input != null && !(input.equals("q"))) {
+                int type = -1;
+                try{
+                    type = Integer.parseInt(input) - 1;
+                    typecounts[type]++;
+                    break;
+                 }catch(NumberFormatException e){
+                     System.out.println(input + " is not an number. Reenter");
+                 }catch(ArrayIndexOutOfBoundsException e){
+                     System.out.println(input + " is out of range. Reenter");
+                 }
+            }else{
+                break;
+            }
+        }
+        
+        if(input.equals("q")){
+            for(int i=0;i<typecounts.length;i++){
+                System.out.println(clist[i] + " " + typecounts[i]);
+            }
+            System.exit(-1);
+        }
+    }
+
+
+
+	
+}
