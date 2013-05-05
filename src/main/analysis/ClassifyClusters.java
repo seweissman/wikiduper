@@ -69,7 +69,6 @@ public class ClassifyClusters {
 	                }
 					
 	                if(!clustcurr.equals(clust)){
-                        clusterct++;
 	                    if(clusterct % 1000 == 0) System.out.println("clusterct = " + clusterct);
 	                    if(sentenceset.size() > 1){
 	                        for(String s : sentenceset){
@@ -83,6 +82,7 @@ public class ClassifyClusters {
 	                    titleset.clear();
 	                    sentenceset.clear();
 	                    lineset.clear();
+                        clusterct++;
 	                }
 	                
 	                clustcurr = clust;
