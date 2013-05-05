@@ -74,7 +74,8 @@ public class GetSentenceClusters extends Configured implements Tool {
      *
      */
     private static class ClusterMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
+    //Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
+    Mapper<LongWritable, WikipediaPage, IntWritable, Text> {
         
         // Map from docid -> sentence number -> cluster number
         static final TreeMap<Integer, TreeMap<Integer, Integer>> docmap = new TreeMap<Integer, TreeMap<Integer, Integer>>();
@@ -100,8 +101,10 @@ public class GetSentenceClusters extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
-                Reporter reporter) throws IOException {
+        //public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+          //      Reporter reporter) throws IOException {
+          public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+                    Reporter reporter) throws IOException {
 
             if(!p.isArticle() || p.isEmpty()) return;
             String content = p.getContent();
@@ -120,6 +123,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             if(!docmap.containsKey(id)) return;
             TreeMap<Integer,Integer> sentMap = docmap.get(id);
 
+            try{
             // For each sentence in the input text:
             while(m.find()){
                 String sentence = m.group(1);
@@ -130,6 +134,9 @@ public class GetSentenceClusters extends Configured implements Tool {
                     output.collect(CLUSTER,TITLESENTENCE);
                 }
                 sentencect++;
+            }
+            }catch(Throwable e){
+                System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + sentencect);
             }
         }
 
@@ -306,15 +313,15 @@ public class GetSentenceClusters extends Configured implements Tool {
         conf.setMapperClass(ClusterMapper.class);
         //conf.setReducerClass(ClusterReducer.class);
         
-        //conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setInputFormat(SequenceFileInputFormat.class);
+        conf.setInputFormat(WikipediaPageInputFormat.class);
+        //conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
         conf.set("mapred.map.child.java.opts", "-Xmx2048m");
-        conf.set("mapred.job.reduce.memory.mb", "2048");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx2048m");
+        conf.set("mapred.job.reduce.memory.mb", "4096");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         
         conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(Text.class);
