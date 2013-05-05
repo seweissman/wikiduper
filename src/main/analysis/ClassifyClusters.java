@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class ClassifyClusters {
     private static enum ClusterTypes {
-        FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
+        NOT_SIMILAR, FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     };	
     private static int typecounts[];
     private static int clusterct = 0;
