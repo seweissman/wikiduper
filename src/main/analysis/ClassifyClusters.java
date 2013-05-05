@@ -8,7 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,8 +42,10 @@ public class ClassifyClusters {
             fin = new FileInputStream(file);
             BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
 	        String line;
-	        HashSet<String> titleset = new HashSet<String>();
-	        HashSet<String> lineset = new HashSet<String>();
+	        
+	        ArrayList<String> titlelist = new ArrayList<String>();
+	        ArrayList<String> sentencelist = new ArrayList<String>();
+	        
 	        TreeSet<String> sentenceset = new TreeSet<String>();
 	        String clustcurr = null;
 	        while((line = bin.readLine()) != null){
@@ -55,10 +57,7 @@ public class ClassifyClusters {
 	                    clust = m.group(1);
 	                    title = m.group(2);
 	                    sentence = m.group(3);
-	                    if(sentence.startsWith("See also") || sentence.startsWith("References")
-                              || sentence.startsWith("List of") || title.startsWith("List of")){
-	                        continue;
-                        }
+
                     }else{
                         System.out.println("Bad line: " + line);
                         System.exit(-1);
@@ -70,24 +69,28 @@ public class ClassifyClusters {
 					
 	                if(!clustcurr.equals(clust)){
 	                    if(clusterct % 1000 == 0) System.out.println("clusterct = " + clusterct);
+
 	                    if(sentenceset.size() > 1){
-	                        for(String s : sentenceset){
-	                            System.out.println(s);
+	                        for(int i=0;i<sentencelist.size();i++){
+	                            String s = sentencelist.get(i);
+	                            String t = titlelist.get(i);
+	                            System.out.println(s + "\t[" + t + "]");
+
 	                        }
 	                        classifyCluster();
 	                    }else{
 	                        // sentences are identical
 	                        typecounts[ClusterTypes.IDENTICAL.ordinal()] += 1;
 	                    }
-	                    titleset.clear();
+	                    titlelist.clear();
+	                    sentencelist.clear();
 	                    sentenceset.clear();
-	                    lineset.clear();
                         clusterct++;
 	                }
 	                
 	                clustcurr = clust;
-                    lineset.add(line);
-                    titleset.add(title);
+                    titlelist.add(title);
+                    sentencelist.add(sentence);
                     sentenceset.add(sentence);
 	            }
 	              bin.close();
