@@ -54,7 +54,7 @@ public class MergeClusters extends Configured implements Tool {
     //private static final String MAPFILE = "mapfile";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
-    private static final String LANGUAGE_OPTION = "wiki_language";
+    //private static final String LANGUAGE_OPTION = "wiki_language";
 
     @SuppressWarnings("static-access")
     @Override
@@ -62,8 +62,8 @@ public class MergeClusters extends Configured implements Tool {
         Options options = new Options();
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("output path").create(OUTPUT));
-        options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
-                .withDescription("two-letter language code").create(LANGUAGE_OPTION));
+        //options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
+          //      .withDescription("two-letter language code").create(LANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
         options.addOption(OptionBuilder.withArgName("path")
@@ -91,6 +91,7 @@ public class MergeClusters extends Configured implements Tool {
             return -1;
         }
 
+/*
         String language = "en";
         if (cmdline.hasOption(LANGUAGE_OPTION)) {
             language = cmdline.getOptionValue(LANGUAGE_OPTION);
@@ -99,7 +100,7 @@ public class MergeClusters extends Configured implements Tool {
                 return -1;
             }
         }
-
+*/
         String outputPath = cmdline.getOptionValue(OUTPUT);
         String pairPath = cmdline.getOptionValue(PAIRFILE);
         //String indexPath = cmdline.getOptionValue(INDEXFILE);
@@ -109,7 +110,7 @@ public class MergeClusters extends Configured implements Tool {
 
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - output file: " + outputPath);
-        LOG.info(" - language: " + language);
+  //      LOG.info(" - language: " + language);
         
         JobConf conf = new JobConf(getConf(), MergeClusters.class);
 

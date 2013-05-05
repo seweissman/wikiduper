@@ -19,9 +19,7 @@ package courseproj.application;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +32,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -49,7 +46,6 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -343,117 +339,6 @@ public class GetSentenceClusters extends Configured implements Tool {
         return 0;
     }
 
-    // Reads in pairs from MinhahsWikipediaPages output and performs connected component analysis
-    // Creates a global cluster numbering and a map from doc numbers to sentences and their cluster numbers
-    // Writes the docmap to docmapFile
-    public static void getClusters(String filein, JobConf conf, String docmapFile){
-
-        try {
-            TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap = new TreeMap<PairOfInts, HashSet<PairOfInts>>();
-            // map from doc id to sentence numbers
-            TreeMap<Integer, TreeSet<PairOfInts>> docmap = new TreeMap<Integer, TreeSet<PairOfInts>>();
-            readPairs(filein,conf,matchmap);
-            int componentct = 0;
-            
-            while(!matchmap.isEmpty()){
-                PairOfInts entity = matchmap.firstKey();
-                HashSet<PairOfInts> comp = getConnectedComponent(entity, matchmap);
-
-                for(PairOfInts p : comp){
-                    int docid = p.getLeftElement();
-                    int sentencenum = p.getRightElement();
-                    if(!docmap.containsKey(docid)){
-                        docmap.put(docid, new TreeSet<PairOfInts>());
-                    }
-                    docmap.get(docid).add(new PairOfInts(sentencenum, componentct));
-                }
-
-                componentct++;
-
-            }
-
-            FileSystem fs = FileSystem.get(conf);
-            Path clustersOut = new Path(docmapFile);
-            FileSystem.get(conf).delete(clustersOut, true);
-            SequenceFile.Writer writer = SequenceFile.createWriter(conf, 
-                    SequenceFile.Writer.file(clustersOut), 
-                    SequenceFile.Writer.keyClass(IntWritable.class), 
-                    SequenceFile.Writer.valueClass(ArrayListWritable.class));
-            ArrayListWritable<PairOfInts> sentlist;
-            IntWritable doc;
-            for(int docid : docmap.navigableKeySet()){
-                doc = new IntWritable();
-                sentlist = new ArrayListWritable<PairOfInts>();
-                sentlist.clear();
-                doc.set(docid);
-                for(PairOfInts sentcomp : docmap.get(docid)){
-                    sentlist.add(sentcomp);
-                }
-                writer.append(doc,sentlist);
-            }
-            
-            writer.close();
-            fs.close();
-            System.out.println("N components: " + componentct);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public static void readPairs(String filein, JobConf conf, TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap){
-     
-    try {
-        FileSystem fs = FileSystem.get(conf);
-        System.out.println("filein = " + filein);
-        FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
-        for(FileStatus filestatus : infiles){
-            System.out.println(filestatus.getPath().toString());
-            try{
-            FSDataInputStream in = fs.open(filestatus.getPath());
-            SequenceFile.Reader reader;
-            reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
-            PairOfInts p1 = new PairOfInts();
-            PairOfInts p2 = new PairOfInts();
-            while(reader.next(p1, p2)){
-                if(!matchmap.containsKey(p1)){
-                    matchmap.put(p1, new HashSet<PairOfInts> ());
-                }
-                if(!matchmap.containsKey(p2)){
-                    matchmap.put(p2, new HashSet<PairOfInts> ());
-                }
-                matchmap.get(p2).add(p1);
-                matchmap.get(p1).add(p2);
-                p1 = new PairOfInts();
-                p2 = new PairOfInts();
-            }
-          reader.close();
-          }catch (EOFException e) {
-           // For some reason it doesn't know when the input stream is done??
-          }
-        }
-    }catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-    }
-
-
-    }
-    
-    static HashSet<PairOfInts> getConnectedComponent(PairOfInts entity, TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap){
-        HashSet<PairOfInts> component = new HashSet<PairOfInts>();
-        component.add(entity);
-        if(matchmap.isEmpty() || !matchmap.containsKey(entity)){
-            return component;
-        }
-
-        HashSet <PairOfInts> matches = matchmap.remove(entity);
-        for(PairOfInts m : matches){
-            HashSet<PairOfInts> c = getConnectedComponent(m, matchmap);
-            component.addAll(c);
-        }
-        return component;
-    }
 
     public GetSentenceClusters() {}
 

@@ -223,9 +223,9 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
         public void configure(JobConf job) {
             rseed = job.getLong("rseed", 112345);
-            NHASH = job.getInt("NHASH", 6);
+            NHASH = job.getInt("NHASH", 20);
             NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
-            MINLEN = job.getInt("MINLEN", 20);
+            MINLEN = job.getInt("MINLEN", 75);
             MAXLEN = job.getInt("MAXLEN", 600);
             K = job.getInt("K",  10);
             N = job.getInt("N", 10);
