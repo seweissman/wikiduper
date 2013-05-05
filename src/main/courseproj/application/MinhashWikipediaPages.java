@@ -82,7 +82,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     };
     
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    //Mapper<IntWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
         static long seeds[];
@@ -122,8 +123,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
+        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
                 Reporter reporter) throws IOException {
+            //public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
+              //      Reporter reporter) throws IOException {
 
             if (p.isRedirect()) {
                 reporter.incrCounter(PageTypes.REDIRECT, 1);
@@ -157,7 +160,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             // Assume a whole Wikipedia article has been passed to the mapper; track sentence number by counting
 
             int sentencect = 0;
-
+            try{
             // For each sentence in the input text:
             while(m.find()){
                 // Initialize the minhash vector
@@ -208,6 +211,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 }
             }
                 sentencect++;
+            }
+            
+            }catch(Throwable e){
+                System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + sentencect);
             }
         }
 
@@ -381,8 +388,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setMapperClass(SignatureMapper.class);
         conf.setReducerClass(SignatureReducer.class);
         
-        //conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setInputFormat(SequenceFileInputFormat.class);
+        conf.setInputFormat(WikipediaPageInputFormat.class);
+        //conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         //conf.setOutputFormat(TextOutputFormat.class);
         
@@ -391,6 +398,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.set("mapred.map.child.java.opts", "-Xmx2048m");
         conf.set("mapred.job.reduce.memory.mb", "2048");
         conf.set("mapred.reduce.child.java.opts", "-Xmx2048m");
+        //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setMapOutputValueClass(PairOfStringInt.class);
