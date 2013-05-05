@@ -65,10 +65,9 @@ public class DedupSentencePairs extends Configured implements Tool {
                 Reporter reporter) throws IOException {
             PairOfStringInt p1;
             PairOfStringInt p2;
-            if(sentenceList.size() > MAXSIZE) return;
-            for(int i = 0; i < sentenceList.size();i++){
+            for(int i = 0; i < sentenceList.size() && i < MAXSIZE;i++){
                 p1 = sentenceList.get(i);
-                for(int j=i+1;j < sentenceList.size();j++){
+                for(int j=i+1;j < sentenceList.size() && j < MAXSIZE;j++){
                     p2 = sentenceList.get(j);
                     if(p1.compareTo(p2) < 0){
                         sentences.add(Integer.parseInt(p1.getLeftElement()));
@@ -164,8 +163,8 @@ public class DedupSentencePairs extends Configured implements Tool {
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
         conf.set("mapred.map.child.java.opts", "-Xmx2048m");
-        conf.set("mapred.job.reduce.memory.mb", "2048");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx2048m");
+        conf.set("mapred.job.reduce.memory.mb", "4096");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         
         conf.setMapperClass(DedupMapper.class);
         conf.setReducerClass(DedupReducer.class);

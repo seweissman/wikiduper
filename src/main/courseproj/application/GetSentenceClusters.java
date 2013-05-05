@@ -217,7 +217,7 @@ public class GetSentenceClusters extends Configured implements Tool {
     }
 */
     
-    private static final String PAIRFILE = "pairfile";
+    //private static final String PAIRFILE = "pairfile";
     private static final String CLUSTERMAP = "clustermap";
     //private static final String INDEXFILE = "indexfile";
     //private static final String MAPFILE = "mapfile";
@@ -238,8 +238,8 @@ public class GetSentenceClusters extends Configured implements Tool {
                 .withDescription("two-letter language code").create(LANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
-        options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("pair file").create(PAIRFILE));
+        //options.addOption(OptionBuilder.withArgName("path")
+          //      .hasArg().withDescription("pair file").create(PAIRFILE));
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("cluster map file").create(CLUSTERMAP));
         //options.addOption(OptionBuilder.withArgName("path")
@@ -256,7 +256,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(PAIRFILE) || !cmdline.hasOption(CLUSTERMAP)){
+        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(CLUSTERMAP)){
                 //|| !cmdline.hasOption(INDEXFILE) || !cmdline.hasOption(MAPFILE)) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
