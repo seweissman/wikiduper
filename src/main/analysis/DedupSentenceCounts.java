@@ -132,7 +132,7 @@ public class DedupSentenceCounts extends Configured implements Tool {
         // set job configurations
         Configuration conf = getConf();
         Job job = Job.getInstance(conf);
-        job.setJobName(DedupSentenceCounts.class.toString());
+        job.setJobName("DedupSentenceCounts");
         job.setJarByClass(DedupSentenceCounts.class);
         job.setNumReduceTasks(reduceTasks);
         

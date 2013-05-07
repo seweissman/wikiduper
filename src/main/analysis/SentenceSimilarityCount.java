@@ -113,7 +113,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 }
             }
 
-            System.out.println("Wiki Article: " + wikiID.get());
+            //System.out.println("Wiki Article: " + wikiID.get());
             for (Integer otherWikiArticle: COUNTS.keySet()) {
 
                 // only output if the article pair has more than a threshold number of "similar" sentences in common
@@ -121,7 +121,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                     KEY.set(wikiID.get(), otherWikiArticle);
                     VALUE.set(COUNTS.get(otherWikiArticle));
 
-                    System.out.println("\t" + otherWikiArticle + " " + VALUE.get());
+                    //System.out.println("\t" + otherWikiArticle + " " + VALUE.get());
 
                     context.write(KEY, VALUE);
                 }
@@ -201,7 +201,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         // set job configurations
         Configuration conf = getConf();
         Job job = Job.getInstance(conf);
-        job.setJobName(SentenceSimilarityCount.class.toString());
+        job.setJobName("SentenceSimilarityCount");
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
