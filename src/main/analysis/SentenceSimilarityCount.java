@@ -84,7 +84,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         private static final Object2IntFrequencyDistribution<Integer> COUNTS = new Object2IntFrequencyDistributionEntry<Integer>();
         public static final Map<PairOfInts, Integer> collection = new HashMap<PairOfInts, Integer>();
-        private int threshold;
+        private static int threshold;
 
         @Override
         public void reduce(IntWritable wikiID, Iterable<PairOfInts> values, Context context)
@@ -92,7 +92,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
-            threshold = context.getConfiguration().getInt("threshold", 40);
+            threshold = context.getConfiguration().getInt("THRESHOLD", 40);
             Iterator<PairOfInts> iter = values.iterator();
 
             while (iter.hasNext()) {
