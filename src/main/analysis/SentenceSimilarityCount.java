@@ -85,14 +85,20 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         private static final Object2IntFrequencyDistribution<Integer> COUNTS = new Object2IntFrequencyDistributionEntry<Integer>();
         public static final Map<PairOfInts, Integer> collection = new HashMap<PairOfInts, Integer>();
         private static int threshold;
-
+        
+        @Override
+        public void setup(Context context) throws IOException {
+            Configuration conf = context.getConfiguration();
+            
+            threshold = conf.getInt("THRESHOLD", 30);
+        }
+        
         @Override
         public void reduce(IntWritable wikiID, Iterable<PairOfInts> values, Context context)
                 throws IOException, InterruptedException {
 
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
-            threshold = context.getConfiguration().getInt("THRESHOLD", 30);
             Iterator<PairOfInts> iter = values.iterator();
 
             while (iter.hasNext()) {
@@ -205,15 +211,15 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
-        conf.setInt("THRESHOLD", threshold);
+        job.getConfiguration().setInt("THRESHOLD", threshold);
         
         FileInputFormat.setInputPaths(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
         // set input/output format of the job
         job.setInputFormatClass(SequenceFileInputFormat.class);
-        //job.setOutputFormatClass(SequenceFileOutputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+        job.setOutputFormatClass(SequenceFileOutputFormat.class);
+        //job.setOutputFormatClass(TextOutputFormat.class);
 
         // set output key/value data types
         job.setMapOutputKeyClass(IntWritable.class);
