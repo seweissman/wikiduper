@@ -83,6 +83,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         private static final Object2IntFrequencyDistribution<Integer> COUNTS = new Object2IntFrequencyDistributionEntry<Integer>();
         public static final Map<PairOfInts, Integer> collection = new HashMap<PairOfInts, Integer>();
+        private int threshold;
 
         @Override
         public void reduce(IntWritable wikiID, Iterable<PairOfInts> values, Context context)
@@ -90,6 +91,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
+            threshold = context.getConfiguration().getInt("threshold", 40);
             Iterator<PairOfInts> iter = values.iterator();
 
             while (iter.hasNext()) {
@@ -112,17 +114,22 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
             System.out.println("Wiki Article: " + wikiID.get());
             for (Integer otherWikiArticle: COUNTS.keySet()) {
-                KEY.set(wikiID.get(), otherWikiArticle);
-                VALUE.set(COUNTS.get(otherWikiArticle));
 
-                System.out.println("\t" + otherWikiArticle + " " + VALUE.get());
-                context.write(KEY, VALUE);
+                // only output if the article pair has more than a threshold number of "similar" sentences in common
+                if (COUNTS.get(otherWikiArticle) > threshold) {
+                    KEY.set(wikiID.get(), otherWikiArticle);
+                    VALUE.set(COUNTS.get(otherWikiArticle));
+
+                    System.out.println("\t" + otherWikiArticle + " " + VALUE.get());
+
+                    context.write(KEY, VALUE);
+                }
             }
 
             collection.clear();
             COUNTS.clear();
         }
-    }
+   }
 
 
 
@@ -135,6 +142,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
+    private static final String THRESHOLD = "threshold";
 
     /**
      * Runs this tool.
@@ -146,10 +154,15 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         options.addOption(OptionBuilder.withArgName("path").hasArg()
                 .withDescription("input path").create(INPUT));
+        
         options.addOption(OptionBuilder.withArgName("path").hasArg()
                 .withDescription("output path").create(OUTPUT));
+        
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
+        
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("threshold value").create(THRESHOLD));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -170,10 +183,14 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             ToolRunner.printGenericCommandUsage(System.out);
             return -1;
         }
+        
+        
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 10;
+        int threshold = cmdline.hasOption(THRESHOLD) ? Integer.parseInt(cmdline.getOptionValue(THRESHOLD)) : 40;
+        
 
         LOG.info("Tool: " + SentenceSimilarityCount.class.getSimpleName());
         LOG.info(" - input path: " + inputPath);
@@ -186,7 +203,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setJobName(SentenceSimilarityCount.class.toString());
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
-
+        
+        conf.setInt("THRESHOLD", threshold);
+        
         FileInputFormat.setInputPaths(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
