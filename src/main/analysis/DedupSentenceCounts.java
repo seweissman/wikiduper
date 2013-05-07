@@ -39,24 +39,25 @@ public class DedupSentenceCounts extends Configured implements Tool {
         @Override
         public void map(PairOfInts key, IntWritable count, Context context)
                 throws IOException, InterruptedException {
-            
-            if (key.getLeftElement() > key.getRightElement()) {
-                KEY.set(key.getRightElement(), key.getLeftElement());
+            if (key.getLeftElement() != key.getRightElement()) {
+                if (key.getLeftElement() > key.getRightElement()) {
+                    KEY.set(key.getRightElement(), key.getLeftElement());
+                }
+                context.write(KEY,  count);
             }
-            context.write(KEY,  count);
         }
     }
 
-    
-    // emit only one copy of the count results for each unique article pair
+
+    // only emit one copy of the count results for each unique article pair
     private static class MyReducer extends Reducer<PairOfInts, IntWritable, PairOfInts, IntWritable> {
-        
+
         private static final IntWritable VALUE = new IntWritable(0);
-        
+
         @Override
         public void reduce(PairOfInts articlePair, Iterable<IntWritable> counts, Context context)
                 throws IOException, InterruptedException {
-            
+
             Iterator<IntWritable> iter = counts.iterator();
             int max = 0;
             while (iter.hasNext()) {
@@ -64,11 +65,11 @@ public class DedupSentenceCounts extends Configured implements Tool {
                 if (tmp > max)
                     max = tmp;
             }
-            
+
             VALUE.set(max);
             context.write(articlePair, VALUE);
         }
-   }
+    }
 
 
 
@@ -116,13 +117,13 @@ public class DedupSentenceCounts extends Configured implements Tool {
             ToolRunner.printGenericCommandUsage(System.out);
             return -1;
         }
-        
-        
+
+
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 10;
-        
+
 
         LOG.info("Tool: " + DedupSentenceCounts.class.getSimpleName());
         LOG.info(" - input path: " + inputPath);
@@ -135,7 +136,7 @@ public class DedupSentenceCounts extends Configured implements Tool {
         job.setJobName("DedupSentenceCounts");
         job.setJarByClass(DedupSentenceCounts.class);
         job.setNumReduceTasks(reduceTasks);
-        
+
         FileInputFormat.setInputPaths(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
@@ -160,8 +161,8 @@ public class DedupSentenceCounts extends Configured implements Tool {
         long startTime = System.currentTimeMillis();
         job.waitForCompletion(true);
         LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
-        
-        
+
+
         return 0;
     }
 
