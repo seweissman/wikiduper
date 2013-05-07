@@ -92,7 +92,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
-            threshold = context.getConfiguration().getInt("THRESHOLD", 40);
+            threshold = context.getConfiguration().getInt("THRESHOLD", 30);
             Iterator<PairOfInts> iter = values.iterator();
 
             while (iter.hasNext()) {
@@ -212,7 +212,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         // set input/output format of the job
         job.setInputFormatClass(SequenceFileInputFormat.class);
-        job.setOutputFormatClass(SequenceFileOutputFormat.class);
+        //job.setOutputFormatClass(SequenceFileOutputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
 
         // set output key/value data types
         job.setMapOutputKeyClass(IntWritable.class);
