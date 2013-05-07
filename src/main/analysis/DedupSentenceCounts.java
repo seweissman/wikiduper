@@ -144,8 +144,8 @@ public class DedupSentenceCounts extends Configured implements Tool {
         job.setOutputFormatClass(TextOutputFormat.class);
 
         // set output key/value data types
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(PairOfInts.class);
+        job.setMapOutputKeyClass(PairOfInts.class);
+        job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(PairOfInts.class);
         job.setOutputValueClass(IntWritable.class);
 
