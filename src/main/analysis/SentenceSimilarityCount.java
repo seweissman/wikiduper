@@ -222,7 +222,12 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         // define Mapper and Reducer
         job.setMapperClass(MyMapper.class);
         job.setReducerClass(MyReducer.class);
-
+        
+        conf.set("mapred.job.map.memory.mb", "6144");
+        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
+        conf.set("mapred.job.reduce.memory.mb", "6144");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+        
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
         FileSystem.get(conf).delete(outputDir, true);
@@ -230,7 +235,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         long startTime = System.currentTimeMillis();
         job.waitForCompletion(true);
         LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
-
+        
+        
         return 0;
     }
 
