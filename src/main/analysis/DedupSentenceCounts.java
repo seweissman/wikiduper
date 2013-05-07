@@ -40,9 +40,12 @@ public class DedupSentenceCounts extends Configured implements Tool {
         public void map(PairOfInts key, IntWritable count, Context context)
                 throws IOException, InterruptedException {
             if (key.getLeftElement() != key.getRightElement()) {
+                
+                KEY.set(key.getLeftElement(),  key.getRightElement());
                 if (key.getLeftElement() > key.getRightElement()) {
                     KEY.set(key.getRightElement(), key.getLeftElement());
                 }
+                
                 context.write(KEY,  count);
             }
         }
