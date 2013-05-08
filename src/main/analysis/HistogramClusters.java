@@ -38,7 +38,7 @@ public class HistogramClusters {
             String line;
 
             for(File file : filedir.listFiles()){
-                System.out.println("Reading files " + file.getName() + "...");
+                System.err.println("Reading file " + file.getName() + "...");
                 fin = new FileInputStream(file);
                 BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
                 
@@ -54,7 +54,7 @@ public class HistogramClusters {
 	                    sentence = m.group(3);
 
                     }else{
-                        System.out.println("Bad line: " + line);
+                        System.err.println("Bad line: " + line);
                         System.exit(-1);
                     }
 
@@ -63,13 +63,20 @@ public class HistogramClusters {
 	                }
 					
 	                if(!clustcurr.equals(clust)){
-	                    if(clusterct % 1000 == 0) System.out.println("clusterct = " + clusterct);
+	                    if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
 
 	                    int size = cluster.size();
 	                    if(!histogram.containsKey(size)){
 	                        histogram.put(size, 0);    
 	                    }
 	                    histogram.put(size, histogram.get(size) + 1);
+	                    if(cluster.size() > 100){
+                            System.err.println("Big cluster:");
+	                        for(String l : cluster){
+	                            System.out.println("\t" + l);
+	                        }
+	                    }
+	                    
 	                    cluster.clear();
                         clusterct++;
 	                }
@@ -93,7 +100,7 @@ public class HistogramClusters {
 		    
             System.out.println("N clusters: " + clusterct);            
             for(int b : histogram.keySet()){
-                System.out.println(b + "\t" + histogram.get(b));
+                System.err.println(b + "\t" + histogram.get(b));
             }
 
 	}
