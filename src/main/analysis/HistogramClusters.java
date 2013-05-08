@@ -9,10 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +19,7 @@ public class HistogramClusters {
     public static void main(String args[]){
 		
 	    if(args.length != 1){
-	        System.out.println("Usage: FilterClusters <cluster output file>n");
+	        System.out.println("Usage: HistogramClusters <cluster output file>n");
 			System.exit(-1);
 	    }
 		Pattern linepat = Pattern.compile("([0-9]+)\t(.*)\t(.*)$");
