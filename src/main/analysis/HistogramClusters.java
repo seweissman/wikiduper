@@ -174,21 +174,55 @@ public class HistogramClusters {
 		System.out.println("N clusters: " + clusterct);            
 		System.out.println("N unique titles: " + titleset.size());
 		System.out.println("N unique sentences: " + sentenceset.size());
-        
-		System.out.println("Cluster histogram");
+
+        StringBuffer histvals = new StringBuffer();
+        StringBuffer histkeys = new StringBuffer();
+		
+        System.out.println("Cluster histogram");
         for(int b : histogram.keySet()){
+            histkeys.append(",");
+            histkeys.append("\"");
+            histkeys.append(b);
+            histkeys.append("\"");
+            histvals.append(",");
+            histvals.append(histogram.get(b));
             System.out.println(b + "\t" + histogram.get(b));
+
         }
+        //Mathematic output:
+        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Top]]");
+        histkeys.setLength(0);
+        histvals.setLength(0);
         
         System.out.println("Unique Title histogram");
         for(int b : titlehistogram.keySet()){
+            histkeys.append(",");
+            histkeys.append("\"");
+            histkeys.append(b);
+            histkeys.append("\"");
+            histvals.append(",");
+            histvals.append(titlehistogram.get(b));
             System.out.println(b + "\t" + titlehistogram.get(b));
         }
+        //Mathematica output
+        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Top]]");
+        histkeys.setLength(0);
+        histvals.setLength(0);
         
         System.out.println("Uniqe Sentence histogram");
         for(int b : sentencehistogram.keySet()){
+            histkeys.append(",");
+            histkeys.append("\"");
+            histkeys.append(b);
+            histkeys.append("\"");
+            histvals.append(",");
+            histvals.append(sentencehistogram.get(b));
             System.out.println(b + "\t" + sentencehistogram.get(b));
         }
+        //Mathematica output
+        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Top]]");
+        histkeys.setLength(0);
+        histvals.setLength(0);
 
 	}
 
