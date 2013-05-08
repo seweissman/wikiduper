@@ -110,7 +110,7 @@ public class HistogramClusters {
 		System.out.println("N sentences: " + sentencect);
 		System.out.println("N unique sentences: " + sentenceset.size());
             for(int b : histogram.keySet()){
-                System.err.println(b + "\t" + histogram.get(b));
+                System.out.println(b + "\t" + histogram.get(b));
             }
 
 	}
