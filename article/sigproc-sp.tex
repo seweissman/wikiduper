@@ -1,5 +1,6 @@
 \documentclass{acm_proc_article-sp}
 \usepackage{url}
+\usepackage{algpseudocode}
 
 
 \def\sharedaffiliation{%
@@ -109,8 +110,6 @@ In order to handle large Wikipedia dumps with the order of tens or hundreds of g
 
 \section{Algorithm Utilizing Locality Sensitive Hashing}
 
-In this section, we introduce the algorithm that utilizes the locality sensitive hashing.
-
 In order to measure document similarity we use a common LSH technique known as minhashing \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case input documents are sentences. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate $\{min_{s \in S}(F_i(s)\}$, the set of minimum hashes over the hash family. The signature on a document d is a vector of $K$ minhashes from the set of minimum hashes. In order to minimize false negatives we apply the technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
 
 \subsection{Design}
@@ -121,40 +120,49 @@ Describe MapReduce.
 Because the minhash technique is parametrized by several values, including shingle length, signature vector size and number of signatures calculated, these values can also be considered as inputs for the MapReduce algorithm.
 
 \begin{table}
-MapReduce pseudocode:
-\begin{verbatim}
-initialize(){
- # configure and set up algorithm parameters
- # F = hash family;
- # L = shingle length;
- # K = vector length;
- # N = number of signatures to emit;
-}
+Minhash MapReduce pseudocode:
+\begin{algorithmic}
+\Function{initialize}{}
+%\Comment{configure and set up algorithm parameters}
+ \State $F \gets $ hash family;
+ \State $L \gets $ shingle length;
+ \State $K \gets $ vector length;
+ \State $N \gets $ number of signatures to emit;
+\EndFunction
 
-map(docid d, wikipage p){
-  int sentence ct = 0;
-  while s = nextSentence(p){
-    shingles = shingleSet(s,L);
-    minhashes = new List(|F|);
-    for i = 1 ... |F|:
-      minhashes[i] = Infinity;
-    for g in shingles:
-      for i = 1 ... |F|:
-        minhashes[i] = min(F_i(g),minhashes[i]);
-    for i = 1 ... N:
-      sig = select(K, minhahses);
-      emit(sig,(docid,sentencect));
-    sentencect++;
-  }
-}
-\end{verbatim}
+\Function{map}{docid $d$, wikipage $p$}
+ \State sentencect $\gets 0$
+ %\Comment {Break up article text into sentence}
+ \While{$s \gets$ nextSentence($p$)}
+  %\Comment{Break up sentence into shingles}
+  \State shingles $\gets$ shingleSet($s$,$L$);
+  \State minhashes = new List(|F|);
+   \For{$i \gets 1 \ldots |F|$}
+    \State minhashes[$i$] $\gets \infty$;
+   \EndFor
+   %\Comment{Calculate set of minhash signature for each sentence}
+   \For{$g \in$ shingles}
+    \For{$i \gets 1 \ldots |F|$}
+     \State minhashes[$i$] $\gets$ min($F_i(g)$,minhashes[$i$]);
+    \EndFor
+   \EndFor
+   %\Comment{Emit $N$ $K$-length signatures}
+  \For{$i \gets 1 \ldots N$}
+   \State sig = select($K$, minhahses);
+   \State emit(sig,(docid,sentencect));
+  \EndFor
+  \State  sentencect++;
+ \EndWhile
+\EndFunction
+\end{algorithmic}
 
-\begin{verbatim}
-reduce(signature sig, sentenceids [(d1,s1),(d2,s2) ...]){
-  if [[(d1,s1),(d2,s2) ... ]| > 1:
-    emit(sig, [(d1,s1), (d2,s2), ...]);
-}
-\end{verbatim}
+\begin{algorithmic}
+\Function{reduce}{signature sig, sentenceids $S$}
+\If{$|S| > 1$}
+\State    emit(sig, $S$);
+\EndIf
+\EndFunction
+\end{algorithmic}
 \end{table}
 
 \subsection{Implementation Details}
