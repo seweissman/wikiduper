@@ -1,5 +1,7 @@
 \documentclass{acm_proc_article-sp}
 \usepackage{url}
+\usepackage{verbatim}
+\usepackage{microtype}
 
 
 \def\sharedaffiliation{%
@@ -109,16 +111,16 @@ In order to handle large Wikipedia dumps with the order of tens or hundreds of g
 
 \section{Algorithm Utilizing Locality Sensitive Hashing}
 
-In this section, we introduce the algorithm that utilizes the locality sensitive hashing.
+In this section, we introduce the algorithm that utilizes locality sensitive hashing.
 
-In order to measure document similarity we use a common LSH technique known as minhashing \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case input documents are sentences. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate $\{min_{s \in S}(F_i(s)\}$, the set of minimum hashes over the hash family. The signature on a document d is a vector of $K$ minhashes from the set of minimum hashes. In order to minimize false negatives we apply the technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
+In order to measure document similarity we use a common LSH technique known as MinHash \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case, we denote ''documents'' to mean sentences found within the content of Wikipedia articles. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
 
 \subsection{Design}
-Since signature techniques such as LSH are easily parallelized we designed our algorithm around the MapReduce framework. 
+Since signature techniques such as LSH are embarrassingly parallel, we designed our algorithm around the MapReduce framework.
 
 Describe MapReduce.
 
-Because the minhash technique is parametrized by several values, including shingle length, signature vector size and number of signatures calculated, these values can also be considered as inputs for the MapReduce algorithm.
+Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
 
 \begin{table}
 MapReduce pseudocode:
@@ -244,7 +246,7 @@ In this section, we discuss some of the issues we encountered regarding data rep
 
 We explain optimizations here...
 
-\subsubsection{Optimization1}
+\subsubsection{Optimization-1}
 
 An optimization we realized...
 
