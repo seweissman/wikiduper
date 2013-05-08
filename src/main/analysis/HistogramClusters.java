@@ -102,10 +102,9 @@ public class HistogramClusters {
 		 			e.printStackTrace();
 		     }
 		    
-		    
+        System.out.println("N lines: " + sentencect);
 		System.out.println("N clusters: " + clusterct);            
 		System.out.println("N unique articles: " + articleset.size());
-		System.out.println("N sentences: " + sentencect);
 		System.out.println("N unique sentences: " + sentenceset.size());
             for(int b : histogram.keySet()){
                 System.out.println(b + "\t" + histogram.get(b));
