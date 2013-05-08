@@ -213,26 +213,46 @@ As we would expect, Jaccard similarity decreases as edit distance increases, but
 
 \subsection{False positives}
 
+In order to estimate the affect of shingle length on false positive rate we ran a number of experiments for a 1 G collection of wikipedia documents. For fixed $N=10$ we ran experiments for three values of $K=\{8,9,10\}$ and $5 \le L \le 15$. Setting a normalized edit distance threshold of $e = .25$, we calculated the total number of ''good'' ($e <= .25$) and ''bad'' ($e > .25$) (unique) sentence pairs as well as the false positive rate (\# bad pairs divided by the total number of sentences). Results are presented in Figure \ref{ed-grid}.
+
+We can see from the graphs in Figure \ref{ed-grid} that all three statistics hit a low at shingle length 12 or 13. This means that in order to achieve the lowest false positive rate we should use parameter settings around $N=10, K=10$ and $L=12$ or $L=13$. However the number of \emph{good} pairs also hits a minimum at $L = 12$, which means that while overall the output is more precise, we are also missing output pairs.
+
+Another feature of the graphs in Figure \ref{ed-grid} that stands out is that while the false positive rate and total number of bad pairs bottoms out at around $L=12$, for $L > 12$ the output quality actually decreases. This is counter to our intuition that output quality increases as the length of the shingle increases. One would expect larger shingles to correspond to closer edit distance scores, since larger shingles correspond to longer consecutive sequences of identical text. One explanation for these counter-intuitive results could be limitations of the underlying hash family. If longer shingle lengths lead to greater hash collisions this could explain the increased numbers of bad pairs. Improving the hash function to reduce collisions could improve results.
+
+Since minimizing the false positive rate also means minimizing reducing good pairs, another option is to let parameters to maximize good output and use edit distance as a secondary filter. With this approach our experimental results suggest that the best parameter combination would be $N=10, K=8, L=10$.
+
+
 \begin{figure}
 \centering
 \epsfig{file=edgrid.eps,width=3.5in}
-\caption{}
+\caption{False Positive Rate, Good Count, Bad Count for $N=10, K \in \{8,9,10\}, 5 \le L \le 15$}
 \label{ed-grid}
 \end{figure}
 
 \section{Working Application}
-\begin{itemize}
-\item Repack Wikipedia Pages as Sequence Files using Cloud9 library utility
-\item MinhashWikipediaPages
-\item DedupSentences
-\item MergeClusters
-\item GetSentenceClusters
-\item Edit Distance Filter
-\end{itemize}
+
+While the Minhash signature code provides the raw similarity scores, it is one part of a larger framework composed of several pieces, described below. The input to the process is an XML dump format. (See http://en.wikipedia.org/wiki/Wikipedia:Database\_download for details.) The output of the process is a list of sentence clusters containing the original article title and sentence text. Decomposing the sentence clustering into several pieces allows us to minimize the amount of raw wikipedia text that gets passed between mappers and reducers, thus improving scalability.
+
+The process can be summarized as follows:
+
+\begin{enumerate}
+\item Preprocess Wikipedia Pages - 
+\item Minhash Wikipedia Sentences -
+\item Dedup Sentence Buckets - 
+\item Computer Sentence Clusters - 
+\item Get Sentence Text - 
+\item Edit Distance Filter -
+\end{enumerate}
 
 \subsection{Limitations of Approach}
 
-DOCUMENT LIMITATIONS HERE
+\begin{itemize}
+\item Aforementioned hash issues.
+\item Non-deterministic behavior
+\item Regular expression depth
+\item Dirty wikipedia data
+\item large clusters of relatively uninteresting results
+\end{itemize}
 
 \section{Experiments and Discussion}
 
