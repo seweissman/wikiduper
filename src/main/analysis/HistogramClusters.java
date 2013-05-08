@@ -30,8 +30,10 @@ public class HistogramClusters {
 		
 		TreeMap<Integer,Integer> histogram = new TreeMap<Integer,Integer>();
 		HashSet<String> articleset = new HashSet<String>();
+		HashSet<String> sentenceset = new HashSet<String>();
 		ArrayList<String> cluster = new ArrayList<String>();
         int clusterct = 0;
+        int sentencect = 0;
 		try {
 
             File filedir = new File(args[0]);
@@ -44,6 +46,7 @@ public class HistogramClusters {
                 
                 String clustcurr = null;
                 while((line = bin.readLine()) != null){
+                    sentencect++;
 	                Matcher m = linepat.matcher(line);
 	                String clust = "";
 	                String title = "";
@@ -70,12 +73,16 @@ public class HistogramClusters {
 	                        histogram.put(size, 0);    
 	                    }
 	                    histogram.put(size, histogram.get(size) + 1);
-	                    if(cluster.size() > 100){
-                            System.err.println("Big cluster:");
-	                        for(String l : cluster){
-	                            System.out.println("\t" + l);
+	                    /*
+	                    if(cluster.size() > 10000){
+                            int ct = 0;
+                            for(String l : cluster){
+	                            if(ct > 20) break;
+                                System.out.println(l);
+	                            ct++;
 	                        }
 	                    }
+	                    */
 	                    
 	                    cluster.clear();
                         clusterct++;
@@ -84,7 +91,7 @@ public class HistogramClusters {
 	                clustcurr = clust;
                     cluster.add(line);
                     articleset.add(title);
-
+                    sentenceset.add(sentence);
 	            }
 	              bin.close();
 	              fin.close();
@@ -98,7 +105,10 @@ public class HistogramClusters {
 		     }
 		    
 		    
-            System.out.println("N clusters: " + clusterct);            
+		System.out.println("N clusters: " + clusterct);            
+		System.out.println("N unique articles: " + articleset.size());
+		System.out.println("N sentences: " + sentencect);
+		System.out.println("N unique sentences: " + sentenceset.size());
             for(int b : histogram.keySet()){
                 System.err.println(b + "\t" + histogram.get(b));
             }
