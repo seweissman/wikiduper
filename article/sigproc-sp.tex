@@ -222,6 +222,7 @@ As we would expect, Jaccard similarity decreases as edit distance increases, but
 
 \section{Working Application}
 \begin{itemize}
+\item Repack Wikipedia Pages as Sequence Files using Cloud9 library utility
 \item MinhashWikipediaPages
 \item DedupSentences
 \item MergeClusters
@@ -231,35 +232,72 @@ As we would expect, Jaccard similarity decreases as edit distance increases, but
 
 \subsection{Limitations of Approach}
 
+DOCUMENT LIMITATIONS HERE
+
 \section{Experiments and Discussion}
 
-To test our application we ran the first four steps (up to but not including the final edit distance filtering pass) on a dump of current English-language Wikipedia articles (as of 5/2013) obtained from dumps.wikimedia.org. The dump is approximately 40G in size and contains 4,113,785 articles (after excluding certain non-article page types). After minhashing and deduplification, we found a total of 9,465,881 similar sentence pairs. After clustering these pairs, the total number of similar sentence clusters was 415,936, including 1,792,748 unique article/sentence pairs over 759,297 article titles. The total number of unique sentences over all cluster was 1,305,359.
+We performed several analyses to provide more insight into the occurence of duplicate sentences. In particular, we were interested in detecting similar sentences that arose from copying text from one article to another since such instances would represent content that is either redundant, or content that has diverged in the sense that either the original or the copy was edited for clarification of factual correctness and the other was not. Such instances give insight into the Wikipedia editing process, and also represent an opportunity to improve article quality on Wikipedia by identifying places where further editing or article merging may be needed.
 
-Cluster sizes ranged from 2 to 28,008. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, but the distribution of cluster exhibits a long tail. As a result, while 99\% of our clusters have size below or equal to 30, about 1/3 of the output sentence/article pairs fall into clusters with size greater than 30. One explanation for this distribution of sentences is the phenomenon we call ''tempatification,'' which we describe more in detail below.)
+All of our experiments were run against an XML dump of current English-language Wikipedia (enwiki) articles (as of 4/2013) obtained from dumps.wikimedia.org. The enwiki dump is approximately 40G in size and contains 4,113,785 articles (after excluding certain non-article page types). Running the first four steps of our application (up to but not including the final edit distance filtering pass) against the enwiki dump on a shared cluster of 16 nodes with (15 GB RAM and 4 cores each) took XXXX (HOW MUCH TIME DID THIS TAKE, SAMET?) minutes.
+
+After minhashing and deduplification, we found a total of 9,465,881 similar article/sentence pairs. After clustering these pairs, the total number of similar sentence clusters was 415,936, including 1,792,748 unique article/sentence pairs over 759,297 article titles. The total number of unique sentences over all cluster was 1,305,359.
+
+Cluster sizes ranged from 2 to 28,008. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, but the distribution of cluster sizes exhibits a long tail. As a result, while 99\% of our clusters have size below or equal to 30, about 1/3 of the output sentence/article pairs fall into clusters with size greater than 30. One explanation for this distribution of sentences is the phenomenon we call ''templatification,'' which we describe in more detail below.)
+
+\begin{figure}
+\centering
+\includegraphics[width=3.5in, keepaspectratio = true]{clusterhistogram.png}
+\caption{Histogram of Cluster Sizes (for cluster size $< 300$, log scale).}
+\label{clust}
+\end{figure}
 
 \subsection{Similar Sentence Types}
 
-Sentence Clusters (without an Edit Distance Filter).
+Manual inspection of cluster output reveals several different similar sentence types. These types can be summarized as follows:
 
 \begin{itemize}
-\item Factual Drift
 \item Templatification
 \item References
-\item Copy Editing
+\item Direct Copying
+\item Direct Copying with Copy Editing
+\item Direct Copying with Factual Drift
 \end{itemize}
 
-For this project, we performed several analyses to provide more insight into the occurence of duplicate sentences. In particular, we were interested in detecting the occurrence of templatification which is a precursor to the problem of finding factual drift between articles. \emph{Templatification} occurs when one sentence is an exact duplicate of another sentence, but the main topic has been changed by only a few pieces of key information having been modified. For example, it could be said that the following two sentences follow a particular \emph{template}.
+ \emph{Templatification} occurs when one sentence is an exact duplicate of another sentence, but the main topic has been changed by only a few pieces of key information having been modified. For example, it could be said that the following two sentences follow a particular \emph{template}.
 \begin{itemize}[noitemsep,nolistsep]
 \item Bush had an approval rating of 22\% by the end of his term in 2008.
 \item Obama had an approval rating of 56\% by the end of his term in 2012.
 \end{itemize}
 From the perspective of editing/writing Wikipedia articles, this is a strong indicator that the author copied the original sentence and modified the relevant information to pertain to a different topic. What remains shared between both sentences though is the inherent structure.
 
-\emph{Factual drift} most notably occurs when the same sentence has been copied and only one piece of factual information about the \emph{same} topic has changed. For example, factual drift can be seen in the following two sentences.
+\emph{Direct Copying} occurs when the same sentence has been copied into another (or possibly the same) article. This can happen for many reasons, including articles that deal with similar subjects, or articles that are subtopics of other topics. (SOME EXAMPLES?). Similarly, \emph{Direct Copying with Copy Editing} occurs when the same sentence has been copied into another article and then one or both sentences has been edited for style or clarity. For example:
+
+\begin{itemize}[noitemsep,nolistsep]
+\item EXAMPLE HERE.
+\item EXAMPLE HERE.
+\end{itemize}
+
+\emph{Factual drift} most notably occurs when the same sentence has been copied and a piece of factual information about the \emph{same} topic has changed. For example, factual drift can be seen in the following two sentences.
 \begin{itemize}[noitemsep,nolistsep]
 \item Obama had an approval rating of 56\% by the end of his term in 2012.
 \item Obama had an approval rating of 46\% by the end of his term in 2012.
 \end{itemize}
+Although factual drift is similar to copy editing and may occur along with copy editing, we distinguish the two cases since factual errors are more severe than style issues.
+
+\emph{References} refers to citations, typically occurring at the end of a Wikipedia article. Since Wikipedia does not adhere to one single citation style, the same work may be referenced on multiple pages in different styles. Similarly different portions of the same work may be referenced in different articles. Although citation errors might be harder to distinguish from factual errors, errors in citation are arguably no less important. (It would also be interesting to compare whether articles that share similar sentences also share similar citations.) 
+
+\begin{itemize}[noitemsep,nolistsep]
+\item EXAMPLE HERE.
+\item EXAMPLE HERE.
+\end{itemize}
+
+\subsubsection{Break down of sentence types}
+
+By manually counting a small sample of NNNN output clusters, we came up with the following breakdown of sentence types:
+
+INSERT CLASSIFY CLUSTER BREAKDOWN HERE
+
+\subsection{Sentence Similarity as a Measure of Article Similarity}
 
 \begin{figure}
 \begin{center}
@@ -269,16 +307,11 @@ From the perspective of editing/writing Wikipedia articles, this is a strong ind
 \label{toparticles}
 \end{figure}
 
-Based on our preliminary analysis, templatification and factual drift tends to occur most often between articles that maintain large lists of information related to the same general sub-theme of different topics. For example, of the top 10 pairs of articles with the highest similarity count, one article pair was the articles titled ''List of birds of Zambia'' and ''List of birds of Tanzania''. With both countries sharing the same geographic region, it is not unexpected that their respective wikipedia articles on the countrys' bird species would be highly comparable. For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Overall, we found $\approx 6500$ wikipedia article pairs that had a similarity count greater than $50$.
+Based on our preliminary analysis, templatification tends to occur most often between articles that maintain large lists of information related to the same general sub-theme of different topics. For example, of the top 10 pairs of articles with the highest similarity count, one article pair was the articles titled ''List of birds of Zambia'' and ''List of birds of Tanzania''. With both countries sharing the same geographic region, it is not unexpected that their respective wikipedia articles on the countrys' bird species would be highly comparable. For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences. Overall, we found $\approx 6500$ wikipedia article pairs that had a similarity count greater than $50$.
 
-After performing minhash on all of Wikipedia, we were able to cluster all unique sentences. Looking at the distribution of cluster sizes in FIGURE SARAH'S HISTOGRAM \ref{clust}, we can see the expected behavior of monotonically decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. Based on the fact that we found $\approx 6500$ article pairs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in Figure \ref{toparticles}).
+Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see the expected behavior of decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. Based on the fact that we found $\approx 6500$ article pairs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in Figure \ref{toparticles}).
 
-\begin{figure}
-\centering
-\includegraphics[width=3.5in, keepaspectratio = true]{clusterhistogram.png}
-\caption{Histogram of Cluster Sizes (for cluster size $< 300$, log scale).}
-\label{clust}
-\end{figure}
+JOSH, CAN YOU LOOK UP WHAT THE ACTUAL ARTICLES ARE? THAT MIGHT BE INTERESTING.
 
 
 \section{Conclusion and Future Work}
