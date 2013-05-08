@@ -9,10 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,18 +19,32 @@ public class HistogramClusters {
     public static void main(String args[]){
 		
 	    if(args.length != 1){
-	        System.out.println("Usage: FilterClusters <cluster output file>n");
+	        System.out.println("Usage: HistogramClusters <cluster output file>n");
 			System.exit(-1);
 	    }
 		Pattern linepat = Pattern.compile("([0-9]+)\t(.*)\t(.*)$");
 		    
 		FileInputStream fin;
 		
+		// Overall histogram: cluster sizes -> cluster cts
 		TreeMap<Integer,Integer> histogram = new TreeMap<Integer,Integer>();
-		HashSet<String> articleset = new HashSet<String>();
+		
+		// Unique title histogram: # unique titles in cluster -> cluster cts
+		TreeMap<Integer,Integer> titlehistogram = new TreeMap<Integer,Integer>();
+		
+		// Unique sentence histogra: # unique sentences in cluster -> cluster cts
+		TreeMap<Integer,Integer> sentencehistogram = new TreeMap<Integer,Integer>();
+		
+		// Sets to keep track of overall unique title and sentences
+		HashSet<String> titleset = new HashSet<String>();
 		HashSet<String> sentenceset = new HashSet<String>();
+		
+		// Per cluster data structures
 		ArrayList<String> cluster = new ArrayList<String>();
-        int clusterct = 0;
+		HashSet<String> clustertitles = new HashSet<String>();
+		HashSet<String> clustersentences = new HashSet<String>();
+       
+		int clusterct = 0;
         int sentencect = 0;
 		try {
 
@@ -40,6 +52,7 @@ public class HistogramClusters {
             String line;
 
             for(File file : filedir.listFiles()){
+                if(file.getName().startsWith("_")) continue;
                 System.err.println("Reading file " + file.getName() + "...");
                 fin = new FileInputStream(file);
                 BufferedReader bin = new BufferedReader(new InputStreamReader(fin));
@@ -68,33 +81,86 @@ public class HistogramClusters {
 	                if(!clustcurr.equals(clust)){
 	                    if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
 
+	                    // Once we've found a new cluster Update each histogram
 	                    int size = cluster.size();
-	                    if(!histogram.containsKey(size)){
-	                        histogram.put(size, 0);    
-	                    }
-	                    histogram.put(size, histogram.get(size) + 1);
-	                    /*
+                        if(!histogram.containsKey(size)){
+                            histogram.put(size, 0);    
+                        }
+                        histogram.put(size, histogram.get(size) + 1);
+	                    
+                        size = clustertitles.size();
+                        if(!titlehistogram.containsKey(size)){
+                            titlehistogram.put(size, 0);    
+                        }
+                        titlehistogram.put(size, titlehistogram.get(size) + 1);
+                        
+                        size = clustersentences.size();
+                        if(!sentencehistogram.containsKey(size)){
+                            sentencehistogram.put(size, 0);    
+                        }
+                        sentencehistogram.put(size, sentencehistogram.get(size) + 1);
+	                    
+                        /*
+                         // Code for examining cluster contents
 	                    if(cluster.size() > 10000){
                             int ct = 0;
+                            System.out.println("Cluster size: " + cluster.size());
+                            System.out.println("N unique sentences " +  clustersentences.size());
+                            System.out.println("N unique titles " +  clustertitles.size());
+
                             for(String l : cluster){
-	                            if(ct > 20) break;
+	                            if(ct > 10) break;
                                 System.out.println(l);
 	                            ct++;
 	                        }
+                            System.out.println();
 	                    }
 	                    */
 	                    
-	                    cluster.clear();
+                        // Clear per cluster data structures
+                        
+                        cluster.clear();
+                        clustersentences.clear();
+                        clustertitles.clear();
                         clusterct++;
 	                }
 	                
 	                clustcurr = clust;
                     cluster.add(line);
-                    articleset.add(title);
+                    clustersentences.add(sentence);
+                    clustertitles.add(title);
+                    
+                    titleset.add(title);
                     sentenceset.add(sentence);
 	            }
-	              bin.close();
-	              fin.close();
+                
+                // Update one time at the end of each file input loop to add remaining cluster
+                int size = cluster.size();
+                if(!histogram.containsKey(size)){
+                   histogram.put(size, 0);    
+                }
+                histogram.put(size, histogram.get(size) + 1);
+                    
+                size = clustertitles.size();
+                if(!titlehistogram.containsKey(size)){
+                    titlehistogram.put(size, 0);    
+                }
+                titlehistogram.put(size, titlehistogram.get(size) + 1);
+                
+                size = clustersentences.size();
+                if(!sentencehistogram.containsKey(size)){
+                    sentencehistogram.put(size, 0);    
+                }
+                sentencehistogram.put(size, sentencehistogram.get(size) + 1);
+                
+                // Clear per cluster data structures
+                cluster.clear();
+                clustersentences.clear();
+                clustertitles.clear();
+                clusterct++;
+
+	            bin.close();
+	            fin.close();
             }
 		 	 } catch (FileNotFoundException e) {
 		 		// TODO Auto-generated catch block
@@ -104,14 +170,25 @@ public class HistogramClusters {
 		 			e.printStackTrace();
 		     }
 		    
-		    
+        System.out.println("N lines: " + sentencect);
 		System.out.println("N clusters: " + clusterct);            
-		System.out.println("N unique articles: " + articleset.size());
-		System.out.println("N sentences: " + sentencect);
+		System.out.println("N unique titles: " + titleset.size());
 		System.out.println("N unique sentences: " + sentenceset.size());
-            for(int b : histogram.keySet()){
-                System.out.println(b + "\t" + histogram.get(b));
-            }
+        
+		System.out.println("Cluster histogram");
+        for(int b : histogram.keySet()){
+            System.out.println(b + "\t" + histogram.get(b));
+        }
+        
+        System.out.println("Unique Title histogram");
+        for(int b : titlehistogram.keySet()){
+            System.out.println(b + "\t" + titlehistogram.get(b));
+        }
+        
+        System.out.println("Uniqe Sentence histogram");
+        for(int b : sentencehistogram.keySet()){
+            System.out.println(b + "\t" + sentencehistogram.get(b));
+        }
 
 	}
 
