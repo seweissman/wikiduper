@@ -232,6 +232,22 @@ As we would expect, Jaccard similarity decreases as edit distance increases, but
 \subsection{Limitations of Approach}
 
 \section{Experiments and Discussion}
+
+To test our application we ran the first four steps (up to but not including the final edit distance filtering pass) on a dump of current English-language Wikipedia articles (as of 5/2013) obtained from dumps.wikimedia.org. The dump is approximately 40G in size and contains 4,113,785 articles (after excluding certain non-article page types). After minhashing and deduplification, we found a total of 9,465,881 similar sentence pairs. After clustering these pairs, the total number of similar sentence clusters was 415,936, including 1,792,748 unique article/sentence pairs over 759,297 article titles. The total number of unique sentences over all cluster was 1,305,359.
+
+Cluster sizes ranged from 2 to 28,008. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, but the distribution of cluster exhibits a long tail. As a result, while 99\% of our clusters have size below or equal to 30, about 1/3 of the output sentence/article pairs fall into clusters with size greater than 30. One explanation for this distribution of sentences is the phenomenon we call ''tempatification,'' which we describe more in detail below.)
+
+\subsection{Similar Sentence Types}
+
+Sentence Clusters (without an Edit Distance Filter).
+
+\begin{itemize}
+\item Factual Drift
+\item Templatification
+\item References
+\item Copy Editing
+\end{itemize}
+
 For this project, we performed several analyses to provide more insight into the occurence of duplicate sentences. In particular, we were interested in detecting the occurrence of templatification which is a precursor to the problem of finding factual drift between articles. \emph{Templatification} occurs when one sentence is an exact duplicate of another sentence, but the main topic has been changed by only a few pieces of key information having been modified. For example, it could be said that the following two sentences follow a particular \emph{template}.
 \begin{itemize}[noitemsep,nolistsep]
 \item Bush had an approval rating of 22\% by the end of his term in 2008.
@@ -260,7 +276,7 @@ After performing minhash on all of Wikipedia, we were able to cluster all unique
 \begin{figure}
 \centering
 \includegraphics[width=3.5in, keepaspectratio = true]{clusterhistogram.png}
-\caption{Histogram of Cluster Sizes (log scale).}
+\caption{Histogram of Cluster Sizes (for cluster size $< 300$, log scale).}
 \label{clust}
 \end{figure}
 
