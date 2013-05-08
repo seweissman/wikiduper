@@ -1,70 +1,18 @@
-% THIS IS SIGPROC-SP.TEX - VERSION 3.1
-% WORKS WITH V3.2SP OF ACM_PROC_ARTICLE-SP.CLS
-% APRIL 2009
-%
-% It is an example file showing how to use the 'acm_proc_article-sp.cls' V3.2SP
-% LaTeX2e document class file for Conference Proceedings submissions.
-% ----------------------------------------------------------------------------------------------------------------
-% This .tex file (and associated .cls V3.2SP) *DOES NOT* produce:
-%       1) The Permission Statement
-%       2) The Conference (location) Info information
-%       3) The Copyright Line with ACM data
-%       4) Page numbering
-% ---------------------------------------------------------------------------------------------------------------
-% It is an example which *does* use the .bib file (from which the .bbl file
-% is produced).
-% REMEMBER HOWEVER: After having produced the .bbl file,
-% and prior to final submission,
-% you need to 'insert'  your .bbl file into your source .tex file so as to provide
-% ONE 'self-contained' source file.
-%
-% Questions regarding SIGS should be sent to
-% Adrienne Griscti ---> griscti@acm.org
-%
-% Questions/suggestions regarding the guidelines, .tex and .cls files, etc. to
-% Gerald Murray ---> murray@hq.acm.org
-%
-% For tracking purposes - this is V3.1SP - APRIL 2009
-
 \documentclass{acm_proc_article-sp}
 \usepackage{url}
 
-%
+
 \def\sharedaffiliation{%
 \end{tabular}
 \begin{tabular}{c}}
-%
+
 
 \begin{document}
 
 
 \title{Similar Article Detection Using Locality Sensitive Hashing Technique on Wikipedia\titlenote{This effort is part of the CMSC828G, Data Intensive Computing with MapReduce, class project.}}
-%
-% You need the command \numberofauthors to handle the 'placement
-% and alignment' of the authors beneath the title.
-%
-% For aesthetic reasons, we recommend 'three authors at a time'
-% i.e. three 'name/affiliation blocks' be placed beneath the title.
-%
-% NOTE: You are NOT restricted in how many 'rows' of
-% "name/affiliations" may appear. We just ask that you restrict
-% the number of 'columns' to three.
-%
-% Because of the available 'opening page real-estate'
-% we ask you to refrain from putting more than six authors
-% (two rows with three columns) beneath the article title.
-% More than six makes the first-page appear very cluttered indeed.
-%
-% Use the \alignauthor commands to handle the names
-% and affiliations for an 'aesthetic maximum' of six authors.
-% Add names, affiliations, addresses for
-% the seventh etc. author(s) as the argument for the
-% \additionalauthors command.
-% These 'additional authors' will be output/set for you
-% without further effort on your part as the last section in
-% the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{5} %  in this sample file, there are a *total*
+\numberofauthors{3} %  in this sample file, there are a *total*
 % of EIGHT authors. SIX appear on the 'first-page' (for formatting
 % reasons) and the remaining two appear in the \additionalauthors section.
 %
@@ -108,33 +56,33 @@
 
 \maketitle
 \begin{abstract}
-The growth of Internet has enabled collaboration and cooperation on a large scale, resulting in an abundant number of near-duplicate web documents. The range of occurrences is even more evident within Wikipedia articles, due to its editing largely being open. Except for particularly sensitive and/or vandalism-prone pages that are "protected" to some degree from editing, the reader of an article can edit the text by copying from another article without needing approval. Although we are not inspired to measure the quality of Wikipedia articles, we are interested in finding near-duplicate occurrences at various granularity levels. 
+The growth of Internet has enabled collaboration and cooperation on a large scale, resulting in an abundant number of near-duplicate web documents. The range of near-duplicate occurrences is even more evident within Wikipedia articles, due to its editing largely being open to the online community. Except for particularly sensitive and/or vandalism-prone pages that are "protected" to some degree from editing, the reader of an article can edit the text by copying from another article without prior approval. There is no current automated mechanism for truth validation. Although we are not inspired to measure the quality of Wikipedia articles, we are interested in finding near-duplicate occurrences at various granularity levels. 
 
-In this paper, we describe a novel similarity detection algorithm that utilizes locality sensitive hashing (LSH) technique on MapReduce framework. The algorithm has been designed and implemented to detect similar articles using large Wikipedia dumps, in compressed or uncompressed forms. Experimental results appear to support that our method is able to efficiently and effectively detect similar articles from large Wikipedia dumps.
+In this paper, we describe a novel similarity detection algorithm that utilizes a locality sensitive hashing (LSH) technique on the MapReduce framework. The algorithm has been designed and implemented to detect similar articles using large Wikipedia dumps, in compressed or uncompressed forms. Experimental results appear to support that our method is able to efficiently and effectively detect similar articles across Wikipedia.
 \end{abstract}
 
 % A category with the (minimum) three required fields
 \category{H.3.3}{Information Storage and Retrieval}[Information Search and Retrieval]
 
-\terms{Algorithms, Design, Performance}
+\terms{Algorithms, Design, MapReduce}
 
 \section{Introduction}
-The online encyclopedia Wikipedia is a multilingual, free resource with its 26 million articles. All these articles with over 4.2 million in the English Wikipedia alone, are written collaboratively by volunteers around the world. Almost all of its articles can be edited by anyone with access to the site, and it has about 100,000 active contributors. In light of these facts, it is clear that unprecedented example of such a large-scale collaboration may result in duplicate or near duplicate articles in relatively granular level such as at sentence or multi-gram granularity \cite{wiki:weblink}
+The online encyclopedia Wikipedia is a multilingual, free resource with its 26 million articles. All these articles, with over 4.2 million in English alone, are written collaboratively by volunteer contributors around the world. Most articles can be edited by anyone with internet access, thus there are currently approximately 100,000 active contributors. In light of these facts, it is clear that the unprecedented example of such a large-scale collaboration effort may result in duplicate or near duplicate articles at various granular levels, such as sentence-level or multi-gram granularity \cite{wiki:weblink}
 
-Furthermore, Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia’s accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors. Since Wikipedia may be edited anonymously, information is often freely copied between web sources or other Wikipedia articles. Additionally, many articles in Wikipedia lack citations. There is little mechanism for detecting and correcting such errors. One potential source of error on Wikipedia is factual information that varies over time and is not updated. Wilkinson found that the distribution of article edits has a long tail, meaning that a small number of articles have many edits while most articles have few, and that number of edits is directly related to article quality. Articles with low edits, and low editorial attention, are less likely to be updated when new information becomes available \cite{wilkinson:wiki}.
+Furthermore, Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia’s accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors. Since Wikipedia may be edited anonymously, information is often freely copied between web sources and even between Wikipedia articles. Additionally, many articles in Wikipedia lack citations. There is little mechanism for detecting and correcting such errors. One potential source of error on Wikipedia is factual information that varies over time and is not updated. Wilkinson found that the distribution of article edits has a long tail, meaning that a small number of articles have many edits while most articles have few, and that the number of edits is directly related to article quality. Articles with low edits and low editorial attention, are less likely to be updated when new information is available \cite{wilkinson:wiki}.
 
 As a step toward identifying factual errors, we investigated the problem of finding near duplicate sentences on Wikipedia. Such near duplicate sentences may reflect factual information that has been updated in one article and not another, or merely inconsistencies that should be flagged and addressed. 
 
 In order to come up with a novel algorithm that would allow us to detect near duplicate Wikipedia articles, we decided that we needed to answer the following questions, first:
 \begin{itemize}
-\item What is the most appropriate LSH technique to apply? Edit distance seems like a reasonable metric for near duplicate sentences, but no LSH family for edit distance is known to exist.
+\item What is the most appropriate LSH technique to apply? Edit distance seems like a reasonable metric for near duplicate sentences, however LSH does not map naturally to the edit distance metric. Currently, no LSH family for edit distance is known to exist.
 \item Compare different sentence similarity techniques for effectiveness. 
 \item What is the appropriate granularity for analysis? Is comparing multiple consecutive sentences more effective than comparing single sentences? Similarly, what is the best shingle size?
 \item How well do techniques for detecting near duplicate documents work when applied at the sentence level?
-\item Do near duplicate sentences correspond to factual errors? Can these errors be automatically flagged or corrections suggested?
+\item Do near duplicate sentences correspond to factual errors? Can these errors be automatically detected and/or corrections suggested?
 \end{itemize}
 
-Along with these questions, we also considered the scalability and efficiency issues due to large size of Wikipedia dumps. To address these issues, we used the MapReduce computing framework and LSH techniques to group sentences with the same signatures and identify near duplicates.
+Along with these questions, we also considered the scalability and efficiency issues due to the large size of Wikipedia. To address these issues, we used the MapReduce computing framework and LSH techniques to group sentences with the same signatures and identify near duplicates.
 
 The rest of this paper is organized as follows: In Section 2, we present related work, in Section 3, we explain the algorithm utilizing locality sensitive hashing, in Section 4, we present the working application within MapReduce framework. In Section 5, we discuss our experiments with various Wikipedia datasets. The final section contains concluding remarks and future work.
 
@@ -319,19 +267,9 @@ In the future, we would like to investigate revision histories of these articles
 \section{Acknowledgments}
 We would like to thank all of the anonymous contributors. We would especially like to thank Jimmy Lin for his advise and directions.
 
-%
-% The following two commands are all you need in the
-% initial runs of your .tex file to
-% produce the bibliography for the citations in your paper.
 \bibliographystyle{abbrv}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
-% You must have a proper ".bib" file
-%  and remember to run:
-% latex bibtex latex latex
-% to resolve all references
-%
-% ACM needs 'a single self-contained file'!
-%
+
 %APPENDICES are optional
 %\balancecolumns
 \balancecolumns
