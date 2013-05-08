@@ -3,58 +3,35 @@
 \usepackage{algpseudocode}
 \usepackage{verbatim}
 \usepackage{microtype}
-
-\def\sharedaffiliation{%
-\end{tabular}
-\begin{tabular}{c}}
-
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{epsfig}
+\usepackage{algorithmicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \begin{document}
 
-
 \title{Similar Article Detection Using Locality Sensitive Hashing Technique on Wikipedia\titlenote{This effort is part of the CMSC828G, Data Intensive Computing with MapReduce, class project.}}
 
-\numberofauthors{3} %  in this sample file, there are a *total*
-% of EIGHT authors. SIX appear on the 'first-page' (for formatting
-% reasons) and the remaining two appear in the \additionalauthors section.
-%
+\numberofauthors{3}
+
 \author{
-% You can go ahead and credit any number of authors here,
-% e.g. one 'row of three' or two rows (consisting of one row of three
-% and a second row of one, two or three).
-%
-% The command \alignauthor (no curly braces needed) should
-% precede each author name, affiliation/snail-mail address and
-% e-mail address. Additionally, tag each line of
-% affiliation/address with \affaddr, and tag the
-% e-mail address with \email.
-%
-% 1st. author
 \alignauthor Samet Ayhan\\
        \affaddr{University of Maryland, Dept. of Computer Science}\\
        \affaddr{College Park, Maryland 20740}\\
        \email{sayhan@cs.umd.edu}
-% 2nd. author
 \alignauthor Joshua Bradley\\
        \affaddr{University of Maryland, Dept. of Computer Science}\\
        \affaddr{College Park, Maryland 20740}\\
        \email{jgbrad1@cs.umd.edu}
-% 3rd. author
 \alignauthor Sarah Weissman\\
        \affaddr{University of Maryland, College of Information Studies}\\
        \affaddr{College Park, Maryland 20740}\\
        \email{sew@umd.edu}
 }
-% There's nothing stopping you putting the seventh, eighth, etc.
-% author on the opening page (as the 'third row') but we ask,
-% for aesthetic reasons that you place these 'additional authors'
-% in the \additional authors block, viz.
 
 \date{19 April 2013}
-% Just remember to make sure that the TOTAL number of authors
-% is the number that will appear on the first page PLUS the
-% number that will appear in the \additionalauthors section.
-
 
 \maketitle
 \begin{abstract}
@@ -101,7 +78,12 @@ Zhang et al. presented partial duplicate detection algorithm using sequence matc
 
 Hajishirzi et al. introduced an adaptive near-duplicate detection (ANDD) method by extending term-weighting framework to learn k-gram vectors. Provided that each document was represented by an informative real k-gram vector, similarity measures were computed to come up with predicted values of near-duplicates \cite{hajishirzi:andd}.
 
-Lin described three MapReduce algorithms for computing pairwise similarity on document collections: 1.Based on brute force, 2.Treated as large-scale ad hoc retrieval, 3.Based on Cartesian product of postings lists \cite{lin:brute}.
+Lin described three MapReduce algorithms for computing pairwise similarity on document collections \cite{lin:brute}.
+\begin{enumerate}[noitemsep,nolistsep]
+\item Based on brute force.
+\item Treated as large-scale ad hoc retrieval.
+\item Based on Cartesian product of postings lists.
+\end{enumerate}
 
 Manku et al. used Charikar's fingerprinting technique for developing near-duplicate detection system. They presented an algorithmic technique for identifying existing f-bit fingerprints that differ from a given fingerprint in at most k bit-positions, for small k. They demonstrated that their system is useful not only for batch but also for online processing \cite{manku:web}.
 
@@ -111,20 +93,20 @@ In order to handle large Wikipedia dumps with the order of tens or hundreds of g
 
 \section{Algorithm Utilizing Locality Sensitive Hashing}
 
-
 %In order to measure document similarity we use a common LSH technique known as minhashing \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case input documents are sentences. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate $\{min_{s \in S}(F_i(s)\}$, the set of minimum hashes over the hash family. The signature on a document d is a vector of $K$ minhashes from the set of minimum hashes. In order to minimize false negatives we apply the technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
 
 In order to measure document similarity we use a common LSH technique known as MinHash \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case, we denote ''documents'' to mean sentences found within the content of Wikipedia articles. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
 
 \subsection{Design}
-Since signature techniques such as LSH are embarrassingly parallel, we designed our algorithm around the MapReduce framework.
+Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
 
 Describe MapReduce.
 
 Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
 
 \begin{table}
-Minhash MapReduce pseudocode:
+\begin{algorithm}[H]
+\caption{Minhash MapReduce Pseudocode}
 \begin{algorithmic}
 \Function{initialize}{}
 %\Comment{configure and set up algorithm parameters}
@@ -158,15 +140,14 @@ Minhash MapReduce pseudocode:
   \State  sentencect++;
  \EndWhile
 \EndFunction
-\end{algorithmic}
 
-\begin{algorithmic}
 \Function{reduce}{signature sig, sentenceids $S$}
 \If{$|S| > 1$}
-\State    emit(sig, $S$);
+\State emit(sig, $S$);
 \EndIf
 \EndFunction
 \end{algorithmic}
+\end{algorithm}
 \end{table}
 
 \subsection{Implementation Details}
@@ -223,7 +204,7 @@ Note that as relative shingle size goes to 0 there is a nice convergence for Jac
 
 \begin{figure*}
 \centering
-\epsfig{file=jac-ed-chart.eps,height=4in,width=6in}
+\epsfig{file=jac-ed-chart.eps, height=4in, width=6in}
 \caption{Jaccard Similarity vs. normalized edit distance.}
 \label{jac-ed}
 \end{figure*}
@@ -241,10 +222,30 @@ As we would expect, Jaccard similarity decreases as edit distance increases, but
 
 
 \section{Experiments and Discussion}
-In this section, we discuss ...
+For this project, we performed several analyses to provide more insight into the occurence of duplicate sentences. In particular, we were interested in detecting the occurrence of templatification which is a precursor to the problem of finding factual drift between articles. \emph{Templatification} occurs when one sentence is an exact duplicate of another sentence, but the main topic has been changed by only a few pieces of key information having been modified. For example, it could be said that the following two sentences follow a particular \emph{template}.
+\begin{itemize}[noitemsep,nolistsep]
+\item Bush had an approval rating of 22\% by the end of his term in 2008.
+\item Obama had an approval rating of 56\% by the end of his term in 2012.
+\end{itemize}
+From the perspective of editing/writing Wikipedia articles, this is a strong indicator that the author copied the original sentence and modified the relevant information to pertain to a different topic. What remains shared between both sentences though is the inherent structure.
+
+\emph{Factual drift} most notably occurs when the same sentence has been copied and only one piece of factual information about the \emph{same} topic has changed. For example, factual drift can be seen in the following two sentences.
+\begin{itemize}[noitemsep,nolistsep]
+\item Obama had an approval rating of 56\% by the end of his term in 2012.
+\item Obama had an approval rating of 46\% by the end of his term in 2012.
+\end{itemize}
+
+\begin{center}
+\includegraphics[scale=0.43, keepaspectratio = true]{Top10ArticlePairs.jpg}
+\end{center}
+
+Based on our preliminary analysis, templatification and factual drift tends to occur most often between articles that maintain large lists of information related to the same general sub-theme of different topics. For example, of the top 10 pairs of articles with the highest similarity count, one article pair was the articles titled ''List of birds of Zambia'' and ''List of birds of Tanzania''. With both countries sharing the same geographic region, it is not unexpected that their respective wikipedia articles on the countrys' bird species would be highly comparable. For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Overall, we found $\approx 6500$ wikipedia article pairs that had a similarity count greater than $50$.
+
+After performing minhash on all of Wikipedia, we were able to cluster all unique sentences. Looking at the distribution of cluster sizes in FIGURE SARAH'S HISTOGRAM, we can see the expected behavior of monotonically decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. Based on the fact that we found $\approx 6500$ article pairs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in TOP 10 SIMILARITY COUNTS FIGURE).
+
 
 \section{Conclusion and Future Work}
-This paper presents our work on near-duplicate detection of Wikipedia articles at various granularity levels using LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at k-gram level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.
+This paper presents our work on near-duplicate detection of Wikipedia articles at various granularity levels using LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece is handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at the sentence level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.
 
 In the future, we would like to investigate revision histories of these articles, correlate them with their timestamps, and better relate similarities based on temporal dimensions. 
 
@@ -254,8 +255,5 @@ We would like to thank all of the anonymous contributors. We would especially li
 \bibliographystyle{abbrv}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 
-%APPENDICES are optional
-%\balancecolumns
 \balancecolumns
-% That's all folks!
 \end{document}
