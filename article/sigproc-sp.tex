@@ -8,7 +8,6 @@
 \usepackage{epsfig}
 \usepackage{algorithmicx}
 \usepackage{algorithm}
-\usepackage{algpseudocode}
 
 \begin{document}
 
@@ -152,7 +151,7 @@ Because the minhash technique is parametrized by several variables, including sh
 
 \subsection{Implementation Details}
 
-Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift''  \cite{} hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library (\url{https://github.com/lintool/Cloud9}) for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift''  \cite{} hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
 
 \section{Parameter Tuning}
 
@@ -221,7 +220,6 @@ Another feature of the graphs in Figure \ref{ed-grid} that stands out is that wh
 
 Since minimizing the false positive rate also means minimizing reducing good pairs, another option is to let parameters to maximize good output and use edit distance as a secondary filter. With this approach our experimental results suggest that the best parameter combination would be $N=10, K=8, L=10$.
 
-
 \begin{figure}
 \centering
 \epsfig{file=edgrid.eps,width=3.5in}
@@ -231,28 +229,30 @@ Since minimizing the false positive rate also means minimizing reducing good pai
 
 \section{Working Application}
 
-While the Minhash signature code provides the raw similarity scores, it is one part of a larger framework composed of several pieces, described below. The input to the process is an XML dump format. (See http://en.wikipedia.org/wiki/Wikipedia:Database\_download for details.) The output of the process is a list of sentence clusters containing the original article title and sentence text. Decomposing the sentence clustering into several pieces allows us to minimize the amount of raw wikipedia text that gets passed between mappers and reducers, thus improving scalability.
+While the Minhash signature code provides the raw similarity scores, it is one part of a larger framework composed of several pieces, described below. The input to the process is an XML dump format. (See \url{http://en.wikipedia.org/wiki/Wikipedia:Database_download} for details.) The output of the process is a list of sentence clusters containing the original article title and sentence text. Decomposing the sentence clustering into several pieces allows us to minimize the amount of raw text that gets passed between mappers and reducers, thus improving scalability.
 
 The process can be summarized as follows:
 
 \begin{enumerate}
-\item Preprocess Wikipedia Pages - 
-\item Minhash Wikipedia Sentences -
-\item Dedup Sentence Buckets - 
-\item Computer Sentence Clusters - 
-\item Get Sentence Text - 
-\item Edit Distance Filter -
+\item \textbf{Preprocess Wikipedia Pages} - Using a utility from the Cloud9 library, preprocess the raw Wikipedia dump into a SequenceFile format. Working with SequenceFiles gives the option to use block or record compressed input compatible with the MapReduce framework.
+\item \textbf{Minhash Wikipedia Sentences} - Reads processed Wikipedia input, and uses a regular expression to match sentences in the article text. Outputs a file of signature ``buckets'' organized by signature. Each output sentence is represented by a (docid,sentenceid) pair.
+\item \textbf{Dedup Sentence Buckets} - Because multiple sentences may occur in each bucket, a second MapReduce job is used to map from buckets to raw sentence pairs, removing duplicates.
+\item \textbf{Compute Sentence Clusters} - Performs a local (i.e., non-MapReduce) connected component analysis on the dedup-ed pairs to form sentence clusters.
+\item \textbf{Get Sentence Text} - Maps clustered sentences (represented by (docid,sentenceid) pairs) back to sentence text by streaming over the Wikipedia input a second time and recovering the corresponding sentences by ID.
+\item \textbf{Edit Distance Filter} - \emph{(optional)} For each output cluster and filter all pairs within the cluster by desired edit distance threshold.
 \end{enumerate}
 
-\subsection{Limitations of Approach}
+\subsection{Limitations to Our Approach}
 
-\begin{itemize}
-\item Aforementioned hash issues.
-\item Non-deterministic behavior
-\item Regular expression depth
-\item Dirty wikipedia data
-\item large clusters of relatively uninteresting results
-\end{itemize}
+In addition to the aforementioned hash issue there are other limitations in our implementation and improvements that could be made.
+
+\emph{Data cleanliness} - The Cloud9 utilities that process Wikipedia code do some preprocessing of non-text elements from Wikipedia pages. However there is still improvements that could be made. Section headings can confuse our regular expression mapping, causing pieces of extraneous text to be appended to sentences. Parsing page text with a better understanding of how Wikipedia articles are structured could improve our input data. Additionally, keeping track of the order in which sentences occur on a page could improve analysis. For example, references and external links are typically found at the bottom of a Wikipeda page. More carefully filtering text based on sentence depth could improve results.
+
+\emph{Sentence matching} - Since Wikipedia data is not chunked by sentence, we rely on regular expression matching to break up input text into sentences. Since sentences have recursive structure, our regular expression can lead to stack overflow exceptions from the underlying recursive pattern match search. Setting bounds on the sentence structure nesting could provide more reliable results. The encyclopedic style of Wikipedia may lend itself to simpler sentence structures that don't require a general purpose sentence matching algorithm.
+
+\emph{Large clusters} - Since we rely on a connected component analysis to compute the final sentence clusters, our large clusters can be a bottleneck. Unfortunately, the Wikipedia data does contain large clusters of similar sentences (see the discussion of templatification below). Since our initial experimental results suggest that more interesting clusters (for example, sentence clusters representing copied data with factual errors) are much smaller (on the order of 2 or 3 sentences per cluster), we set a limit on maximum bucket size and only consider the first $n$ sentences in any bucket up to that limit. Setting a limit on cluster size helps ensure more predictable runtime and discards large portions of relatively uninteresting clusters, making output data more manageable.
+
+\emph{Non-determinism} - Our current implementation of Minhash suffers from a yet unidentified source of non-determinism. This affects the number of output records produced from the Minhashing stage of our implementation from one run to the next and has unknown effects on output quality. 
 
 \section{Experiments and Discussion}
 
