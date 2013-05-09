@@ -28,7 +28,7 @@
 
   <property name="ivy.install.version" value="2.2.0"/>
   <property name="ivy.jar.dir" value="${basedir}/ivy"/>
-  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
   <property name="ivy.settings.file" value="${basedir}/ivy/ivysettings.xml" />
   <property name="ivy.dep.file" value="${basedir}/ivy/ivy.xml" />
 
