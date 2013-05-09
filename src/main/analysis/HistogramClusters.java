@@ -18,6 +18,8 @@ public class HistogramClusters {
 
     public static void main(String args[]){
 		
+        int thresh = 30;
+        
 	    if(args.length != 1){
 	        System.out.println("Usage: HistogramClusters <cluster output file>n");
 			System.exit(-1);
@@ -43,9 +45,10 @@ public class HistogramClusters {
 		ArrayList<String> cluster = new ArrayList<String>();
 		HashSet<String> clustertitles = new HashSet<String>();
 		HashSet<String> clustersentences = new HashSet<String>();
-       
+		int bigclusterlinect = 0;
+		int smallclusterlinect = 0;
 		int clusterct = 0;
-        int sentencect = 0;
+        int linect = 0;
 		try {
 
             File filedir = new File(args[0]);
@@ -59,7 +62,7 @@ public class HistogramClusters {
                 
                 String clustcurr = null;
                 while((line = bin.readLine()) != null){
-                    sentencect++;
+                    linect++;
 	                Matcher m = linepat.matcher(line);
 	                String clust = "";
 	                String title = "";
@@ -83,6 +86,13 @@ public class HistogramClusters {
 
 	                    // Once we've found a new cluster Update each histogram
 	                    int size = cluster.size();
+	                    
+	                    if(size > thresh){
+                            bigclusterlinect+=size;
+                        }else{
+                            smallclusterlinect+=size;
+                        }
+                        
                         if(!histogram.containsKey(size)){
                             histogram.put(size, 0);    
                         }
@@ -136,6 +146,14 @@ public class HistogramClusters {
                 
                 // Update one time at the end of each file input loop to add remaining cluster
                 int size = cluster.size();
+                
+                if(size > thresh){
+                    bigclusterlinect+=size;
+                }else{
+                    smallclusterlinect+=size;
+                }
+                
+                
                 if(!histogram.containsKey(size)){
                    histogram.put(size, 0);    
                 }
@@ -170,7 +188,7 @@ public class HistogramClusters {
 		 			e.printStackTrace();
 		     }
 		    
-        System.out.println("N lines: " + sentencect);
+        System.out.println("N lines: " + linect);
 		System.out.println("N clusters: " + clusterct);            
 		System.out.println("N unique titles: " + titleset.size());
 		System.out.println("N unique sentences: " + sentenceset.size());
@@ -179,50 +197,145 @@ public class HistogramClusters {
         StringBuffer histkeys = new StringBuffer();
 		
         System.out.println("Cluster histogram");
+        int binsize = 30;
+        int sum = 0;
+        int sumsentence = 0;
+        int sumtitle = 0;
+        
+        int gtx = 0;
+        int ltex = 0;
         for(int b : histogram.keySet()){
-            histkeys.append(",");
-            histkeys.append("\"");
-            histkeys.append(b);
-            histkeys.append("\"");
-            histvals.append(",");
-            histvals.append(histogram.get(b));
-            System.out.println(b + "\t" + histogram.get(b));
-
+            //System.out.println(b + "\t" + histogram.get(b));
+            if(b <= thresh){
+                ltex += histogram.get(b);
+            }else{
+                gtx += histogram.get(b);
+                
+            }
         }
+        
+        System.out.println("N Lte " + thresh + ": " + ltex + " " + (1.0*ltex/clusterct));
+        System.out.println("N gt " + thresh + ": " + gtx + " " + (1.0*gtx/clusterct));
+        
+        System.out.println("Number of lines in big clusters = " + bigclusterlinect + " " + (1.0*bigclusterlinect/linect));
+        System.out.println("Number of lines in small clusters = " + smallclusterlinect + " " + (1.0*smallclusterlinect/linect));
+
+        int max = 1501;
+        for(int i=1;i<max;i++){
+            int b = histogram.containsKey(i) ? histogram.get(i) : 0;
+            sum+=b;
+            b = sentencehistogram.containsKey(i) ? sentencehistogram.get(i) : 0;
+            sumsentence+=b;
+            b = titlehistogram.containsKey(i) ? titlehistogram.get(i) : 0;
+            sumtitle+=b;
+            
+            if(i%binsize == 0){
+                int rangel = i-binsize;
+                int rangeh = i-1;
+                histkeys.append(",");
+                histkeys.append("\"");
+                histkeys.append(rangel);
+                histkeys.append("-");
+                histkeys.append(rangeh);
+                histkeys.append("\"");
+            histvals.append(",");
+//            histvals.append("{");
+            histvals.append(sum);
+//            histvals.append(",");
+//            histvals.append(sumsentence);
+//            histvals.append(",");
+//            histvals.append(sumtitle);
+//            histvals.append("}");
+
+            sum = 0;
+            sumsentence = 0;
+            sumtitle = 0;
+            }
+        }
+        
+        // Calculate rest of distribution weight
+        sum = 0;
+        sumsentence = 0;
+        sumtitle = 0;
+        for(int i=max;i<=histogram.lastKey();i++){
+            int b = histogram.containsKey(i) ? histogram.get(i) : 0;
+            sum+=b;
+            b = sentencehistogram.containsKey(i) ? sentencehistogram.get(i) : 0;
+            sumsentence+=b;
+            b = titlehistogram.containsKey(i) ? titlehistogram.get(i) : 0;
+            sumtitle+=b;
+        }
+        int rangel = max;
+        int rangeh = histogram.lastKey();
+        histkeys.append(",");
+        histkeys.append("\"");
+        histkeys.append(rangel);
+        histkeys.append("-");
+        histkeys.append(rangeh);
+        histkeys.append("\"");
+        histvals.append(",");
+      histvals.append(sum);
+        
         //Mathematic output:
-        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Top]]");
+        System.out.println("BarChart[{"+histvals.substring(1)+"}, "
+                    +"ChartLabels ->Placed[{(Rotate[#, Pi/4] & /@{"+histkeys.substring(1)+"}), "
+                     +"{" + histvals.substring(1) + "}},{Axis,Above}], "
+                    +"ScalingFunctions -> \"Log\", BaseStyle -> {FontSize -> 18},ImageSize->Scaled[.6]]");
         histkeys.setLength(0);
         histvals.setLength(0);
-        
+
+        /*
         System.out.println("Unique Title histogram");
-        for(int b : titlehistogram.keySet()){
-            histkeys.append(",");
-            histkeys.append("\"");
-            histkeys.append(b);
-            histkeys.append("\"");
+        sum = 0;
+        for(int i=titlehistogram.firstKey();i<500;i++){
+            int b = titlehistogram.containsKey(i) ? titlehistogram.get(i) : 0;
+            sum+=b;
+            if(i%binsize == 0){
+                int rangel = i-binsize;
+                int rangeh = i-1;
+                histkeys.append(",");
+                histkeys.append("\"");
+                histkeys.append(rangel);
+                histkeys.append("-");
+                histkeys.append(rangeh);
+                histkeys.append("\"");
             histvals.append(",");
-            histvals.append(titlehistogram.get(b));
-            System.out.println(b + "\t" + titlehistogram.get(b));
+            histvals.append(sum);
+//            System.out.println(sum + "\t" + sum);
+            sum = 0;
+            }
         }
+
         //Mathematica output
-        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Top]]");
+        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Below],ScalingFunctions -> \"Log\", ImageSize -> Full]");
         histkeys.setLength(0);
         histvals.setLength(0);
         
         System.out.println("Uniqe Sentence histogram");
-        for(int b : sentencehistogram.keySet()){
-            histkeys.append(",");
-            histkeys.append("\"");
-            histkeys.append(b);
-            histkeys.append("\"");
+        for(int i=sentencehistogram.firstKey();i<500;i++){
+            int b = sentencehistogram.containsKey(i) ? sentencehistogram.get(i) : 0;
+            sum+=b;
+            if(i%binsize == 0){
+                int rangel = i-binsize;
+                int rangeh = i-1;
+                histkeys.append(",");
+                histkeys.append("\"");
+                histkeys.append(rangel);
+                histkeys.append("-");
+                histkeys.append(rangeh);
+                histkeys.append("\"");
             histvals.append(",");
-            histvals.append(sentencehistogram.get(b));
-            System.out.println(b + "\t" + sentencehistogram.get(b));
+            histvals.append(sum);
+            //System.out.println(sum + "\t" + sum);
+            sum = 0;
+            }
         }
+        
         //Mathematica output
-        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Top]]");
+        System.out.println("BarChart[{"+histvals.substring(1)+"}, ChartLabels ->Placed[{"+histkeys.substring(1)+"},Below],ScalingFunctions -> \"Log\", ImageSize -> Full]");
         histkeys.setLength(0);
         histvals.setLength(0);
+        */
 
 	}
 
