@@ -17,26 +17,26 @@
 
 \author{
 \alignauthor Samet Ayhan\\
-       \affaddr{University of Maryland, Dept. of Computer Science}\\
-       \affaddr{College Park, Maryland 20740}\\
+       \affaddr{University of Maryland}\\
+       \affaddr{Dept. of Computer Science}
        \email{sayhan@cs.umd.edu}
 \alignauthor Joshua Bradley\\
-       \affaddr{University of Maryland, Dept. of Computer Science}\\
-       \affaddr{College Park, Maryland 20740}\\
+       \affaddr{University of Maryland}\\
+       \affaddr{Dept. of Computer Science}
        \email{jgbrad1@cs.umd.edu}
 \alignauthor Sarah Weissman\\
-       \affaddr{University of Maryland, College of Information Studies}\\
-       \affaddr{College Park, Maryland 20740}\\
+       \affaddr{University of Maryland}\\
+       \affaddr{College of Information Studies}\\
        \email{sew@umd.edu}
 }
 
-\date{19 April 2013}
+\date{9 May 2013}
 
 \maketitle
 \begin{abstract}
 The growth of Internet has enabled collaboration and cooperation on a large scale, resulting in an abundant number of near-duplicate web documents. The range of near-duplicate occurrences is even more evident within Wikipedia articles, due to its editing largely being open to the online community. Except for particularly sensitive and/or vandalism-prone pages that are "protected" to some degree from editing, the reader of an article can edit the text by copying from another article without prior approval. There is no current automated mechanism for truth validation. Although we are not inspired to measure the quality of Wikipedia articles, we are interested in finding near-duplicate occurrences at various granularity levels. 
 
-In this paper, we describe a novel similarity detection algorithm that utilizes a locality sensitive hashing (LSH) technique on the MapReduce framework. The algorithm has been designed and implemented to detect similar articles using large Wikipedia dumps, in compressed or uncompressed forms. Experimental results appear to support that our method is able to efficiently and effectively detect similar articles across Wikipedia.
+In this paper, we describe a novel similarity detection algorithm that utilizes a locality sensitive hashing (LSH) technique on the MapReduce framework. The algorithm has been designed and implemented to detect similar articles using large Wikipedia dumps. Experimental results appear to support that our method is able to efficiently and effectively detect similar articles across Wikipedia.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -47,13 +47,13 @@ In this paper, we describe a novel similarity detection algorithm that utilizes 
 \section{Introduction}
 The online encyclopedia Wikipedia is a multilingual, free resource with its 26 million articles. All these articles, with over 4.2 million in English alone, are written collaboratively by volunteer contributors around the world. Most articles can be edited by anyone with internet access, thus there are currently approximately 100,000 active contributors. In light of these facts, it is clear that the unprecedented example of such a large-scale collaboration effort may result in duplicate or near duplicate articles at various granular levels, such as sentence-level or multi-gram granularity \cite{wiki:weblink}
 
-Furthermore, Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia’s accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors. Since Wikipedia may be edited anonymously, information is often freely copied between web sources and even between Wikipedia articles. Additionally, many articles in Wikipedia lack citations. There is little mechanism for detecting and correcting such errors. One potential source of error on Wikipedia is factual information that varies over time and is not updated. Wilkinson found that the distribution of article edits has a long tail, meaning that a small number of articles have many edits while most articles have few, and that the number of edits is directly related to article quality. Articles with low edits and low editorial attention, are less likely to be updated when new information is available \cite{wilkinson:wiki}.
+Furthermore, Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia's accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors. Since Wikipedia may be edited anonymously, information is often freely copied between web sources and even between Wikipedia articles. Additionally, many articles in Wikipedia lack citations. There is little mechanism for detecting and correcting such errors. One potential source of error on Wikipedia is factual information that varies over time and is not updated. Wilkinson found that the distribution of article edits has a long tail, meaning that a small number of articles have many edits while most articles have few, and that the number of edits is directly related to article quality. Articles with low edits and low editorial attention, are less likely to be updated when new information is available \cite{wilkinson:wiki}.
 
 As a step toward identifying factual errors, we investigated the problem of finding near duplicate sentences on Wikipedia. Such near duplicate sentences may reflect factual information that has been updated in one article and not another, or merely inconsistencies that should be flagged and addressed. 
 
-In order to come up with a novel algorithm that would allow us to detect near duplicate Wikipedia articles, we decided that we needed to answer the following questions, first:
-\begin{itemize}
-\item What is the most appropriate LSH technique to apply? Edit distance seems like a reasonable metric for near duplicate sentences, however LSH does not map naturally to the edit distance metric. Currently, no LSH family for edit distance is known to exist.
+In order to come up with a novel algorithm that would allow us to detect near-duplicate sentences within Wikipedia articles, we decided that we needed to answer the following questions, first:
+\begin{itemize}[noitemsep,nolistsep]
+\item What is the most appropriate LSH technique to apply? Edit distance seems like a reasonable metric for near duplicate sentences, however LSH does not map naturally to the edit distance metric.
 \item Compare different sentence similarity techniques for effectiveness. 
 \item What is the appropriate granularity for analysis? Is comparing multiple consecutive sentences more effective than comparing single sentences? Similarly, what is the best shingle size?
 \item How well do techniques for detecting near duplicate documents work when applied at the sentence level?
@@ -62,7 +62,7 @@ In order to come up with a novel algorithm that would allow us to detect near du
 
 Along with these questions, we also considered the scalability and efficiency issues due to the large size of Wikipedia. To address these issues, we used the MapReduce computing framework and LSH techniques to group sentences with the same signatures and identify near duplicates.
 
-The rest of this paper is organized as follows: In Section 2, we present related work, in Section 3, we explain the algorithm utilizing locality sensitive hashing, in Section 4, we present the working application within MapReduce framework. In Section 5, we discuss our experiments with various Wikipedia datasets. The final section contains concluding remarks and future work.
+The rest of this paper is organized as follows: In Section 2, we present related work, in Section 3, we explain the algorithm utilizing locality sensitive hashing, in Section 4, we discuss parameter tuning for Minhash. In Section 5, we present the working application within the MapReduce framework. In Section 6, we discuss our experiments with various Wikipedia datasets. The final section contains concluding remarks and future work.
 
 \section{Related Work}
 A number of techniques have been implemented to identify similarity between documents in the literature. These techniques usually differ in terms of corpus of interest, signature representing the document, feature-set determined by the system, and the end goal. In addition to these differences, one can also consider the efficiency and scalability of the system, overall. 
@@ -90,7 +90,7 @@ Bendersky et al. examined two information flow representations: the timeline and
 
 In order to handle large Wikipedia dumps with the order of tens or hundreds of gigabytes and even a few terabytes, we used MapReduce framework in this work, that was introduced by Dean and Ghemawat \cite{dean:mapreduce}. The implementation is able to stream the compressed bz2 dumps and feed into mappers and reducers for further processing, which will be detailed in the following sections.
 
-\section{Algorithm Utilizing Locality Sensitive Hashing}
+\section{Algorithm Utilizing Locality \\ Sensitive Hashing}
 
 %In order to measure document similarity we use a common LSH technique known as minhashing \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case input documents are sentences. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate $\{min_{s \in S}(F_i(s)\}$, the set of minimum hashes over the hash family. The signature on a document d is a vector of $K$ minhashes from the set of minimum hashes. In order to minimize false negatives we apply the technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
 
@@ -99,7 +99,7 @@ In order to measure document similarity we use a common LSH technique known as M
 \subsection{Design}
 Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
 
-Describe MapReduce.
+DESCRIBE MAPREDUCE.
 
 Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
 
@@ -151,7 +151,7 @@ Because the minhash technique is parametrized by several variables, including sh
 
 \subsection{Implementation Details}
 
-Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library (\url{https://github.com/lintool/Cloud9}) for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift''  \cite{} hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library (\url{https://github.com/lintool/Cloud9}) for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift''  CORRECT CITATION GOES HERE hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
 
 \section{Parameter Tuning}
 
@@ -258,11 +258,11 @@ In addition to the aforementioned hash issue there are other limitations in our 
 
 We performed several analyses to provide more insight into the occurence of duplicate sentences. In particular, we were interested in detecting similar sentences that arose from copying text from one article to another since such instances would represent content that is either redundant, or content that has diverged in the sense that either the original or the copy was edited for clarification of factual correctness and the other was not. Such instances give insight into the Wikipedia editing process, and also represent an opportunity to improve article quality on Wikipedia by identifying places where further editing or article merging may be needed.
 
-All of our experiments were run against an XML dump of current English-language Wikipedia (enwiki) articles (as of 4/2013) obtained from dumps.wikimedia.org. The enwiki dump is approximately 40G in size and contains 4,113,785 articles (after excluding certain non-article page types). Running the first four steps of our application (up to but not including the final edit distance filtering pass) against the enwiki dump on a shared cluster of 16 nodes with (15 GB RAM and 4 cores each) took XXXX (HOW MUCH TIME DID THIS TAKE, SAMET?) minutes.
+All of our experiments were run against an XML dump of current English-language Wikipedia (enwiki) articles (as of 4/2013) obtained from dumps.wikimedia.org. The enwiki dump is approximately 40G in size and contains 4,113,785 articles (after excluding certain non-article page types). Running the first four steps of our application (up to but not including the final edit distance filtering pass) against the enwiki dump on a shared cluster of 16 nodes with (15 GB RAM and 4 cores each) took $\approx 2$ hours.
 
 After minhashing and deduplification, we found a total of 9,465,881 similar article/sentence pairs. After clustering these pairs, the total number of similar sentence clusters was 415,936, including 1,792,748 unique article/sentence pairs over 759,297 article titles. The total number of unique sentences over all cluster was 1,305,359.
 
-Cluster sizes ranged from 2 to 28,008. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, but the distribution of cluster sizes exhibits a long tail. As a result, while 99\% of our clusters have size below or equal to 30, about 1/3 of the output sentence/article pairs fall into clusters with size greater than 30. One explanation for this distribution of sentences is the phenomenon we call ''templatification,'' which we describe in more detail below.)
+Cluster sizes ranged from 2 to 28,008. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, but the distribution of cluster sizes exhibits a long tail. As a result, while 99\% of our clusters have size below or equal to 30, about 1/3 of the output sentence/article pairs fall into clusters with size greater than 30. One explanation for this distribution of sentences is the phenomenon we call ''templatification,'' which we describe in more detail below.
 
 \begin{figure}
 \centering
@@ -293,8 +293,8 @@ From the perspective of editing/writing Wikipedia articles, this is a strong ind
 
 \emph{Direct Copying} occurs when the same sentence has been copied into another (or possibly the same) article. This can happen for many reasons, including articles that deal with similar subjects, or articles that are subtopics of other topics. (SOME EXAMPLES?). Similarly, \emph{Direct Copying with Copy Editing} occurs when the same sentence has been copied into another article and then one or both sentences has been edited for style or clarity. For example:
 \begin{itemize}[noitemsep,nolistsep]
-\item EXAMPLE HERE.
-\item EXAMPLE HERE.
+\item Bush had an approval rating of 22\% by the end of his term in 2008.
+\item Bush, a US President, had an approval rating of 22\% by the end of his term in 2008.
 \end{itemize}
 
 \emph{Factual drift} most notably occurs when the same sentence has been copied and a piece of factual information about the \emph{same} topic has changed. For example, factual drift can be seen in the following two sentences.
@@ -307,23 +307,29 @@ Although factual drift is similar to copy editing and may occur along with copy 
 \emph{References} refers to citations, typically occurring at the end of a Wikipedia article. Since Wikipedia does not adhere to one single citation style, the same work may be referenced on multiple pages in different styles. Similarly different portions of the same work may be referenced in different articles. Although citation errors might be harder to distinguish from factual errors, errors in citation are arguably no less important. (It would also be interesting to compare whether articles that share similar sentences also share similar citations.) 
 
 \begin{itemize}[noitemsep,nolistsep]
-\item EXAMPLE HERE.
-\item EXAMPLE HERE.
+\item Neotropical Ichthyology 11 (1): 73-80.
+\item Neotropical Ichthyology 10 (2): 245-253.
 \end{itemize}
 
 \subsubsection{Break down of sentence types}
 
-By manually counting a small sample of 824 output clusters, we came up with the following breakdown of sentence types:
+By manually counting a small sample of 824 output clusters, we came up with a breakdown of sentence types in Table 1.
 
-\begin{tabular}{l l}
-NOT\_SIMILAR & 3 \\
-FACTUAL\_DRIFT & 65 \\
-TEMPLATE & 52 \\
-REFERENCE & 23 \\
-COPY\_EDIT & 214 \\
-OTHER & 12 \\
-IDENTICAL & 455 \\
+\begin{table}
+\centering
+\caption{Sentence Breakdown Counts}
+\begin{tabular}{| l | c |}
+\hline
+Not Similar & 3 \\ \hline
+Factual Drift & 65 \\ \hline
+Template & 52 \\ \hline
+Reference & 23 \\ \hline
+Copy Edit & 214 \\ \hline
+Other & 12 \\ \hline
+Identical & 455 \\
+\hline
 \end{tabular}
+\end{table}
 
 \subsection{Sentence Similarity as a Measure of Article Similarity}
 
@@ -339,16 +345,40 @@ Based on our preliminary analysis, templatification tends to occur most often be
 
 Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see the expected behavior of decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. Based on the fact that we found $\approx 6500$ article pairs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in Figure \ref{toparticles}).
 
-JOSH, CAN YOU LOOK UP WHAT THE ACTUAL ARTICLES ARE? THAT MIGHT BE INTERESTING.
+\begin{table}
+\centering
+\caption{Top 10 Article Pair Titles}
+\begin{tabular}{| l | c |}
+    \hline
+    \textbf{Article ID} & \textbf{Title} \\ \hline
+    21986867 & 2000 New Year Honours \\ \hline
+    21986897 & 1999 New Year Honours \\ \hline
+    3951586 & Instruments of the United Kingdom, 1994 \\ \hline
+    3951664 & Instruments of the United Kingdom, 1995 \\ \hline
+    1903966 & Management of baldness \\ \hline
+    38088660 & Management of androgenic alopecia \\ \hline
+    1503105 & Jayne Torvill \\ \hline
+    1503115 & Christopher Dean \\ \hline
+    184843 & Henry VI, Part 1 \\ \hline
+    184846 & Henry VI, Part 2 \\ \hline
+    184847 & Henry VI, Part 3 \\ \hline
+    10701462 & List of birds of Zambia \\ \hline
+    10930255 & List of birds of Zimbabwe \\ \hline
+    10930111 & List of birds of Mozambique \\ \hline
+    48711 & Oregon Trail \\ \hline
+    31518964 & History of the Oregon Trail \\
+    \hline
+\end{tabular}
+\end{table}
 
 
 \section{Conclusion and Future Work}
-This paper presents our work on near-duplicate detection of Wikipedia articles at various granularity levels using LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece is handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at the sentence level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.
+This paper presents our work on near-duplicate detection of Wikipedia articles at the sentence-granularity level using MinHash, a LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece is handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at the sentence level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.
 
 In the future, we would like to investigate revision histories of these articles, correlate them with their timestamps, and better relate similarities based on temporal dimensions. 
 
 \section{Acknowledgments}
-We would like to thank all of the anonymous contributors. We would especially like to thank Jimmy Lin for his advise and directions.
+We would especially like to thank Dr. Jimmy Lin for his advise and directions.
 
 \bibliographystyle{abbrv}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
