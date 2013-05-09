@@ -11,7 +11,7 @@
 
 \begin{document}
 
-\title{Similar Article Detection Using Locality Sensitive Hashing Technique on Wikipedia\titlenote{This effort is part of the CMSC828G, Data Intensive Computing with MapReduce, class project.}}
+\title{Similar Sentence Detection Using Locality Sensitive Hashing Technique on Wikipedia\titlenote{This effort is part of the CMSC828G, Data Intensive Computing with MapReduce, class project.}}
 
 \numberofauthors{3}
 
@@ -53,8 +53,7 @@ As a step toward identifying factual errors, we investigated the problem of find
 
 In order to come up with a novel algorithm that would allow us to detect near-duplicate sentences within Wikipedia articles, we decided that we needed to answer the following questions, first:
 \begin{itemize}[noitemsep,nolistsep]
-\item What is the most appropriate LSH technique to apply? Edit distance seems like a reasonable metric for near duplicate sentences, however LSH does not map naturally to the edit distance metric.
-\item Compare different sentence similarity techniques for effectiveness. 
+\item How effectively does Minhashing approximate edit distance? Edit distance seems like a reasonable metric for near duplicate sentences, however LSH does not map naturally to the edit distance metric.
 \item What is the appropriate granularity for analysis? Is comparing multiple consecutive sentences more effective than comparing single sentences? Similarly, what is the best shingle size?
 \item How well do techniques for detecting near duplicate documents work when applied at the sentence level?
 \item Do near duplicate sentences correspond to factual errors? Can these errors be automatically detected and/or corrections suggested?
@@ -94,12 +93,10 @@ In order to handle large Wikipedia dumps with the order of tens or hundreds of g
 
 %In order to measure document similarity we use a common LSH technique known as minhashing \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case input documents are sentences. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate $\{min_{s \in S}(F_i(s)\}$, the set of minimum hashes over the hash family. The signature on a document d is a vector of $K$ minhashes from the set of minimum hashes. In order to minimize false negatives we apply the technique sometimes known as ``banding'' \cite{Ullman} where multiple signatures are produced for each input document.
 
-In order to measure document similarity we use a common LSH technique known as MinHash \cite{}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case, we denote ''documents'' to mean sentences found within the content of Wikipedia articles. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
+In order to measure document similarity we use a common LSH technique known as MinHash \cite{Broder97onthe}. A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. In our case, we denote ''documents'' to mean sentences found within the content of Wikipedia articles. Each sentence is broken up into n-gram ``shingles''. For each shingle set $S$ we calculate the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
 
 \subsection{Design}
 Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
-
-DESCRIBE MAPREDUCE.
 
 Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
 
@@ -151,7 +148,7 @@ Because the minhash technique is parametrized by several variables, including sh
 
 \subsection{Implementation Details}
 
-Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library (\url{https://github.com/lintool/Cloud9}) for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift''  CORRECT CITATION GOES HERE hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 library (\url{https://github.com/lintool/Cloud9}) for parsing Wikipedia page text from the Wikipedia XML dump format. Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift'' (http://en.wikipedia.org/wiki/Universal_hashing) hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
 
 \section{Parameter Tuning}
 
@@ -159,7 +156,7 @@ As mentioned above the minhash algorithm is parametrized by several values, incl
 
 \subsection{Jaccard Similarity and Edit Distance}
 
-Jaccard similarity is a measure of set similarity while our stated goal is to find sentences in Wikipedia that have been copied from one article to another and possibly edited. A more natural measure to use for this application is edit distance. There is no known locality sensitive hashing family for edit distance \citation{}.
+Jaccard similarity is a measure of set similarity while our stated goal is to find sentences in Wikipedia that have been copied from one article to another and possibly edited. A more natural measure to use for this application is edit distance, but there is no known good locality sensitive hashing family for edit distance \citw{Kirsch06distance-sensitivebloom}.
 
 In order to estimate Jaccard similarity of sentences $X$ and $Y$ in terms of edit distance we assume that $X$ and $Y$ are both of length $N$ and that their shingle sets are of maximum size (i.e. all shingles are unique). Also assume that $X$ and $Y$ have edit distance $e$.  We limit type of edits to changing characters in place. Additionally, to simplify our calculations, we assume that edits are localized so that no shingle overlaps more than one edit.
 
@@ -291,7 +288,7 @@ Manual inspection of cluster output reveals several different similar sentence t
 \end{itemize}
 From the perspective of editing/writing Wikipedia articles, this is a strong indicator that the author copied the original sentence and modified the relevant information to pertain to a different topic. What remains shared between both sentences though is the inherent structure.
 
-\emph{Direct Copying} occurs when the same sentence has been copied into another (or possibly the same) article. This can happen for many reasons, including articles that deal with similar subjects, or articles that are subtopics of other topics. (SOME EXAMPLES?). Similarly, \emph{Direct Copying with Copy Editing} occurs when the same sentence has been copied into another article and then one or both sentences has been edited for style or clarity. For example:
+\emph{Direct Copying} occurs when the same sentence has been copied into another (or possibly the same) article. This can happen for many reasons, including articles that deal with similar subjects, or articles that are subtopics of other topics Similarly, \emph{Direct Copying with Copy Editing} occurs when the same sentence has been copied into another article and then one or both sentences has been edited for style or clarity. For example:
 \begin{itemize}[noitemsep,nolistsep]
 \item Bush had an approval rating of 22\% by the end of his term in 2008.
 \item Bush, a US President, had an approval rating of 22\% by the end of his term in 2008.
