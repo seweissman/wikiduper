@@ -1450,9 +1450,9 @@
 \def\crdata#1{\global\acmcopyr{#1}}
 \def\permission#1{\global\boilerplate{#1}}
 %
-\global\boilerplate={Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee.
-ACM SIGSPATIAL BIGSPATIAL'12, November 6, 2012. Redondo Beach, CA, USA
-Copyright (c) 2012 ACM ISBN 978-1-4503-1692-7/12/11...\$15.00}
+%\global\boilerplate={Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee.
+%ACM SIGSPATIAL BIGSPATIAL'12, November 6, 2012. Redondo Beach, CA, USA
+%Copyright (c) 2012 ACM ISBN 978-1-4503-1692-7/12/11...\$15.00}
 \newtoks\copyrightetc
 \global\copyrightetc{\ } %  Need to have 'something' so that adequate space is left for pasting in a line if "confinfo" is supplied.
 
