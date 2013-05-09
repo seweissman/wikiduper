@@ -161,7 +161,7 @@ As mentioned above the minhash algorithm is parametrized by several values, incl
 
 Jaccard similarity is a measure of set similarity while our stated goal is to find sentences in Wikipedia that have been copied from one article to another and possibly edited. A more natural measure to use for this application is edit distance. There is no known locality sensitive hashing family for edit distance \citation{}.
 
-In order to estimate Jaccard similarity of sentences $X$ and $Y$ in terms of edit distance we assume that $X$ and $Y$ are both of length $N$ and that their shingle sets are of maximum size (i.e. all shingles are unique). Also assume that $X$ and $Y$ have edit distance $e$.  Additionally, to simplify our calculations, we assume that edits are localized so that no shingle overlaps more than one edit.
+In order to estimate Jaccard similarity of sentences $X$ and $Y$ in terms of edit distance we assume that $X$ and $Y$ are both of length $N$ and that their shingle sets are of maximum size (i.e. all shingles are unique). Also assume that $X$ and $Y$ have edit distance $e$.  We limit type of edits to changing characters in place. Additionally, to simplify our calculations, we assume that edits are localized so that no shingle overlaps more than one edit.
 
 (WLOG) Let $S$ be the set of shingles for X and let $S_o$ be the set of shingles of X that overlap edits. The maximum number of unique shingles for a sentence of length $N$ is $N - L + 1 = |S|$. Also, we can see that $e \le |S_o| \le e + L - 1$. Since edits at the start or end of the sentence will overlap with fewer shingles than edit mid-sentence.
 
