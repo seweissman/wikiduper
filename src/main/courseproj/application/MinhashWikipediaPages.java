@@ -82,8 +82,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     };
     
     private static class SignatureMapper extends MapReduceBase implements
-    //Mapper<IntWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
-    Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    Mapper<IntWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
         static long seeds[];
@@ -123,10 +123,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
-                Reporter reporter) throws IOException {
-            //public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
-              //      Reporter reporter) throws IOException {
+        //public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
+          //      Reporter reporter) throws IOException {
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
+                    Reporter reporter) throws IOException {
 
             if (p.isRedirect()) {
                 reporter.incrCounter(PageTypes.REDIRECT, 1);
@@ -388,8 +388,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setMapperClass(SignatureMapper.class);
         conf.setReducerClass(SignatureReducer.class);
         
-        conf.setInputFormat(WikipediaPageInputFormat.class);
-        //conf.setInputFormat(SequenceFileInputFormat.class);
+        //conf.setInputFormat(WikipediaPageInputFormat.class);
+        conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         //conf.setOutputFormat(TextOutputFormat.class);
         
