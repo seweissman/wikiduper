@@ -46,6 +46,7 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -70,8 +71,8 @@ public class GetSentenceClusters extends Configured implements Tool {
      *
      */
     private static class ClusterMapper extends MapReduceBase implements
-    //Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
-    Mapper<LongWritable, WikipediaPage, IntWritable, Text> {
+    Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
+    //Mapper<LongWritable, WikipediaPage, IntWritable, Text> {
         
         // Map from docid -> sentence number -> cluster number
         static final TreeMap<Integer, TreeMap<Integer, Integer>> docmap = new TreeMap<Integer, TreeMap<Integer, Integer>>();
@@ -97,10 +98,10 @@ public class GetSentenceClusters extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        //public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
-          //      Reporter reporter) throws IOException {
-          public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
-                    Reporter reporter) throws IOException {
+        public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+                Reporter reporter) throws IOException {
+          //public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+            //        Reporter reporter) throws IOException {
 
             if(!p.isArticle() || p.isEmpty()) return;
             String content = p.getContent();
@@ -314,8 +315,8 @@ public class GetSentenceClusters extends Configured implements Tool {
         conf.setMapperClass(ClusterMapper.class);
         //conf.setReducerClass(ClusterReducer.class);
         
-        conf.setInputFormat(WikipediaPageInputFormat.class);
-        //conf.setInputFormat(SequenceFileInputFormat.class);
+        //conf.setInputFormat(WikipediaPageInputFormat.class);
+        conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
