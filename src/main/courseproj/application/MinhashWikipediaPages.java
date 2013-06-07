@@ -367,7 +367,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
         conf.setLong("rseed", 1123456);
         conf.setInt("NHASH", 20);
-        conf.setInt("NHASHOUTPUTBITS", 30);
+        conf.setInt("NHASHOUTPUTBITS", 60);
         //conf.setInt("MINLEN", 20);
         conf.setInt("MINLEN", 75);
         conf.setInt("MAXLEN", 600);
@@ -396,8 +396,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
         conf.set("mapred.map.child.java.opts", "-Xmx2048m");
-        conf.set("mapred.job.reduce.memory.mb", "4096");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
+        conf.set("mapred.job.reduce.memory.mb", "6144");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
