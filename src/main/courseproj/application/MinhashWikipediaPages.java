@@ -313,7 +313,18 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
     private static final String LANGUAGE_OPTION = "wiki_language";
-
+    private static final String NHASH_IN = "nHash";
+    private static final String K_IN = "k";
+    private static final String N_IN = "n";
+    private static final String HASHBITS = "bits";
+    private static final String SHINGLELEN_IN = "shingleLen";
+    static int NHASH; // Total number of hashes per sentence
+    static int K; // Length of hash vector
+    static int N; // Number of hashes per input sentence (N < NHASH)
+    static int NHASHOUTPUTBITS;
+    static int SHINGLELEN;
+    
+    
     @SuppressWarnings("static-access")
     @Override
     public int run(String[] args) throws Exception {
@@ -326,7 +337,17 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 .withDescription("two-letter language code").create(LANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
-
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("number of hashes").create(NHASH_IN));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("length of minhash signature vector").create(K_IN));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("number of signatures").create(N_IN));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("size of hash in bits").create(HASHBITS));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+                .withDescription("length of shingle window").create(SHINGLELEN_IN));
+        
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
         try {
@@ -336,7 +357,9 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
+        if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(NUM_REDUCERS)
+                || !cmdline.hasOption(NHASH_IN) || !cmdline.hasOption(K_IN) || !cmdline.hasOption(N_IN)
+                || !cmdline.hasOption(HASHBITS) || !cmdline.hasOption(SHINGLELEN_IN)) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -356,6 +379,12 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
+        int nHash = Integer.parseInt(cmdline.getOptionValue(NHASH_IN));
+        int k = Integer.parseInt(cmdline.getOptionValue(K_IN));
+        int n = Integer.parseInt(cmdline.getOptionValue(N_IN));
+        int nBits = Integer.parseInt(cmdline.getOptionValue(HASHBITS)); 
+        int l = Integer.parseInt(cmdline.getOptionValue(SHINGLELEN_IN));
+        
 
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - bz2 file: " + inputPath);
@@ -366,14 +395,20 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setJobName(String.format("MinhashWikipediaPages[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
 
         conf.setLong("rseed", 1123456);
-        conf.setInt("NHASH", 20);
-        conf.setInt("NHASHOUTPUTBITS", 30);
-        //conf.setInt("MINLEN", 20);
+        //conf.setInt("NHASH", 20);
+        conf.setInt("NHASH", nHash);
+        //conf.setInt("NHASHOUTPUTBITS", 30);
+        conf.setInt("NHASHOUTPUTBITS", nBits);
+        //conf.setInt("K",  10);
+        conf.setInt("K",  k);
+        //conf.setInt("N", 10);
+        conf.setInt("N", n);
+        //conf.setInt("SHINGLELEN",12);
+        conf.setInt("SHINGLELEN",l);
+        
         conf.setInt("MINLEN", 75);
         conf.setInt("MAXLEN", 600);
-        conf.setInt("K",  10);
-        conf.setInt("N", 10);
-        conf.setInt("SHINGLELEN",12);
+
 
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(reduceTasks);
