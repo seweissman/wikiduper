@@ -1,6 +1,6 @@
 
-nReducers = 20
-lang = en
+nReducers=20
+lang=en
 # input = $1
 # output $2
 # nHash $3
