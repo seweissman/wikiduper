@@ -4,12 +4,12 @@ lang = en
 # input = $1
 # output $2
 # nHash $3
-# k $4
-# n $5
-# bits $6
+# bits $4
+# k $5
+# n $6
 # shingleLen $7
 
-echo etc/hadoop-cluster.sh courseproj.application.MinhashWikipediaPages -wiki_language $lang -input $1 -output enwiki-20130503-pairs -numReducers $nReducers -nHash $3 -k $4 -n $5 -bits $6 -shingleLen $7
+echo etc/hadoop-cluster.sh courseproj.application.MinhashWikipediaPages -wiki_language $lang -input $1 -output enwiki-20130503-pairs -numReducers $nReducers -nHash $3 -k $5 -n $6 -bits $4 -shingleLen $7
 echo etc/hadoop-cluster.sh courseproj.application.DedupSentencePairs -input enwiki-20130503-pairs -output enwiki-20130503-pairsdedup
 echo rm -rf enwiki-20130503-pairsdedup
 echo hadoop fs -get enwiki-20130503-pairsdedup
