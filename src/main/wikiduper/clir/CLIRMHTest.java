@@ -19,6 +19,7 @@ import edu.umd.hooka.Vocab;
 import edu.umd.hooka.alignment.HadoopAlign;
 import edu.umd.hooka.ttables.TTable_monolithic_IFAs;
 
+
 public class CLIRMHTest {
 
     private static void readSentences(String eReadFile, String fReadFile, String eLang, String fLang,
@@ -52,7 +53,6 @@ public class CLIRMHTest {
           } else {
             tokens = fTokenizer.processContent(fLine);
           }
-          //lastSentLenF = tokens.length;
 
           for (String token : tokens) {
             if (!fSent.containsKey(token)) { // if this is first time we saw token in this sentence
@@ -71,7 +71,6 @@ public class CLIRMHTest {
           }
           
           tokens = eTokenizer.processContent(eLine);
-          //lastSentLenE = tokens.length;
 
           for (String token : tokens) {
             if (!eSent.containsKey(token)) {
