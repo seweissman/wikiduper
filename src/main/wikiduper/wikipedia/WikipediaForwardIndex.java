@@ -1,4 +1,4 @@
-package courseproj.wikipedia;
+package wikiduper.wikipedia;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Preconditions;
 
-import courseproj.wikipedia.language.WikipediaPageFactory;
+import wikiduper.wikipedia.language.WikipediaPageFactory;
 
 import edu.umd.cloud9.collection.DocumentForwardIndex;
 

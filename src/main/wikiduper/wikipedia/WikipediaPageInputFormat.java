@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia;
+package wikiduper.wikipedia;
 
 import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
@@ -25,7 +25,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
-import courseproj.wikipedia.language.WikipediaPageFactory;
+import wikiduper.wikipedia.language.WikipediaPageFactory;
 import edu.umd.cloud9.collection.IndexableFileInputFormatOld;
 import edu.umd.cloud9.collection.XMLInputFormatOld;
 import edu.umd.cloud9.collection.XMLInputFormatOld.XMLRecordReader;

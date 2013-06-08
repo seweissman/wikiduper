@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wiki;
+package wikiduper.wiki;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -29,8 +29,8 @@ import java.util.regex.Pattern;
 
 import org.apache.tools.bzip2.CBZip2InputStream;
 
-import courseproj.wikipedia.WikipediaPage;
-import courseproj.wikipedia.language.WikipediaPageFactory;
+import wikiduper.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.language.WikipediaPageFactory;
 
 
 /**

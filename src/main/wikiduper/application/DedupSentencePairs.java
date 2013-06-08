@@ -1,4 +1,4 @@
-package courseproj.application;
+package wikiduper.application;
 
 /*
  * Cloud9: A MapReduce Library for Hadoop

@@ -1,4 +1,4 @@
-package courseproj.hash;
+package wikiduper.hash;
 
 import java.util.Random;
 

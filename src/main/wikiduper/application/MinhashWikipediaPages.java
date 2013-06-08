@@ -1,4 +1,4 @@
-package courseproj.application;
+package wikiduper.application;
 
 /*
  * Cloud9: A MapReduce Library for Hadoop
@@ -51,9 +51,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import courseproj.hash.MultiplyShiftHash;
-import courseproj.wikipedia.WikipediaPage;
-import courseproj.wikipedia.WikipediaPageInputFormat;
+import wikiduper.hash.MultiplyShiftHash;
+import wikiduper.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfStringInt;

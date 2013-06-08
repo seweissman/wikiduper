@@ -14,14 +14,14 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia.language;
+package wikiduper.wikipedia.language;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
-import courseproj.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.WikipediaPage;
 
 /**
  * An Arabic page from Wikipedia.

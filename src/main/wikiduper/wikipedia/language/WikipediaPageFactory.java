@@ -14,9 +14,9 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia.language;
+package wikiduper.wikipedia.language;
 
-import courseproj.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.WikipediaPage;
 
 
 /**

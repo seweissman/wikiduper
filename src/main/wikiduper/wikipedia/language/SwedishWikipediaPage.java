@@ -14,11 +14,11 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia.language;
+package wikiduper.wikipedia.language;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
-import courseproj.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.WikipediaPage;
 
 /**
  * A Swedish page from Wikipedia.

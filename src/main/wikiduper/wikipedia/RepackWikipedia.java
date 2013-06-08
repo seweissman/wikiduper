@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia;
+package wikiduper.wikipedia;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,10 +44,10 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import courseproj.wikipedia.WikipediaDocnoMapping;
-import courseproj.wikipedia.WikipediaPage;
-import courseproj.wikipedia.WikipediaPageInputFormat;
-import courseproj.wikipedia.language.WikipediaPageFactory;
+import wikiduper.wikipedia.WikipediaDocnoMapping;
+import wikiduper.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.WikipediaPageInputFormat;
+import wikiduper.wikipedia.language.WikipediaPageFactory;
 
 
 /**

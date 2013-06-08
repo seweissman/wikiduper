@@ -1,4 +1,4 @@
-package courseproj.clir;
+package wikiduper.clir;
 
 import java.io.BufferedReader;
 import java.io.EOFException;

@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia;
+package wikiduper.wikipedia;
 
 import info.bliki.wiki.filter.PlainTextConverter;
 import info.bliki.wiki.model.WikiModel;

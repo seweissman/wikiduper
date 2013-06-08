@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wikipedia;
+package wikiduper.wikipedia;
 
 import java.io.IOException;
 import java.util.Arrays;

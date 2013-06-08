@@ -1,4 +1,4 @@
-package analysis;
+package wikiduper.analysis;
 
 
 
@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import wikiduper.dist.EditDistance;
 
 public class ClusterSentences {
 	

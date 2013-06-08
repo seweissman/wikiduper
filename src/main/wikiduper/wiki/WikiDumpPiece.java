@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package courseproj.wiki;
+package wikiduper.wiki;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
