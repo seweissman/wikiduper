@@ -106,5 +106,6 @@
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-nodemanager-2.0.0-cdh4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-resourcemanager-2.0.0-cdh4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-web-proxy-2.0.0-cdh4.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/ivory-0.12.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
