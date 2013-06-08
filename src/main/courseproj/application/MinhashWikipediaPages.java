@@ -387,9 +387,14 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
 
         LOG.info("Tool name: " + this.getClass().getName());
-        LOG.info(" - bz2 file: " + inputPath);
+        LOG.info(" - input file: " + inputPath);
         LOG.info(" - output file: " + outputPath);
         LOG.info(" - language: " + language);
+        LOG.info(" - number hashes: " + nHash);
+        LOG.info(" - hash bits: " + nBits);
+        LOG.info(" - hash sig length: " + k);
+        LOG.info(" - num hash sigs: " + n);
+        LOG.info(" - shingle length: " + l);
 
         JobConf conf = new JobConf(getConf(), MinhashWikipediaPages.class);
         conf.setJobName(String.format("MinhashWikipediaPages[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, LANGUAGE_OPTION, language));
