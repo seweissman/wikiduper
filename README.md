@@ -1,4 +1,4 @@
-828g-project
+Wikiduper
 ============
 
-Repository for group project for 828G
+Package for similar sentence detection on Wikipedia with hadoop.

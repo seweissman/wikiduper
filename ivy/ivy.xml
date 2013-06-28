@@ -16,9 +16,10 @@
     <dependency org="org.apache.hadoop" name="hadoop-hdfs" rev="2.0.0-cdh4.2.1" conf="*->*,!sources,!javadoc"/>
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core" rev="2.0.0-cdh4.2.1" conf="*->*,!sources,!javadoc"/>
     <dependency org="org.apache.hadoop" name="hadoop-streaming" rev="2.0.0-cdh4.2.1" conf="*->*,!sources,!javadoc"/>
-    <dependency org="edu.umd" name="cloud9" rev="1.4.13" conf="*->*,!sources,!javadoc">
+    <dependency org="edu.umd" name="cloud9" rev="1.4.14" conf="*->*,!sources,!javadoc">
       <exclude org="fastutil"/>
     </dependency>
+    <dependency org="cc.ivory" name="ivory" rev="0.12.0" conf="*->*,!sources,!javadoc"/>
     <dependency org="junit" name="junit" rev="4.11" conf="*->*,!sources,!javadoc" />
   </dependencies>
 </ivy-module>

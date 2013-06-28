@@ -12,21 +12,15 @@
 	<classpathentry kind="lib" path="lib/avro-1.7.3.jar"/>
 	<classpathentry kind="lib" path="lib/bliki-core-3.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/cglib-2.2.1-v20090111.jar"/>
-	<classpathentry kind="lib" path="lib/cloud9-1.4.13.jar" sourcepath="/Users/weissman/.m2/repository/edu/umd/cloud9/1.4.13/cloud9-1.4.13-sources.jar"/>
 	<classpathentry kind="lib" path="lib/collections-generic-4.01.jar"/>
 	<classpathentry kind="lib" path="lib/colt-1.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-core-1.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compress-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-daemon-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-digester-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-2.1.jar"/>
@@ -84,7 +78,6 @@
 	<classpathentry kind="lib" path="lib/servlet-api-2.5-20081211.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api-2.5-6.1.14.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/snappy-java-1.0.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/stax-api-1.0.1.jar"/>
@@ -106,5 +99,10 @@
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-nodemanager-2.0.0-cdh4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-resourcemanager-2.0.0-cdh4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-web-proxy-2.0.0-cdh4.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/ivory-0.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/cloud9-1.4.14.jar"/>
+	<classpathentry kind="lib" path="lib/commons-configuration-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

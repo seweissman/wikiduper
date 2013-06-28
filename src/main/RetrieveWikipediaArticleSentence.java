@@ -11,9 +11,9 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import courseproj.wiki.WikipediaPagesBz2InputStream;
-import courseproj.wikipedia.WikipediaPage;
-import courseproj.wikipedia.language.WikipediaPageFactory;
+import wikiduper.wiki.WikipediaPagesBz2InputStream;
+import wikiduper.wikipedia.WikipediaPage;
+import wikiduper.wikipedia.language.WikipediaPageFactory;
 
 
 /**

@@ -27,7 +27,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import courseproj.hash.MultiplyShiftHash;
+import wikiduper.hash.MultiplyShiftHash;
 
 import cern.colt.Arrays;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
