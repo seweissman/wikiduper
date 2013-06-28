@@ -1,4 +1,4 @@
-<ivy-module version="2.0">
+<ivy-module version="2.2">
   <info organisation="edu.umd" module="mapreduce-assignment" revision="${version}"/>
 
   <publications>
@@ -16,10 +16,11 @@
     <dependency org="org.apache.hadoop" name="hadoop-hdfs" rev="2.0.0-cdh4.2.1" conf="*->*,!sources,!javadoc"/>
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core" rev="2.0.0-cdh4.2.1" conf="*->*,!sources,!javadoc"/>
     <dependency org="org.apache.hadoop" name="hadoop-streaming" rev="2.0.0-cdh4.2.1" conf="*->*,!sources,!javadoc"/>
-    <dependency org="edu.umd" name="cloud9" rev="1.4.14" conf="*->*,!sources,!javadoc">
+    <dependency org="edu.umd" name="cloud9" rev="1.4.16" conf="*->*,!sources,!javadoc">
       <exclude org="fastutil"/>
     </dependency>
-    <dependency org="cc.ivory" name="ivory" rev="0.12.0" conf="*->*,!sources,!javadoc"/>
+    <dependency org="com.google.code.simple-spring-memcached" name="spymemcached" rev="2.8.1"/>
+    <dependency org="cc.ivory" name="ivory" rev="0.12.1" conf="*->*,!sources,!javadoc"/>
     <dependency org="junit" name="junit" rev="4.11" conf="*->*,!sources,!javadoc" />
   </dependencies>
 </ivy-module>
