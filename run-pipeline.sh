@@ -25,5 +25,5 @@ echo hadoop fs -put ewiki-20130503-clusters
 hadoop fs -put ewiki-20130503-clusters
 echo etc/hadoop-cluster.sh courseproj.application.GetSentenceClusters -input $1 -wiki_language en -clustermap enwiki-20130503-clusters -output $2 -numReducers $nReducers
 etc/hadoop-cluster.sh courseproj.application.GetSentenceClusters -input $1 -wiki_language en -clustermap enwiki-20130503-clusters -output $2 -numReducers $nReducers
-echo hadoop fs -get $2
-hadoop fs -get $2
+echo hadoop fs -get $2 $2-$4-$5-$6-$7
+hadoop fs -get $2 $2-$4-$5-$6-$7
