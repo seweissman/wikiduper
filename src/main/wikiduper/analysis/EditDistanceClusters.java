@@ -45,6 +45,8 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -246,7 +248,8 @@ public class EditDistanceClusters extends Configured implements Tool {
         conf.setReducerClass(ClusterReducer.class);
         
         conf.setInputFormat(TextInputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
+        //conf.setOutputFormat(SequenceFileOutputFormat.class);
+        conf.setOutputFormat(SequenceFileOutputFormat.class);
         
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
@@ -268,6 +271,15 @@ public class EditDistanceClusters extends Configured implements Tool {
 
         
         // Tally scores
+        System.out.println("Tallying scores!!!");
+        conf = new JobConf(getConf(), EditDistanceClusters.class);
+
+        conf.setJobName(String.format("EditDistanceClusters[%s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath));
+
+        conf.setNumMapTasks(4);
+        conf.setNumReduceTasks(reduceTasks);
+
+        
         FileInputFormat.setInputPaths(conf, new Path(tmpPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
@@ -276,12 +288,13 @@ public class EditDistanceClusters extends Configured implements Tool {
         conf.setReducerClass(ScoreReducer.class);
         conf.setCombinerClass(ScoreReducer.class);
         
-        conf.setInputFormat(TextInputFormat.class);
+        conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(TextOutputFormat.class);
         
         conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(LongWritable.class);
-
+        conf.setMapOutputKeyClass(IntWritable.class);
+        conf.setMapOutputValueClass(LongWritable.class);
         // Delete the output directory if it exists already.
         outputDir = new Path(outputPath);
         FileSystem.get(conf).delete(outputDir, true);
