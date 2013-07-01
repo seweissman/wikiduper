@@ -6,7 +6,7 @@
 
 # Build files
 build/
-dist/
+./dist/
 docs/
 etc/*.sh
 lib/
