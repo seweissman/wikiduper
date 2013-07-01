@@ -18,6 +18,7 @@ package wikiduper.analysis;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -106,33 +107,40 @@ public class EditDistanceClusters extends Configured implements Tool {
 
     private static class ClusterReducer extends MapReduceBase implements 
     Reducer<LongWritable, Text, LongWritable, LongWritable> {
-        
+        static final ArrayList<String> valList = new ArrayList<String>();        
         @Override
         public void reduce(LongWritable key, Iterator<Text> values,
                 OutputCollector<LongWritable, LongWritable> output, Reporter reporter)
                         throws IOException {
             
-            HashSet<String> valSet = new HashSet<String>();
+            valList.clear();
+
             while (values.hasNext()) {
-                valSet.add(values.next().toString());
+                valList.add(values.next().toString());
             }
             LongWritable scoreOut;
-            LongWritable clusterOut;
-            if(valSet.size() > 1){
-                String[] valList = valSet.toArray(new String[valSet.size()]);
-                for(int i=0;i<valList.length;i++){
-                    String m1 = valList[i];
-                    for(int j=i+1;j<valList.length;j++){
-                        String m2 = valList[j];
-                        long d = EditDistance.dist(valList[i], valList[j]);
-                        long dl = Math.max(m1.length(), m2.length()) - Math.min(m1.length(), m2.length());
-                        long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
+            //LongWritable clusterOut;
+            for(int i=0;i<valList.size();i++){
+                String m1 = valList.get(i);
+                for(int j=i+1;j<valList.size();j++){
+                    String m2 = valList.get(j);
+                    if(m1.equals(m2)){
                         scoreOut = new LongWritable();
-                        clusterOut = new LongWritable();
-                        scoreOut.set(score);
-                        clusterOut.set(key.get());
-                        output.collect(clusterOut, scoreOut);                                                        
+                        //clusterOut = new LongWritable();
+                        scoreOut.set(0);
+                        //clusterOut.set(key.get());
+                        //output.collect(clusterOut, scoreOut);                                                        
+                        output.collect(key, scoreOut);
                     }
+                    long d = EditDistance.dist(m1, m2);
+                    long dl = Math.max(m1.length(), m2.length()) - Math.min(m1.length(), m2.length());
+                    long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
+                    scoreOut = new LongWritable();
+                    //clusterOut = new LongWritable();
+                    scoreOut.set(score);
+                    //clusterOut.set(key.get());
+                    //output.collect(clusterOut, scoreOut);
+                    output.collect(key, scoreOut);
                 }
             }
 
