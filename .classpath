@@ -100,7 +100,7 @@
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-resourcemanager-2.0.0-cdh4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-yarn-server-web-proxy-2.0.0-cdh4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ivory-0.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/cloud9-1.4.14.jar"/>
+	<classpathentry kind="lib" path="lib/cloud9-1.4.14.jar" sourcepath="/Users/weissman/.m2/repository/edu/umd/cloud9/1.4.14/cloud9-1.4.14-sources.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.2.jar"/>
