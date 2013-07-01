@@ -82,7 +82,8 @@ public class EditDistance {
 				System.out.println("Usage: EditDistance <filein>\n");
 				System.exit(-1);
 			}
-		    Pattern linepat = Pattern.compile("(\\[[-0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
+		    //Pattern linepat = Pattern.compile("(\\[[-0-9, ]+\\])\t\\((.*), \\d+:\\d+\\)");
+		  Pattern linepat = Pattern.compile("([-0-9]+)\t([^\t]+)\t(.*)");
 		    //ArrayList<ArrayList<String>> clusterlist = new ArrayList<ArrayList<String>>();
 		    HashMap<String, HashSet<String>> matchmap = new HashMap<String, HashSet<String>>();
 		    HashMap<String, HashSet<String>> nomatchmap = new HashMap<String, HashSet<String>>();
@@ -103,10 +104,12 @@ public class EditDistance {
                   Matcher m = linepat.matcher(line);
                   String sig = "";
                   String sentence = "";
+                  String article = "";
                   if(m.matches()){
                       sig = m.group(1);
-					  sentence = m.group(2);
-					  //System.out.println("sig = " + sig + " , sentence = " + sentence);
+                      article = m.group(2);
+                      sentence = m.group(3);
+					  System.out.println("sig = " + sig + ", article = " + article +  ", sentence = " + sentence);
 					}else{
 					    System.out.println("Bad line: " + line);
 					    System.exit(-1);
