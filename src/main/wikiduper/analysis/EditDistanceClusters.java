@@ -119,7 +119,7 @@ public class EditDistanceClusters extends Configured implements Tool {
             LongWritable scoreOut;
             LongWritable clusterOut;
             if(valSet.size() > 1){
-                String[] valList = (String[]) valSet.toArray();
+                String[] valList = valSet.toArray(new String[valSet.size()]);
                 for(int i=0;i<valList.length;i++){
                     String m1 = valList[i];
                     for(int j=i+1;j<valList.length;j++){
