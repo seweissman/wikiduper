@@ -73,7 +73,6 @@ public class EditDistanceClusters extends Configured implements Tool {
         // The document-sentence identifier
         static LongWritable CLUSTER = new LongWritable();
         static Text SENTENCE = new Text();
-        
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         Pattern linepat = Pattern.compile("([-0-9]+)\t([^\t]+)\t(.*)");
         
@@ -83,22 +82,18 @@ public class EditDistanceClusters extends Configured implements Tool {
             Matcher m = linepat.matcher(line.toString());
             String sig = "";
             String sentence = "";
-            String article = "";
+//            String article = "";
             if(m.matches()){
                 sig = m.group(1);
-                article = m.group(2);
+                //article = m.group(2);
                 sentence = m.group(3);
-                System.out.println("sig = " + sig + ", article = " + article +  ", sentence = " + sentence);
+                //System.out.println("sig = " + sig + ", article = " + article +  ", sentence = " + sentence);
                 CLUSTER = new LongWritable();
                 CLUSTER.set(Long.valueOf(sig));
                 SENTENCE = new Text();
                 SENTENCE.set(sentence);
                 output.collect(CLUSTER, SENTENCE);
-            }else{
-                  System.out.println("Bad line: " + line);
-                  System.exit(-1);
             }
-
         }
 
 
@@ -108,16 +103,20 @@ public class EditDistanceClusters extends Configured implements Tool {
     private static class ClusterReducer extends MapReduceBase implements 
     Reducer<LongWritable, Text, LongWritable, LongWritable> {
         static final ArrayList<String> valList = new ArrayList<String>();        
+        static int clusterSizeLimit = 100;
+
         @Override
         public void reduce(LongWritable key, Iterator<Text> values,
                 OutputCollector<LongWritable, LongWritable> output, Reporter reporter)
                         throws IOException {
             
             valList.clear();
-
-            while (values.hasNext()) {
+            int ct = 0;
+            while (values.hasNext() && ct < clusterSizeLimit) {
                 valList.add(values.next().toString());
+                ct++;
             }
+
             LongWritable scoreOut;
             //LongWritable clusterOut;
             for(int i=0;i<valList.size();i++){
@@ -131,16 +130,20 @@ public class EditDistanceClusters extends Configured implements Tool {
                         //clusterOut.set(key.get());
                         //output.collect(clusterOut, scoreOut);                                                        
                         output.collect(key, scoreOut);
-                    }
-                    long d = EditDistance.dist(m1, m2);
-                    long dl = Math.max(m1.length(), m2.length()) - Math.min(m1.length(), m2.length());
-                    long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
-                    scoreOut = new LongWritable();
+                    }else{
+                        long d = EditDistance.dist(m1, m2);
+                        long dl = Math.max(m1.length(), m2.length()) - Math.min(m1.length(), m2.length());
+                        long score = Math.round(100*(d - dl + 1)*1.0/Math.max(m1.length(), m2.length()));
+                        scoreOut = new LongWritable();
                     //clusterOut = new LongWritable();
-                    scoreOut.set(score);
+                        scoreOut.set(score);
                     //clusterOut.set(key.get());
                     //output.collect(clusterOut, scoreOut);
-                    output.collect(key, scoreOut);
+                        output.collect(key, scoreOut);
+                    }
+                    //System.out.println("m1 = " + m1);
+                    //System.out.println("m2 = " + m2);
+                    //System.out.println("score = " + scoreOut);
                 }
             }
 
