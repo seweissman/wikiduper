@@ -19,7 +19,6 @@ package wikiduper.analysis;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +33,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -73,7 +73,6 @@ public class EditDistanceClusters extends Configured implements Tool {
         // The document-sentence identifier
         static LongWritable CLUSTER = new LongWritable();
         static Text SENTENCE = new Text();
-        //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         Pattern linepat = Pattern.compile("([-0-9]+)\t([^\t]+)\t(.*)");
         
         public void map(LongWritable key, Text line, OutputCollector<LongWritable, Text> output,
@@ -151,7 +150,45 @@ public class EditDistanceClusters extends Configured implements Tool {
 
     }
 
+    private static class ScoreMapper extends MapReduceBase implements
+    Mapper<LongWritable, LongWritable, IntWritable, LongWritable> {
+        
+        static IntWritable good = new IntWritable(1);
+        static IntWritable bad = new IntWritable(0);
+        static LongWritable one = new LongWritable(1);
+        static long scoreLimit = 25;
+        public void map(LongWritable key, LongWritable score, OutputCollector<IntWritable, LongWritable> output,
+                Reporter reporter) throws IOException {
+
+            if(score.get() > scoreLimit){
+                output.collect(bad, one);
+            }else{
+                output.collect(good, one);
+            }
+        }
+
+
+    }
     
+
+    private static class ScoreReducer extends MapReduceBase implements 
+    Reducer<IntWritable, LongWritable, IntWritable, LongWritable> {
+
+        @Override
+        public void reduce(IntWritable key, Iterator<LongWritable> values,
+                OutputCollector<IntWritable, LongWritable> output, Reporter reporter)
+                        throws IOException {
+            LongWritable sumOut = new LongWritable();
+            long sum = 0;
+            while(values.hasNext()){
+                sum += values.next().get();
+            }
+            sumOut.set(sum);
+            output.collect(key, sumOut);
+
+        }
+
+    }
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
@@ -187,7 +224,7 @@ public class EditDistanceClusters extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        
+        String tmpPath = "tmpout";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
 
         LOG.info("Tool name: " + this.getClass().getName());
@@ -202,7 +239,7 @@ public class EditDistanceClusters extends Configured implements Tool {
         conf.setNumReduceTasks(reduceTasks);
 
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
-        FileOutputFormat.setOutputPath(conf, new Path(outputPath));
+        FileOutputFormat.setOutputPath(conf, new Path(tmpPath));
 
 
         conf.setMapperClass(ClusterMapper.class);
@@ -224,11 +261,34 @@ public class EditDistanceClusters extends Configured implements Tool {
         conf.setMapOutputValueClass(Text.class);
         
         // Delete the output directory if it exists already.
-        Path outputDir = new Path(outputPath);
+        Path outputDir = new Path(tmpPath);
         FileSystem.get(conf).delete(outputDir, true);
 
         JobClient.runJob(conf);
 
+        
+        // Tally scores
+        FileInputFormat.setInputPaths(conf, new Path(tmpPath));
+        FileOutputFormat.setOutputPath(conf, new Path(outputPath));
+
+
+        conf.setMapperClass(ScoreMapper.class);
+        conf.setReducerClass(ScoreReducer.class);
+        conf.setCombinerClass(ScoreReducer.class);
+        
+        conf.setInputFormat(TextInputFormat.class);
+        conf.setOutputFormat(TextOutputFormat.class);
+        
+        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputValueClass(LongWritable.class);
+
+        // Delete the output directory if it exists already.
+        outputDir = new Path(outputPath);
+        FileSystem.get(conf).delete(outputDir, true);
+
+        JobClient.runJob(conf);
+
+        
         return 0;
     }
 
