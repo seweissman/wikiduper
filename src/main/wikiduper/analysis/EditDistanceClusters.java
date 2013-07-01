@@ -277,7 +277,7 @@ public class EditDistanceClusters extends Configured implements Tool {
         conf.setJobName(String.format("EditDistanceClusters[%s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath));
 
         conf.setNumMapTasks(4);
-        conf.setNumReduceTasks(reduceTasks);
+        conf.setNumReduceTasks(2);
 
         
         FileInputFormat.setInputPaths(conf, new Path(tmpPath));
