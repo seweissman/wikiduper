@@ -15,3 +15,20 @@
 ./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 30 10 14 12
 ./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 30 10 16 12
 
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 8 8 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 8 10 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 8 12 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 8 14 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 8 16 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 9 8 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 9 10 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 9 12 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 9 14 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 9 16 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 10 8 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 10 10 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 10 12 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 10 14 12
+./run-pipeline.sh enwiki-20130503-pack enwiki-20130503-sentences 20 60 10 16 12
+
+
