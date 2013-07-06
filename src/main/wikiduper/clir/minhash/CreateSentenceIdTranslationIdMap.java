@@ -1,4 +1,4 @@
-package wikiduper.clir;
+package wikiduper.clir.minhash;
 
 /*
  * Cloud9: A MapReduce Library for Hadoop
@@ -17,18 +17,8 @@ package wikiduper.clir;
  */
 
 
-import ivory.core.tokenize.Tokenizer;
-import ivory.core.tokenize.TokenizerFactory;
-
-import java.io.EOFException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -37,12 +27,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -61,22 +49,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.hash.MultiplyShiftHash;
-import wikiduper.wikipedia.WikipediaPage;
-import wikiduper.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
-import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.map.HMapSIW;
-import edu.umd.cloud9.io.pair.PairOfFloatInt;
-import edu.umd.cloud9.io.pair.PairOfIntString;
-import edu.umd.cloud9.io.pair.PairOfStringInt;
-import edu.umd.cloud9.io.pair.PairOfStrings;
-import edu.umd.cloud9.util.array.ArrayListOfInts;
-import edu.umd.cloud9.util.array.ArrayListOfLongs;
-import edu.umd.hooka.Vocab;
-import edu.umd.hooka.alignment.HadoopAlign;
-import edu.umd.hooka.ttables.TTable_monolithic_IFAs;
 
 public class CreateSentenceIdTranslationIdMap extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(CreateSentenceIdTranslationIdMap.class);

@@ -1,4 +1,4 @@
-package wikiduper.clir;
+package wikiduper.clir.minhash;
 
 import ivory.core.tokenize.Tokenizer;
 import ivory.core.tokenize.TokenizerFactory;

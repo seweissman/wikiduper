@@ -1,4 +1,4 @@
-package wikiduper.clir;
+package wikiduper.clir.minhash;
 
 import java.io.BufferedReader;
 import java.io.EOFException;

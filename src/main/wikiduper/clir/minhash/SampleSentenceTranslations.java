@@ -1,4 +1,4 @@
-package wikiduper.clir;
+package wikiduper.clir.minhash;
 
 /*
  * Cloud9: A MapReduce Library for Hadoop
