@@ -21,6 +21,7 @@
     </dependency>
     <dependency org="com.google.code.simple-spring-memcached" name="spymemcached" rev="2.8.1"/>
     <dependency org="cc.ivory" name="ivory" rev="0.12.1" conf="*->*,!sources,!javadoc"/>
+    <dependency org="org.wikiclean" name="wikiclean" rev="0.3" conf="*->*,!sources,!javadoc"/>
     <dependency org="junit" name="junit" rev="4.11" conf="*->*,!sources,!javadoc" />
   </dependencies>
 </ivy-module>

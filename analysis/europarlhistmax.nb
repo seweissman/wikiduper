@@ -1,0 +1,776 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     28381,        767]
+NotebookOptionsPosition[     27709,        743]
+NotebookOutlinePosition[     28066,        759]
+CellTagsIndexPosition[     28023,        756]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-5-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-5-30-50-80-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h1", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h2", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{
+  3.580936217899416*^9, {3.5820287044871607`*^9, 3.5820287113667593`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-8-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-8-30-50-80-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h3", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h4", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.580936225065494*^9, 3.580936231024704*^9}, {
+  3.5809364438847322`*^9, 3.580936447724221*^9}, {3.582028808793922*^9, 
+  3.5820288262964973`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-10-30-50-80-100.out\>\"",
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-10-30-50-80-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h5", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h6", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.580936264240182*^9, 3.580936291209991*^9}, {
+  3.5809364504764843`*^9, 3.580936451883719*^9}, {3.582028903724627*^9, 
+  3.582028916643931*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/match-10-30-50-150-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-10-30-50-150-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h7", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h8", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.580936293641325*^9, 3.580936306967763*^9}, {
+  3.580936453772193*^9, 3.5809364576358967`*^9}, {3.5820290166242723`*^9, 
+  3.5820290308343353`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-12-30-50-80-100.out\>\"",
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-12-30-50-80-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h9", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h10", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.5809363450967627`*^9, 3.5809363526155977`*^9}, {
+  3.580936464283546*^9, 3.580936468929329*^9}, {3.582029040527238*^9, 
+  3.582029052359071*^9}, {3.582029100949717*^9, 3.582029105266609*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-12-30-50-80-200.out\>\"",
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-12-30-50-80-200.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h11", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h12", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.580936354800021*^9, 3.5809363583313026`*^9}, {
+  3.580936473067474*^9, 3.580936477383008*^9}, {3.582029827941432*^9, 
+  3.5820298459007053`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/match-12-30-50-150-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-12-30-50-150-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h13", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h14", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.580920426574128*^9, 3.580920430520628*^9}, {
+  3.580921315690578*^9, 3.580921333184554*^9}, {3.580936389478633*^9, 
+  3.580936398292748*^9}, {3.580936482507195*^9, 3.580936487100424*^9}, {
+  3.582031468665948*^9, 3.582031479728503*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/match-12-30-50-300-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-12-30-50-300-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h15", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h16", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.5809214922842197`*^9, 3.580921503464323*^9}, {
+  3.580923407569687*^9, 3.580923416153244*^9}, {3.580936406166995*^9, 
+  3.580936416021941*^9}, {3.580936494194025*^9, 3.580936498436748*^9}, {
+  3.582031563972046*^9, 3.582031577387151*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-15-30-50-80-100.out\>\"",
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-15-30-50-80-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h17", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h18", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.582031603994671*^9, 3.582031628033291*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-20-30-50-80-100.out\>\"",
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"match", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"str", "=", 
+   RowBox[{
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/nomatch-20-30-50-80-100.out\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nomatch", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"str", ",", "Number"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "str", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h19", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h20", " ", "=", " ", 
+   RowBox[{"Histogram", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"Automatic", ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "200"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"BaseStyle", "->", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.582032713897944*^9, 3.582032719553788*^9}, {
+  3.582032817694512*^9, 3.5820328202143373`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"g", "=", 
+   RowBox[{"Legended", "[", 
+    RowBox[{
+     RowBox[{"Grid", "[", 
+      RowBox[{
+       RowBox[{"{", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=5,nhash=50,N=80,M=100\>\"", "]"}], ",",
+            "h1", ",", "h2"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=8,nhash=50,N=80,M=100\>\"", "]"}], ",",
+            "h3", ",", "h4"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=10,nhash=50,N=80,M=100\>\"", "]"}], 
+           ",", "h5", ",", "h6"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=10,nhash=50,N=150,M=100\>\"", "]"}], 
+           ",", "h7", ",", "h8"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=12,nhash=50,N=80,M=100\>\"", "]"}], 
+           ",", "h9", ",", "h10"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=12,nhash=50,N=80,M=200\>\"", "]"}], 
+           ",", "h11", ",", "h12"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=12,nhash=50,N=150,M=100\>\"", "]"}], 
+           ",", "h13", ",", "h14"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=12,nhash=50,N=300,M=100\>\"", "]"}], 
+           ",", "h15", ",", "h16"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=15,nhash=50,N=80,M=100\>\"", "]"}], 
+           ",", "h17", ",", "h18"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Text", "[", "\"\<k=20,nhash=30,N=80,M=100\>\"", "]"}], 
+           ",", "h19", ",", "h20"}], "}"}]}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ItemSize", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Scaled", "[", ".1", "]"}], ",", 
+           RowBox[{"Scaled", "[", ".3", "]"}], ",", 
+           RowBox[{"Scaled", "[", ".6", "]"}]}], "}"}], "}"}]}]}], "]"}], ",",
+      "\[IndentingNewLine]", 
+     RowBox[{"Placed", "[", 
+      RowBox[{
+       RowBox[{"SwatchLegend", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Opacity", "[", 
+            RowBox[{".5", ",", 
+             RowBox[{"ColorData", "[", 
+              RowBox[{"\"\<DarkRainbow\>\"", ",", "0"}], "]"}]}], "]"}], ",", 
+           
+           RowBox[{"Opacity", "[", 
+            RowBox[{".5", ",", 
+             RowBox[{"ColorData", "[", 
+              RowBox[{"\"\<DarkRainbow\>\"", ",", "1"}], "]"}]}], "]"}]}], 
+          "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"\"\<mh-pos\>\"", ",", "\"\<mh-neg\>\""}], "}"}]}], "]"}], 
+       ",", "Above"}], "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+   "\"\<~/workspace/wikiduper/europarlhistmaxnewhash.pdf\>\"", ",", "g", ",", 
+    
+    RowBox[{"PageCount", "\[Rule]", "2"}]}], "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.580259527317957*^9, 3.580259577238865*^9}, {
+   3.580259822958126*^9, 3.58025982850987*^9}, {3.580260072159338*^9, 
+   3.580260091589858*^9}, {3.580260163427412*^9, 3.5802601979119587`*^9}, {
+   3.58026027421393*^9, 3.5802602745937862`*^9}, {3.580260341653838*^9, 
+   3.5802603527146177`*^9}, {3.580260405991892*^9, 3.580260455744524*^9}, {
+   3.580261016121592*^9, 3.5802610525895767`*^9}, {3.5802611034420958`*^9, 
+   3.580261112101899*^9}, {3.580261437555421*^9, 3.580261440961337*^9}, {
+   3.580261678795723*^9, 3.5802616847148743`*^9}, {3.580261732705832*^9, 
+   3.580261744776149*^9}, {3.5802618172236967`*^9, 3.58026184175072*^9}, {
+   3.58026285967903*^9, 3.580262880268422*^9}, {3.5802629611985407`*^9, 
+   3.5802629895003843`*^9}, {3.580263159745659*^9, 3.580263168247333*^9}, {
+   3.580263220518426*^9, 3.5802632602447653`*^9}, {3.5802633310437326`*^9, 
+   3.580263342313017*^9}, {3.5803702695722713`*^9, 3.5803702878489447`*^9}, {
+   3.580370631799934*^9, 3.580370645553999*^9}, {3.580370906008304*^9, 
+   3.580370931414469*^9}, {3.580370999183955*^9, 3.580371072863872*^9}, 
+   3.58037122566558*^9, {3.580371757244021*^9, 3.580371762561751*^9}, {
+   3.5803720226164227`*^9, 3.5803720263752193`*^9}, {3.580372472584737*^9, 
+   3.5803725187261467`*^9}, {3.5803725597281303`*^9, 
+   3.5803725746916018`*^9}, {3.5803727339428997`*^9, 3.580372740886901*^9}, {
+   3.580372829070704*^9, 3.580372851409861*^9}, {3.580372895766527*^9, 
+   3.580372897255413*^9}, {3.580372927902772*^9, 3.580372974738662*^9}, {
+   3.580373397913885*^9, 3.580373409384494*^9}, {3.580373471342745*^9, 
+   3.580373528884102*^9}, 3.5803735777282887`*^9, {3.5808336163250713`*^9, 
+   3.580833627788453*^9}, {3.5808409242233047`*^9, 3.580840930189631*^9}, {
+   3.5808409614174356`*^9, 3.580840961598763*^9}, {3.58084270395569*^9, 
+   3.5808427172969017`*^9}, {3.580913689524611*^9, 3.580913721928937*^9}, {
+   3.580913792960539*^9, 3.580913834812495*^9}, {3.580916246913817*^9, 
+   3.580916260213785*^9}, {3.580918009934946*^9, 3.580918023765009*^9}, {
+   3.5809201605915747`*^9, 3.580920174401867*^9}, {3.580920208757102*^9, 
+   3.5809202133603563`*^9}, {3.580920439840279*^9, 3.5809204562777243`*^9}, {
+   3.580920729310318*^9, 3.58092072939078*^9}, {3.5809215169395437`*^9, 
+   3.580921635572977*^9}, {3.580921727369504*^9, 3.5809217394140787`*^9}, {
+   3.58092323602*^9, 3.5809232455086203`*^9}, {3.580923280108392*^9, 
+   3.580923335801095*^9}, {3.580923388700583*^9, 3.580923402466531*^9}, {
+   3.580923461480317*^9, 3.580923473151927*^9}, {3.5809242072832813`*^9, 
+   3.580924256833826*^9}, {3.580924290264031*^9, 3.580924307531177*^9}, {
+   3.5809269081163673`*^9, 3.5809269454187527`*^9}, {3.580929033397107*^9, 
+   3.580929046228673*^9}, {3.580929621193363*^9, 3.580929621279072*^9}, {
+   3.580936503533716*^9, 3.580936666526431*^9}, {3.580937167917313*^9, 
+   3.580937168117091*^9}, {3.582028746664709*^9, 3.582028769153873*^9}, {
+   3.582028833617488*^9, 3.582028843889133*^9}, {3.582028891849236*^9, 
+   3.582028896320826*^9}, {3.582029006764214*^9, 3.582029009422505*^9}, {
+   3.582029063144534*^9, 3.582029093654415*^9}, {3.582029861079563*^9, 
+   3.58202986587714*^9}, {3.582031500962975*^9, 3.582031508120412*^9}, {
+   3.582031547752418*^9, 3.582031555533453*^9}, {3.5820320144757957`*^9, 
+   3.582032023906357*^9}, {3.582032116789082*^9, 3.58203211868421*^9}, {
+   3.5820328271068296`*^9, 3.582032838375484*^9}, {3.58203291124676*^9, 
+   3.5820329139902287`*^9}}]
+},
+WindowSize->{740, 871},
+WindowMargins->{{45, Automatic}, {Automatic, 85}},
+FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (November 20, \
+2012)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 1951, 56, 182, "Input"],
+Cell[2511, 78, 2024, 57, 182, "Input"],
+Cell[4538, 137, 2024, 57, 182, "Input"],
+Cell[6565, 196, 2033, 58, 182, "Input"],
+Cell[8601, 256, 2073, 57, 182, "Input"],
+Cell[10677, 315, 2028, 57, 182, "Input"],
+Cell[12708, 374, 2124, 59, 182, "Input"],
+Cell[14835, 435, 2126, 59, 182, "Input"],
+Cell[16964, 496, 1926, 55, 182, "Input"],
+Cell[18893, 553, 1977, 56, 182, "Input"],
+Cell[20873, 611, 6832, 130, 267, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

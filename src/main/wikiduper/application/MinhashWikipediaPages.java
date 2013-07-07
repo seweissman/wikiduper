@@ -50,6 +50,9 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import org.wikiclean.WikiClean;
+import org.wikiclean.WikiClean.WikiLanguage;
+import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.hash.MultiplyShiftHash;
 import wikiduper.wikipedia.WikipediaPage;
@@ -125,9 +128,18 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
         //public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
           //      Reporter reporter) throws IOException {
+        
+        public static WikiClean cleaner =
+                new WikiCleanBuilder()
+                    .withLanguage(WikiLanguage.EN)
+                    .withTitle(true)
+                    .withFooter(false).build();
+            
+        
            public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
                     Reporter reporter) throws IOException {
-
+               
+               
             if (p.isRedirect()) {
                 reporter.incrCounter(PageTypes.REDIRECT, 1);
 
@@ -146,7 +158,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             }
             
             if(!p.isArticle() || p.isEmpty()) return;
-            String content = p.getContent();
+            String raw = p.getRawXML();
+            String content = cleaner.clean(raw);
             if(content == null) return;
             if(p.getDocid() == null) return;
             String line = content
