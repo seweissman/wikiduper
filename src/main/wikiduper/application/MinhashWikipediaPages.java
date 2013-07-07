@@ -114,7 +114,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 "# Match a sentence ending in punctuation or EOS.\n" +
                         "[\\s]*    # Leading white space\n" + 
                         "([A-Z\"]    # First char capital letter or quotation\n" +
-                        "[^.!?]*      # Greedily consume up to punctuation.\n" +
+                        "[^.!?\\n]*      # Greedily consume up to punctuation.\n" +
                         "(?:          # Group for unrolling the loop.\n" +
                         "  [.!?]      # (special) inner punctuation ok if\n" +
                         "  (?!['\"]?\\s|$)  # not followed by ws or EOS.\n" +
@@ -122,7 +122,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         ")*           # Zero or more (special normal*)\n" +
                         "[.!?]?       # Optional ending punctuation.\n" +
                         "['\"]?)       # Optional closing quote.\n" +
-                        "\\s*$?       # Trailing white space\n",
+                        "(\\s|\\n)*$?       # Trailing white space or new line\n",
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
@@ -163,7 +163,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             if(content == null) return;
             if(p.getDocid() == null) return;
             String line = content
-                    .replace("\n", " ")
+                    //.replace("\n", " ")
                     .replace("  ", " ")
                     .replace(",","")
                     .replace("(b.", "(b")
@@ -181,7 +181,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     MINHASH[i] = Long.MAX_VALUE;
                 }
                 String sentence = m.group(1);
-
 
                 int shinglect = 0;
                 // Calculate hash vector for each shingle
