@@ -23,7 +23,9 @@
   <path id="libjars.path.id">
     <fileset dir="${lib.dir}/" includes="cloud9*.jar"/>
     <fileset dir="${lib.dir}/" includes="guava*.jar"/>
-  	<fileset dir="${lib.dir}/" includes="bliki*.jar"/>
+    <fileset dir="${lib.dir}/" includes="bliki*.jar"/>
+    <fileset dir="${lib.dir}/" includes="ivory*.jar"/>
+    <fileset dir="${lib.dir}/" includes="wikiclean*.jar"/>
   </path>
 
   <property name="ivy.install.version" value="2.2.0"/>
