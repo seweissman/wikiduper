@@ -129,12 +129,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         //public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
           //      Reporter reporter) throws IOException {
         
-        public static WikiClean cleaner =
-                new WikiCleanBuilder()
-                    .withLanguage(WikiLanguage.EN)
-                    .withTitle(true)
-                    .withFooter(false).build();
-            
+        public static WikiClean cleaner;
         
            public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
                     Reporter reporter) throws IOException {
@@ -160,6 +155,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             if(!p.isArticle() || p.isEmpty()) return;
             String raw = p.getRawXML();
             String content = cleaner.clean(raw);
+            //cleaner.getTitle(content);
             if(content == null) return;
             if(p.getDocid() == null) return;
             String line = content
@@ -234,6 +230,14 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
         
         public void configure(JobConf job) {
+            
+            String language = job.get("wiki.language", "en");
+            WikiLanguage wikilang = WikiLanguage.valueOf(language);
+            cleaner =  new WikiCleanBuilder()
+                        .withLanguage(wikilang)
+                        .withTitle(true)
+                        .withFooter(false).build();
+            
             rseed = job.getLong("rseed", 112345);
             NHASH = job.getInt("NHASH", 20);
             NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);

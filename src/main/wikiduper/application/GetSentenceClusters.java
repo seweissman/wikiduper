@@ -51,6 +51,9 @@ import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import org.wikiclean.WikiClean;
+import org.wikiclean.WikiClean.WikiLanguage;
+import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.wikipedia.WikipediaPage;
 import wikiduper.wikipedia.WikipediaPageInputFormat;
@@ -86,7 +89,7 @@ public class GetSentenceClusters extends Configured implements Tool {
                 "# Match a sentence ending in punctuation or EOS.\n" +
                         "[\\s]*    # Leading white space\n" + 
                         "([A-Z\"]    # First char capital letter or quotation\n" +
-                        "[^.!?]*      # Greedily consume up to punctuation.\n" +
+                        "[^.!?\\n]*      # Greedily consume up to punctuation.\n" +
                         "(?:          # Group for unrolling the loop.\n" +
                         "  [.!?]      # (special) inner punctuation ok if\n" +
                         "  (?!['\"]?\\s|$)  # not followed by ws or EOS.\n" +
@@ -94,20 +97,25 @@ public class GetSentenceClusters extends Configured implements Tool {
                         ")*           # Zero or more (special normal*)\n" +
                         "[.!?]?       # Optional ending punctuation.\n" +
                         "['\"]?)       # Optional closing quote.\n" +
-                        "\\s*$?       # Trailing white space\n",
+                        "(\\s|\\n)*$?       # Trailing white space or new line\n",
                         Pattern.MULTILINE | Pattern.COMMENTS);
-        
-        
+
+        public static WikiClean cleaner;
+
         public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
                 Reporter reporter) throws IOException {
           //public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
             //        Reporter reporter) throws IOException {
 
             if(!p.isArticle() || p.isEmpty()) return;
-            String content = p.getContent();
+            String raw = p.getRawXML();
+            String content = cleaner.clean(raw);
+
+            //cleaner.getTitle(content);
+            //String content = p.getContent();
             if(content == null) return;
             String line = content
-                    .replace("\n", " ")
+                    //.replace("\n", " ")
                     .replace("  ", " ")
                     .replace(",","")
                     .replace("(b.", "(b")
@@ -139,6 +147,13 @@ public class GetSentenceClusters extends Configured implements Tool {
 
         public void configure(JobConf job) {
             String docMapFile = job.get("docmapfile");
+            
+            String language = job.get("wiki.language", "en");
+            WikiLanguage wikilang = WikiLanguage.valueOf(language);
+            cleaner =  new WikiCleanBuilder()
+                        .withLanguage(wikilang)
+                        .withTitle(true)
+                        .withFooter(false).build();
             try{
                 FileSystem fs = FileSystem.get(job);
                 FSDataInputStream in = fs.open(new Path(docMapFile));
