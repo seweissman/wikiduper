@@ -149,7 +149,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             String docMapFile = job.get("docmapfile");
             
             String language = job.get("wiki.language", "en");
-            WikiLanguage wikilang = WikiLanguage.valueOf(language);
+            WikiLanguage wikilang = WikiLanguage.valueOf(language.toUpperCase());
             cleaner =  new WikiCleanBuilder()
                         .withLanguage(wikilang)
                         .withTitle(true)
