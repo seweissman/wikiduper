@@ -19,6 +19,7 @@ package wikiduper.application;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -42,19 +43,17 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfInts;
+import edu.umd.cloud9.io.pair.PairOfStringInt;
 
 public class MergeClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MergeClusters.class);
 
 
-    private static final String PAIRFILE = "pairfile";
-    //private static final String INDEXFILE = "indexfile";
-    //private static final String MAPFILE = "mapfile";
+    private static final String INPUT = "input";
     private static final String OUTPUT = "output";
-    private static final String NUM_REDUCERS = "numReducers";
-    //private static final String LANGUAGE_OPTION = "wiki_language";
 
     @SuppressWarnings("static-access")
     @Override
@@ -62,16 +61,8 @@ public class MergeClusters extends Configured implements Tool {
         Options options = new Options();
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("output path").create(OUTPUT));
-        //options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
-          //      .withDescription("two-letter language code").create(LANGUAGE_OPTION));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("number of reducers").create(NUM_REDUCERS));
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("pair file").create(PAIRFILE));
-        //options.addOption(OptionBuilder.withArgName("path")
-          //      .hasArg().withDescription("index file").create(INDEXFILE));
-        //options.addOption(OptionBuilder.withArgName("path")
-          //      .hasArg().withDescription("map file").create(MAPFILE));
+                .hasArg().withDescription("minhash output buckets").create(INPUT));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -82,8 +73,7 @@ public class MergeClusters extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(PAIRFILE)){
-                //|| !cmdline.hasOption(INDEXFILE) || !cmdline.hasOption(MAPFILE)) {
+        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT)){
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -91,41 +81,17 @@ public class MergeClusters extends Configured implements Tool {
             return -1;
         }
 
-/*
-        String language = "en";
-        if (cmdline.hasOption(LANGUAGE_OPTION)) {
-            language = cmdline.getOptionValue(LANGUAGE_OPTION);
-            if(language.length()!=2){
-                System.err.println("Error: \"" + language + "\" unknown language!");
-                return -1;
-            }
-        }
-*/
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        String pairPath = cmdline.getOptionValue(PAIRFILE);
-        //String indexPath = cmdline.getOptionValue(INDEXFILE);
-        //String mapPath = cmdline.getOptionValue(MAPFILE);
+        String inputPath = cmdline.getOptionValue(INPUT);
         
-        //int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
-
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - output file: " + outputPath);
-  //      LOG.info(" - language: " + language);
         
         JobConf conf = new JobConf(getConf(), MergeClusters.class);
 
-        //conf.set("indexfile", indexPath);
-        //conf.set("mapfile", mapPath);
-        
         /* Get Clusters from MinhashWikipediaPages pair output */
         
-        //String remoteDocmapFile = "docmap2.out";
-        getClusters(pairPath,conf,outputPath);
-        //System.exit(-1);
-        //FileSystem fs = FileSystem.get(conf);
-        //fs.copyFromLocalFile(new Path(docmapFile), new Path(remoteDocmapFile));
-        
-        //conf.set("docmapfile", docmapFile);
+        getClusters(inputPath,conf,outputPath);
 
         return 0;
     }
@@ -136,25 +102,23 @@ public class MergeClusters extends Configured implements Tool {
     public static void getClusters(String filein, JobConf conf, String docmapFile){
 
         try {
-            TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap = new TreeMap<PairOfInts, HashSet<PairOfInts>>();
+            TreeMap<Integer, HashSet<PairOfStringInt>> clustermap = new TreeMap<Integer, HashSet<PairOfStringInt>>();
             // map from doc id to sentence numbers
             TreeMap<Integer, TreeSet<PairOfInts>> docmap = new TreeMap<Integer, TreeSet<PairOfInts>>();
-            readPairs(filein,conf,matchmap);
-            int componentct = 0;
+            readBuckets(filein,conf,clustermap);
             
-            while(!matchmap.isEmpty()){
-                PairOfInts entity = matchmap.firstKey();
-                HashSet<PairOfInts> comp = getConnectedComponent(entity, matchmap);
-
-                for(PairOfInts p : comp){
-                    int docid = p.getLeftElement();
+            // Renumber components
+            int componentct = 0;
+            for(Integer cnum : clustermap.keySet()){
+                HashSet<PairOfStringInt> comp = clustermap.get(cnum);
+                for(PairOfStringInt p : comp){
+                    int docid = Integer.valueOf(p.getLeftElement());
                     int sentencenum = p.getRightElement();
                     if(!docmap.containsKey(docid)){
                         docmap.put(docid, new TreeSet<PairOfInts>());
                     }
                     docmap.get(docid).add(new PairOfInts(sentencenum, componentct));
                 }
-
                 componentct++;
 
             }
@@ -188,33 +152,52 @@ public class MergeClusters extends Configured implements Tool {
         }
     }
 
-    public static void readPairs(String filein, JobConf conf, TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap){
-     
-    try {
+    public static void readBuckets(String filein, JobConf conf, TreeMap<Integer, HashSet<PairOfStringInt>> cluster2sentencemap){
+        HashMap<PairOfStringInt, Integer> sentence2clustermap = new HashMap<PairOfStringInt,Integer>();
+        try {
         FileSystem fs = FileSystem.get(conf);
         System.out.println("filein = " + filein);
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
+        int clusterct = 0;
         for(FileStatus filestatus : infiles){
             System.out.println(filestatus.getPath().toString());
             try{
             FSDataInputStream in = fs.open(filestatus.getPath());
             SequenceFile.Reader reader;
             reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
-            PairOfInts p1 = new PairOfInts();
-            PairOfInts p2 = new PairOfInts();
-            while(reader.next(p1, p2)){
-                if(!matchmap.containsKey(p1)){
-                    matchmap.put(p1, new HashSet<PairOfInts> ());
+            ArrayListOfLongsWritable bucket = new ArrayListOfLongsWritable();
+            ArrayListWritable<PairOfStringInt> sentenceList = new ArrayListWritable<PairOfStringInt>();
+            HashSet<Integer> clusterSet = new HashSet<Integer>();
+            while(reader.next(bucket, sentenceList)){
+                clusterSet.clear();
+                for(PairOfStringInt docsentence : sentenceList){
+                    if(sentence2clustermap.containsKey(docsentence)){
+                       clusterSet.add(sentence2clustermap.get(docsentence));
+                    }
                 }
-                if(!matchmap.containsKey(p2)){
-                    matchmap.put(p2, new HashSet<PairOfInts> ());
+                cluster2sentencemap.put(clusterct, new HashSet<PairOfStringInt>());
+                if(!clusterSet.isEmpty()){
+                    for(int cluster : clusterSet){
+                        // for each cluster merge the sentences into a new cluster
+                        for(PairOfStringInt docsentence : cluster2sentencemap.get(cluster)){
+                            cluster2sentencemap.get(clusterct).add(docsentence);
+                            sentence2clustermap.put(docsentence, clusterct);
+                        }
+                        // Remove the old cluster from cluster2sentencemap
+                        cluster2sentencemap.remove(cluster);
+                    }
                 }
-                matchmap.get(p2).add(p1);
-                matchmap.get(p1).add(p2);
-                p1 = new PairOfInts();
-                p2 = new PairOfInts();
+                // Add all of the docsentences in the current list to the new cluster
+                cluster2sentencemap.get(clusterct).addAll(sentenceList);
+                for(PairOfStringInt docsentence : sentenceList){
+                    sentence2clustermap.put(docsentence, clusterct);
+                }
+                bucket = new ArrayListOfLongsWritable();
+                sentenceList = new ArrayListWritable<PairOfStringInt>();
+                clusterct++;
+                
             }
-          reader.close();
+            reader.close();
           }catch (EOFException e) {
            // For some reason it doesn't know when the input stream is done??
           }
