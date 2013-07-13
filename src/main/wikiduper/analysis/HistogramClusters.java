@@ -38,15 +38,12 @@ public class HistogramClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MergeClusters.class);
 
     private static final String INPUT = "input";
-    private static final String OUTPUT = "output";
     public static int thresh = 30;
     @SuppressWarnings("static-access")
     @Override
     public int run(String[] args) throws Exception {
 
             Options options = new Options();
-            options.addOption(OptionBuilder.withArgName("path")
-                    .hasArg().withDescription("output path").create(OUTPUT));
             options.addOption(OptionBuilder.withArgName("path")
                     .hasArg().withDescription("minhash output buckets").create(INPUT));
 
@@ -59,7 +56,7 @@ public class HistogramClusters extends Configured implements Tool {
                 return -1;
             }
 
-            if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT)){
+            if (!cmdline.hasOption(INPUT)){
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setWidth(120);
                 formatter.printHelp(this.getClass().getName(), options);
@@ -67,22 +64,17 @@ public class HistogramClusters extends Configured implements Tool {
                 return -1;
             }
 
-            String outputPath = cmdline.getOptionValue(OUTPUT);
             String inputPath = cmdline.getOptionValue(INPUT);
             
             LOG.info("Tool name: " + this.getClass().getName());
-            LOG.info(" - output file: " + outputPath);
             
             JobConf conf = new JobConf(getConf(), MergeClusters.class);
-
-            /* Get Clusters from MinhashWikipediaPages pair output */
-            
-            getHistogram(inputPath,conf,outputPath);
+            getHistogram(inputPath,conf);
 
             return 0;
         }
     
-    public static void getHistogram(String filein, JobConf conf, String docmapFile){
+    public static void getHistogram(String filein, JobConf conf){
         //IntWritable, Text
         // Overall histogram: cluster sizes -> cluster cts
         TreeMap<Integer,Integer> histogram = new TreeMap<Integer,Integer>();
