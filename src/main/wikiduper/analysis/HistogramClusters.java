@@ -38,14 +38,22 @@ public class HistogramClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MergeClusters.class);
 
     private static final String INPUT = "input";
-    public static int thresh = 30;
+    private static final String THRESH = "large_cluster_threshold";
+    private static final String BINSIZE = "bin_size";
+    private static final String MAX = "max_bin";
     @SuppressWarnings("static-access")
     @Override
     public int run(String[] args) throws Exception {
 
             Options options = new Options();
             options.addOption(OptionBuilder.withArgName("path")
-                    .hasArg().withDescription("minhash output buckets").create(INPUT));
+                    .hasArg().withDescription("minhash pipeline output").create(INPUT));
+            options.addOption(OptionBuilder.withArgName("num")
+                    .hasArg().withDescription("large cluster threshold").create(THRESH));
+            options.addOption(OptionBuilder.withArgName("num")
+                    .hasArg().withDescription("size of histogram bins").create(BINSIZE));
+            options.addOption(OptionBuilder.withArgName("num")
+                    .hasArg().withDescription("max bin to display in graph").create(MAX));
 
             CommandLine cmdline;
             CommandLineParser parser = new GnuParser();
@@ -56,7 +64,8 @@ public class HistogramClusters extends Configured implements Tool {
                 return -1;
             }
 
-            if (!cmdline.hasOption(INPUT)){
+            if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(THRESH) || !cmdline.hasOption(BINSIZE) || 
+                    !cmdline.hasOption(MAX)){
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setWidth(120);
                 formatter.printHelp(this.getClass().getName(), options);
@@ -65,16 +74,31 @@ public class HistogramClusters extends Configured implements Tool {
             }
 
             String inputPath = cmdline.getOptionValue(INPUT);
+            int thresh = Integer.parseInt(cmdline.getOptionValue(THRESH)); //30;
+            int binsize = Integer.parseInt(cmdline.getOptionValue(BINSIZE));//30;
+            int max = Integer.parseInt(cmdline.getOptionValue(MAX)); //30; 1501;
+            
             
             LOG.info("Tool name: " + this.getClass().getName());
             
             JobConf conf = new JobConf(getConf(), MergeClusters.class);
-            getHistogram(inputPath,conf);
+            conf.set(INPUT, inputPath);
+            conf.setInt(THRESH, thresh);
+            conf.setInt(BINSIZE, binsize);
+            conf.setInt(MAX, max);
+
+            getHistogram(conf);//inputPath,conf);
 
             return 0;
         }
     
-    public static void getHistogram(String filein, JobConf conf){
+    public void getHistogram(JobConf conf){
+        String filein = conf.get(INPUT);
+        int max = conf.getInt(MAX, 30);
+        int thresh = conf.getInt(THRESH, 30);
+        int binsize = conf.getInt(BINSIZE, 10);
+        
+        
         //IntWritable, Text
         // Overall histogram: cluster sizes -> cluster cts
         TreeMap<Integer,Integer> histogram = new TreeMap<Integer,Integer>();
@@ -102,6 +126,7 @@ public class HistogramClusters extends Configured implements Tool {
         Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
         try {
         FileSystem fs = FileSystem.get(conf);
+        
         System.out.println("filein = " + filein);
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
         for(FileStatus filestatus : infiles){
@@ -255,7 +280,7 @@ public class HistogramClusters extends Configured implements Tool {
         StringBuffer histkeys = new StringBuffer();
         
         System.out.println("Cluster histogram");
-        int binsize = 30;
+        
         int sum = 0;
         int sumsentence = 0;
         int sumtitle = 0;
@@ -280,9 +305,8 @@ public class HistogramClusters extends Configured implements Tool {
         System.out.println("Number of lines in small clusters = " + smallclusterlinect + " " + (1.0*smallclusterlinect/linect));
 
         System.out.println("Size of largest cluster: " + maxclustersize);
-        
-        int max = 1501;
-        for(int i=1;i<max;i++){
+        int binmax = max>0?max:histogram.lastKey();
+        for(int i=1;i<=binmax;i++){
             int b = histogram.containsKey(i) ? histogram.get(i) : 0;
             sum+=b;
             b = sentencehistogram.containsKey(i) ? sentencehistogram.get(i) : 0;
@@ -318,7 +342,7 @@ public class HistogramClusters extends Configured implements Tool {
         sum = 0;
         sumsentence = 0;
         sumtitle = 0;
-        for(int i=max;i<=histogram.lastKey();i++){
+        for(int i=binmax;i<=histogram.lastKey();i++){
             int b = histogram.containsKey(i) ? histogram.get(i) : 0;
             sum+=b;
             b = sentencehistogram.containsKey(i) ? sentencehistogram.get(i) : 0;
@@ -326,7 +350,7 @@ public class HistogramClusters extends Configured implements Tool {
             b = titlehistogram.containsKey(i) ? titlehistogram.get(i) : 0;
             sumtitle+=b;
         }
-        int rangel = max;
+        int rangel = binmax;
         int rangeh = histogram.lastKey();
         histkeys.append(",");
         histkeys.append("\"");
