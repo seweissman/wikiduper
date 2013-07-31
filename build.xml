@@ -25,6 +25,8 @@
     <fileset dir="${lib.dir}/" includes="guava*.jar"/>
     <fileset dir="${lib.dir}/" includes="bliki*.jar"/>
     <fileset dir="${lib.dir}/" includes="ivory*.jar"/>
+    <fileset dir="${lib.dir}/" includes="tools*.jar"/>
+    <fileset dir="${lib.dir}/" includes="maxent*.jar"/>
     <fileset dir="${lib.dir}/" includes="wikiclean*.jar"/>
   </path>
 
