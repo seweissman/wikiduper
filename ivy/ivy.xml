@@ -23,5 +23,7 @@
     <dependency org="cc.ivory" name="ivory" rev="0.12.1" conf="*->*,!sources,!javadoc"/>
     <dependency org="org.wikiclean" name="wikiclean" rev="0.3" conf="*->*,!sources,!javadoc"/>
     <dependency org="junit" name="junit" rev="4.11" conf="*->*,!sources,!javadoc" />
+    <dependency org="opennlp" name="tools" rev="1.5.0" conf="*->*,!sources,!javadoc"/>
+    <dependency org="opennlp" name="maxent" rev="3.0.0" conf="*->*,!sources,!javadoc"/>
   </dependencies>
 </ivy-module>

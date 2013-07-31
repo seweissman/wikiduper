@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     24873,        680]
-NotebookOptionsPosition[     24242,        657]
-NotebookOutlinePosition[     24600,        673]
-CellTagsIndexPosition[     24557,        670]
+NotebookDataLength[     25672,        695]
+NotebookOptionsPosition[     25041,        672]
+NotebookOutlinePosition[     25399,        688]
+CellTagsIndexPosition[     25356,        685]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -22,8 +22,9 @@ Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-12-30-50-80-100.out\>\"",
-     "]"}]}], ";"}], "\[IndentingNewLine]", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-12-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -34,8 +35,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-12-30-50-80-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-12-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -48,8 +49,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -74,14 +74,17 @@ Cell[BoxData[{
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.580920426574128*^9, 3.580920430520628*^9}, {
-  3.580921315690578*^9, 3.580921333184554*^9}}],
+   3.580921315690578*^9, 3.580921333184554*^9}, {3.583263310646433*^9, 
+   3.5832633576946774`*^9}, {3.583263546952561*^9, 3.583263548639035*^9}, 
+   3.5832639543449497`*^9, 3.583264019935161*^9}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-10-30-50-80-100.out\>\"",
-     "]"}]}], ";"}], "\[IndentingNewLine]", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-10-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -92,8 +95,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-10-30-50-80-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-10-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -106,8 +109,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -132,13 +134,15 @@ Cell[BoxData[{
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.5809214922842197`*^9, 3.580921503464323*^9}, {
-  3.580923407569687*^9, 3.580923416153244*^9}}],
+   3.580923407569687*^9, 3.580923416153244*^9}, {3.583263538057458*^9, 
+   3.583263576649135*^9}, 3.583263966074486*^9, 3.583264013616623*^9}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-8-30-50-80-100.out\>\"", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-8-30-50-80-100.out\>\"", 
     "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
@@ -150,8 +154,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-8-30-50-80-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-8-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -164,8 +168,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -190,13 +193,15 @@ Cell[BoxData[{
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.58092207374194*^9, 3.580922090761284*^9}, {
-  3.5809234403954678`*^9, 3.580923452614099*^9}}],
+  3.5809234403954678`*^9, 3.580923452614099*^9}, {3.583263580096539*^9, 
+  3.5832635858320704`*^9}, {3.583263985366377*^9, 3.5832640088711977`*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-5-30-50-80-100.out\>\"", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-5-30-50-80-100.out\>\"", 
     "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
@@ -208,8 +213,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-5-30-50-80-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-5-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -222,8 +227,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -247,14 +251,17 @@ Cell[BoxData[{
         RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
- CellChangeTimes->{{3.580924276745615*^9, 3.580924284384182*^9}}],
+ CellChangeTimes->{{3.580924276745615*^9, 3.580924284384182*^9}, {
+  3.583263590111638*^9, 3.583263596456781*^9}, {3.583264000853731*^9, 
+  3.583264035083699*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-15-30-50-80-100.out\>\"",
-     "]"}]}], ";"}], "\[IndentingNewLine]", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-15-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -265,8 +272,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-15-30-50-80-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-15-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -279,8 +286,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -304,14 +310,17 @@ Cell[BoxData[{
         RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
- CellChangeTimes->{{3.580924319726789*^9, 3.580924341612911*^9}}],
+ CellChangeTimes->{{3.580924319726789*^9, 3.580924341612911*^9}, {
+  3.583263599408012*^9, 3.583263606991851*^9}, {3.5832640389253893`*^9, 
+  3.583264041172863*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-20-30-50-80-100.out\>\"",
-     "]"}]}], ";"}], "\[IndentingNewLine]", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-20-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -322,8 +331,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-20-30-50-80-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-20-30-50-80-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -336,8 +345,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -361,14 +369,17 @@ Cell[BoxData[{
         RowBox[{"FontWeight", "->", "\"\<Bold\>\""}], ",", 
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
- CellChangeTimes->{{3.580924328045277*^9, 3.580924349847198*^9}}],
+ CellChangeTimes->{{3.580924328045277*^9, 3.580924349847198*^9}, {
+  3.583263609398418*^9, 3.58326361447915*^9}, {3.583264046044345*^9, 
+  3.583264048756518*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
-   "OpenRead", "[", "\"\<~/workspace/wikiduper/match-12-30-50-80-200.out\>\"",
-     "]"}]}], ";"}], "\[IndentingNewLine]", 
+   "OpenRead", "[", 
+    "\"\<~/workspace/wikiduper/output-max/match-12-30-50-80-200.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -379,8 +390,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-12-30-50-80-200.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-12-30-50-80-200.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -393,8 +404,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -420,15 +430,17 @@ Cell[BoxData[{
   ";"}]}], "Input",
  CellChangeTimes->{{3.580926809778373*^9, 3.5809268198251247`*^9}, {
   3.580926893474904*^9, 3.580926897106928*^9}, {3.58141786937307*^9, 
-  3.58141788859545*^9}, {3.5814179321447573`*^9, 3.581417937391979*^9}}],
+  3.58141788859545*^9}, {3.5814179321447573`*^9, 3.581417937391979*^9}, {
+  3.583263617791771*^9, 3.583263621990981*^9}, {3.583264052741102*^9, 
+  3.5832640561568813`*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/match-12-30-50-150-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/match-12-30-50-150-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -439,8 +451,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-12-30-50-150-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-12-30-50-150-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -453,8 +465,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -479,15 +490,16 @@ Cell[BoxData[{
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.580926955033901*^9, 3.580926962096593*^9}, {
-  3.580927012119355*^9, 3.580927016248392*^9}}],
+  3.580927012119355*^9, 3.580927016248392*^9}, {3.583263624815442*^9, 
+  3.583263629151637*^9}, {3.583264061468609*^9, 3.58326406426822*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/match-12-30-50-300-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/match-12-30-50-300-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"match", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -498,8 +510,8 @@ Cell[BoxData[{
   RowBox[{"str", "=", 
    RowBox[{
    "OpenRead", "[", 
-    "\"\<~/workspace/wikiduper/nomatch-12-30-50-300-100.out\>\"", "]"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+    "\"\<~/workspace/wikiduper/output-max/nomatch-12-30-50-300-100.out\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"nomatch", " ", "=", " ", 
    RowBox[{"ReadList", "[", 
@@ -512,8 +524,7 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"{", 
       RowBox[{"match", ",", "nomatch"}], "}"}], ",", "20", ",", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Log\>\"", ",", "\"\<Count\>\""}], "}"}], ",", 
+     "\"\<Probability\>\"", ",", 
      RowBox[{"BaseStyle", "->", 
       RowBox[{"{", 
        RowBox[{
@@ -538,7 +549,8 @@ Cell[BoxData[{
         RowBox[{"FontSize", "\[Rule]", "8"}]}], "}"}]}]}], "]"}]}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.580929056067698*^9, 3.580929076026083*^9}, {
-  3.580929628758851*^9, 3.580929631196424*^9}}],
+  3.580929628758851*^9, 3.580929631196424*^9}, {3.583263631030881*^9, 
+  3.5832636358791943`*^9}, {3.5832640687320433`*^9, 3.583264070771751*^9}}],
 
 Cell[BoxData[{
  RowBox[{
@@ -614,7 +626,9 @@ Cell[BoxData[{
        ",", "Above"}], "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"Export", "[", 
-   RowBox[{"\"\<~/workspace/wikiduper/europarlhistout.pdf\>\"", ",", "g", ",", 
+   RowBox[{
+   "\"\<~/workspace/wikiduper/europarlhistmax-normalized.pdf\>\"", ",", "g", 
+    ",", 
     RowBox[{"PageCount", "\[Rule]", "2"}]}], "]"}], ";"}]}], "Input",
  CellChangeTimes->{{3.580259527317957*^9, 3.580259577238865*^9}, {
    3.580259822958126*^9, 3.58025982850987*^9}, {3.580260072159338*^9, 
@@ -653,7 +667,8 @@ Cell[BoxData[{
    3.580923461480317*^9, 3.580923473151927*^9}, {3.5809242072832813`*^9, 
    3.580924256833826*^9}, {3.580924290264031*^9, 3.580924307531177*^9}, {
    3.5809269081163673`*^9, 3.5809269454187527`*^9}, {3.580929033397107*^9, 
-   3.580929046228673*^9}, {3.580929621193363*^9, 3.580929621279072*^9}}]
+   3.580929046228673*^9}, {3.580929621193363*^9, 3.580929621279072*^9}, {
+   3.5832638943982773`*^9, 3.583263898319735*^9}}]
 },
 WindowSize->{740, 871},
 WindowMargins->{{308, Automatic}, {20, Automatic}},
@@ -672,16 +687,16 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[557, 20, 1975, 56, 182, "Input"],
-Cell[2535, 78, 1977, 56, 182, "Input"],
-Cell[4515, 136, 1974, 56, 182, "Input"],
-Cell[6492, 194, 1922, 55, 182, "Input"],
-Cell[8417, 251, 1924, 55, 182, "Input"],
-Cell[10344, 308, 1924, 55, 182, "Input"],
-Cell[12271, 365, 2070, 57, 182, "Input"],
-Cell[14344, 424, 1979, 57, 182, "Input"],
-Cell[16326, 483, 1980, 57, 182, "Input"],
-Cell[18309, 542, 5929, 113, 250, "Input"]
+Cell[557, 20, 2102, 58, 199, "Input"],
+Cell[2662, 80, 2050, 57, 199, "Input"],
+Cell[4715, 139, 2051, 57, 182, "Input"],
+Cell[6769, 198, 1998, 57, 182, "Input"],
+Cell[8770, 257, 2002, 57, 199, "Input"],
+Cell[10775, 316, 1999, 57, 199, "Input"],
+Cell[12777, 375, 2148, 59, 199, "Input"],
+Cell[14928, 436, 2048, 57, 199, "Input"],
+Cell[16979, 495, 2054, 57, 199, "Input"],
+Cell[19036, 554, 6001, 116, 250, "Input"]
 }
 ]
 *)
