@@ -455,8 +455,8 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         //conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
-        conf.set("mapred.job.map.memory.mb", "2048");
-        conf.set("mapred.map.child.java.opts", "-Xmx2048m");
+        conf.set("mapred.job.map.memory.mb", "4096");
+        conf.set("mapred.map.child.java.opts", "-Xmx4096m");
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
