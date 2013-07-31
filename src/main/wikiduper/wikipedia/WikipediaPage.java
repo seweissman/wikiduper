@@ -20,6 +20,7 @@ import info.bliki.wiki.filter.PlainTextConverter;
 import info.bliki.wiki.model.WikiModel;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +124,11 @@ public abstract class WikipediaPage extends Indexable {
   public void readFields(DataInput in) throws IOException {
     int length = WritableUtils.readVInt(in);
     byte[] bytes = new byte[length];
+    try{
     in.readFully(bytes, 0, length);
+    }catch(EOFException e){
+        
+    }
     WikipediaPage.readPage(this, new String(bytes, "UTF-8"));
     language = in.readUTF();
   }
