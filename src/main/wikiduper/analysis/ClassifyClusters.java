@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 
 import wikiduper.application.MergeClusters;
 
-public class ClassifyClustersNew extends Configured implements Tool {
+public class ClassifyClusters extends Configured implements Tool {
     public static enum ClusterTypes {
         NOT_SIMILAR, FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     };  
@@ -348,9 +348,9 @@ public class ClassifyClustersNew extends Configured implements Tool {
 
 
     
-    public ClassifyClustersNew() {}
+    public ClassifyClusters() {}
 
     public static void main(String[] args) throws Exception {
-        ToolRunner.run(new ClassifyClustersNew(), args);
+        ToolRunner.run(new ClassifyClusters(), args);
     }
 }

@@ -98,8 +98,8 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         static String fStopWordsFile;
         static int nSamples;
         static long sampleSeed;
-        static Vocab eVocabSrc;
-        static Vocab fVocabTgt;
+        static Vocab fVocabSrc;
+        static Vocab eVocabTgt;
         static TTable_monolithic_IFAs e2fProbs;
         static TTable_monolithic_IFAs f2eProbs;
         static Tokenizer eTokenizer;
@@ -123,9 +123,10 @@ public class SampleSentenceTranslations extends Configured implements Tool {
             sent.clear();
             //System.out.println("nSamples = " + nSamples);
 
-            if(lang.equals(fLang)){
+            // the "english" case
+            if(lang.equals(eLang)){
                 
-                tokens = fTokenizer.processContent(line);
+                tokens = eTokenizer.processContent(line);
                 tokenct = 0;
                 outstr = "";
                 outsig = new ArrayListWritable<Text>();
@@ -147,31 +148,31 @@ public class SampleSentenceTranslations extends Configured implements Tool {
                 //System.out.println("idout = " + idOut);
                 output.collect(idOut, outsig);
             
-            }else if(lang.equals(eLang)){
+            }else if(lang.equals(fLang)){
                 
-                tokens = eTokenizer.processContent(line);
+                tokens = fTokenizer.processContent(line);
                 HashSet<String> sigMap = new HashSet<String>();
                 for(int l=0;l<nSamples;l++){
                     tokenct = 0;
                     sent.clear();
                     outstr = "";
                     outsig = new ArrayListWritable<Text>();
-                    for (String etoken : tokens) {
-                        if (!sent.containsKey(etoken)) { // if this is first time we saw token in this sentence
-                            int e = eVocabSrc.get(etoken);
-                            if(e != -1){
-                                List<PairOfFloatInt> fSProbs = e2fProbs.get(e).getTranslationsWithProbsAsList(0.0f);
+                    for (String ftoken : tokens) {
+                        if (!sent.containsKey(ftoken)) { // if this is first time we saw token in this sentence
+                            int f = fVocabSrc.get(ftoken);
+                            if(f != -1){
+                                List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
                                 float pr = rSample.nextFloat();
-                                String fWord = sampleTranslateDistribution(fSProbs, pr, fVocabTgt);
+                                String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
                                 outWord = new Text();
-                                outWord.set(fWord);
+                                outWord.set(eWord);
                                 outsig.add(outWord);
                                 if(tokenct != 0) outstr += ",";
-                                outstr += fWord;
+                                outstr += eWord;
                                 tokenct++;
                             }
                         }
-                        sent.increment(etoken);
+                        sent.increment(ftoken);
                     }
                     
                     idOut = new IntWritable();
@@ -218,10 +219,10 @@ public class SampleSentenceTranslations extends Configured implements Tool {
             FileSystem fs;
             try {
                 fs = FileSystem.get(job);
-                eVocabSrc = HadoopAlign.loadVocab(new Path(eVocabSrcFile), fs);
+                fVocabSrc = HadoopAlign.loadVocab(new Path(fVocabSrcFile), fs);
                 //eVocabTgt = HadoopAlign.loadVocab(new Path(eVocabTgtFile), fs);
                 //fVocabSrc = HadoopAlign.loadVocab(new Path(fVocabSrcFile), fs);
-                fVocabTgt = HadoopAlign.loadVocab(new Path(fVocabTgtFile), fs);
+                eVocabTgt = HadoopAlign.loadVocab(new Path(eVocabTgtFile), fs);
         
                 try{
                     f2eProbs = new TTable_monolithic_IFAs(fs, new Path(probTablef2eFile), true);
@@ -238,18 +239,18 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         }
     }
 
-    public static String sampleTranslateDistribution(List<PairOfFloatInt> fSProbs, float p, Vocab fVocab){
-            Iterator<PairOfFloatInt> it = fSProbs.iterator();
-            PairOfFloatInt probf = null;
-            int f = -1;
+    public static String sampleTranslateDistribution(List<PairOfFloatInt> eSProbs, float p, Vocab eVocab){
+            Iterator<PairOfFloatInt> it = eSProbs.iterator();
+            PairOfFloatInt probe = null;
+            int e = -1;
             float psum = 0;
             while(psum <= p && it.hasNext()){
-                probf = it.next();
-                psum += probf.getLeftElement();
-                f = probf.getRightElement();
+                probe = it.next();
+                psum += probe.getLeftElement();
+                e = probe.getRightElement();
             }
-            String fWord = fVocab.get(f);
-            return fWord;
+            String eWord = eVocab.get(e);
+            return eWord;
         }
 
     /**
