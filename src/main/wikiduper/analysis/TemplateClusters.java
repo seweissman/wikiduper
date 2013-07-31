@@ -161,7 +161,7 @@ public class TemplateClusters extends Configured implements Tool {
         
         
         IntWritable clusterid = null;
-        ClassifyClustersNew.ClusterTypes clist[] = ClassifyClustersNew.ClusterTypes.values();
+        ClassifyClusters.ClusterTypes clist[] = ClassifyClusters.ClusterTypes.values();
         try {
             
             HashMap<Integer,Integer> clustercategorymap = readGtData(gtin, conf);
@@ -228,7 +228,7 @@ public class TemplateClusters extends Configured implements Tool {
                         }
                         if(clustercategorymap.containsKey(clustcurr)){
                             category = clustercategorymap.get(clustcurr);
-                            if(category == ClassifyClustersNew.ClusterTypes.TEMPLATE.ordinal()){
+                            if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
                                 isTemplate = 1;
                             }else{
                                 isTemplate = 0;
@@ -279,8 +279,8 @@ public class TemplateClusters extends Configured implements Tool {
                         if(DEBUG){
                             System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
                             System.out.println("score: " + score);
-                            System.out.println("CLUSTER TYPE TEMPLTE = " + ClassifyClustersNew.ClusterTypes.TEMPLATE.ordinal());
-                            if(category == ClassifyClustersNew.ClusterTypes.TEMPLATE.ordinal()){
+                            System.out.println("CLUSTER TYPE TEMPLTE = " + ClassifyClusters.ClusterTypes.TEMPLATE.ordinal());
+                            if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
                                 System.out.println("Cluster type template: " + category + " " + clist[category]);
                             }else{
                                 System.out.println("Cluster type : " + category + " " + clist[category]);
@@ -342,7 +342,7 @@ public class TemplateClusters extends Configured implements Tool {
             }
             if(clustercategorymap.containsKey(clustcurr)){
                 category = clustercategorymap.get(clustcurr);
-                if(category == ClassifyClustersNew.ClusterTypes.TEMPLATE.ordinal()){
+                if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
                     isTemplate = 1;
                 }else{
                     isTemplate = 0;
