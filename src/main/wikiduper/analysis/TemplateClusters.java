@@ -508,7 +508,8 @@ public class TemplateClusters extends Configured implements Tool {
         
     }
 
-    Pattern propernoun = Pattern.compile("[A-Z](\\w|[A-Z]|-|—)+('s)?", Pattern.UNICODE_CHARACTER_CLASS);
+    // Some Java 6 -> 7 incompatibility issues here
+    Pattern propernoun = Pattern.compile("\\p{Lu}(\\w|\\p{Lu}|-|—)+('s)?"); //, Pattern.UNICODE_CHARACTER_CLASS);
     private double scoreClusterWordsAlt(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
             int clusterid, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
         // TODO Auto-generated method stub
