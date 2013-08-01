@@ -371,8 +371,8 @@ public class MinhashCLIR extends Configured implements Tool {
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
         conf.set("mapred.map.child.java.opts", "-Xmx2048m");
-        conf.set("mapred.job.reduce.memory.mb", "6144");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+        conf.set("mapred.job.reduce.memory.mb", "8000");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx8000m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
