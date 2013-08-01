@@ -379,7 +379,7 @@ public class MinhashCLIR extends Configured implements Tool {
         conf.setMapOutputValueClass(ArrayListOfIntsWritable.class);
         
         conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setOutputValueClass(ArrayListOfIntsWritable.class);
+        conf.setOutputValueClass(ArrayListWritable.class);
 
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
