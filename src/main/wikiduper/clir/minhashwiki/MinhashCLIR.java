@@ -52,10 +52,12 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import wikiduper.hash.MultiplyShiftHash;
+import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
+import edu.umd.cloud9.util.array.ArrayListOfInts;
 import edu.umd.hooka.Vocab;
 
 public class MinhashCLIR extends Configured implements Tool {
@@ -78,7 +80,7 @@ public class MinhashCLIR extends Configured implements Tool {
      */
 
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<IntWritable, ArrayListWritable<Text>, ArrayListOfLongsWritable, IntWritable> {
+    Mapper<ArrayListOfInts, ArrayListWritable<Text>, ArrayListOfLongsWritable, ArrayListOfIntsWritable> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
@@ -98,7 +100,7 @@ public class MinhashCLIR extends Configured implements Tool {
         static ArrayListOfLongsWritable outsig = new ArrayListOfLongsWritable(K);
         // The minhash signature
 
-        public void map(IntWritable key, ArrayListWritable<Text> tokens, OutputCollector<ArrayListOfLongsWritable, IntWritable> output,
+        public void map(ArrayListOfInts key, ArrayListWritable<Text> tokens, OutputCollector<ArrayListOfLongsWritable, ArrayListOfIntsWritable> output,
                     Reporter reporter) throws IOException {
             int tokenct = 0;
             HMapSIW sent = new HMapSIW();
@@ -131,6 +133,7 @@ public class MinhashCLIR extends Configured implements Tool {
                     
                 r = new Random(sigseed);
                 for(int j=0; j<N; j++){
+                    ArrayListOfIntsWritable keyOut = new ArrayListOfIntsWritable();
                     outsig = new ArrayListOfLongsWritable();
                     for(int i=0; i<K; i++){
                         outsig.add(i, 0);
@@ -140,7 +143,10 @@ public class MinhashCLIR extends Configured implements Tool {
                         outsig.set(i, minhash[x]);
                     }
                     //System.out.println("fsig " + outsig);
-                    output.collect(outsig, key);
+                    for(int kval : key){
+                        keyOut.add(kval);
+                    }
+                    output.collect(outsig, keyOut);
                 }
             //}
 
@@ -224,28 +230,31 @@ public class MinhashCLIR extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, IntWritable, ArrayListOfLongsWritable, ArrayListWritable<IntWritable>> {
+    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, ArrayListOfIntsWritable, ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfIntsWritable>> {
 
         // collect all sentences that have hashed to the same hash signature
-        static ArrayListWritable<IntWritable> nearDuplicateSentenceList = new ArrayListWritable<IntWritable>();
-        static final HashSet<Integer> valset = new HashSet<Integer>();
+        static ArrayListWritable<ArrayListOfIntsWritable> nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfIntsWritable>();
+        static final HashSet<ArrayListOfIntsWritable> valset = new HashSet<ArrayListOfIntsWritable>();
         @Override
-        public void reduce(ArrayListOfLongsWritable key, Iterator<IntWritable> values,
-                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<IntWritable>> output, Reporter reporter)
+        public void reduce(ArrayListOfLongsWritable key, Iterator<ArrayListOfIntsWritable> values,
+                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfIntsWritable>> output, Reporter reporter)
                         throws IOException {
-            IntWritable valout;
-            nearDuplicateSentenceList = new ArrayListWritable<IntWritable>();
+            ArrayListOfIntsWritable valout;
+            nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfIntsWritable>();
             valset.clear();
             //System.out.print("values: ");
             while (values.hasNext()) {
-                IntWritable val = values.next();
+                ArrayListOfIntsWritable val = values.next();
                 //System.out.print(val + " ");
-                if(!valset.contains(val.get())){
-                    valout = new IntWritable();
-                    valout.set(val.get());
+                if(!valset.contains(val)){
+                    valout = new ArrayListOfIntsWritable();
+                    for(int valin : val){
+                        valout.add(valin);
+                    }
+                    //valout.set(val.get());
                     nearDuplicateSentenceList.add(valout);
                 }
-                valset.add(val.get());
+                valset.add(val);
             }
             //System.out.println();
             //System.out.println("output " + nearDuplicateSentenceList);
@@ -367,10 +376,10 @@ public class MinhashCLIR extends Configured implements Tool {
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setMapOutputValueClass(IntWritable.class);
+        conf.setMapOutputValueClass(ArrayListOfIntsWritable.class);
         
         conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setOutputValueClass(ArrayListWritable.class);
+        conf.setOutputValueClass(ArrayListOfIntsWritable.class);
 
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);

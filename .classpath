@@ -103,7 +103,7 @@
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/ivory-0.12.1.jar" sourcepath="/Users/weissman/.m2/repository/cc/ivory/ivory/0.12.1/ivory-0.12.1-sources.jar"/>
-	<classpathentry kind="lib" path="lib/cloud9-1.4.15.jar"/>
+	<classpathentry kind="lib" path="lib/cloud9-1.4.15.jar" sourcepath="/Users/weissman/.m2/repository/edu/umd/cloud9/1.4.15/cloud9-1.4.15-sources.jar"/>
 	<classpathentry kind="lib" path="lib/wikiclean-0.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
