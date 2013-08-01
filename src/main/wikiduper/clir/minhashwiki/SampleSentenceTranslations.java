@@ -334,7 +334,8 @@ public class SampleSentenceTranslations extends Configured implements Tool {
     private static final String f2eProbsOption = "f2eprobs";
     private static final String nSamplesOption = "M";
     private static final String OUTPUT = "output";
-    private static final String INPUT = "input";
+    private static final String fINPUT = "fin";
+    private static final String eINPUT = "ein";
 
     
     @SuppressWarnings("static-access")
@@ -342,7 +343,9 @@ public class SampleSentenceTranslations extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("input").create(INPUT));
+                .hasArg().withDescription("input").create(fINPUT));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("input").create(eINPUT));
         options.addOption(OptionBuilder.withArgName("string")
                 .hasArg().withDescription("e language").create(eLangOption));
         options.addOption(OptionBuilder.withArgName("string")
@@ -384,7 +387,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         if (!cmdline.hasOption(eVocabSrcOption) || !cmdline.hasOption(fVocabSrcOption) ||
                 !cmdline.hasOption(eVocabTgtOption) || !cmdline.hasOption(fVocabTgtOption) ||
                 !cmdline.hasOption(e2fProbsOption) || !cmdline.hasOption(f2eProbsOption) ||
-                !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT) 
+                !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(fINPUT) || !cmdline.hasOption(eINPUT) 
                 || !cmdline.hasOption(eLangOption) || !cmdline.hasOption(fLangOption) 
                 || !cmdline.hasOption(eStopWordsOption) || !cmdline.hasOption(fStopWordsOption) 
                 || !cmdline.hasOption(eTokensOption) || !cmdline.hasOption(fTokensOption)
@@ -409,12 +412,14 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         String fVocabTgtPath = cmdline.getOptionValue(fVocabTgtOption);
         String e2fProbsPath = cmdline.getOptionValue(e2fProbsOption);
         String f2eProbsPath = cmdline.getOptionValue(f2eProbsOption);
-        String inputPath = cmdline.getOptionValue(INPUT);
+        String fInputPath = cmdline.getOptionValue(fINPUT);
+        String eInputPath = cmdline.getOptionValue(eINPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         String nSamplesIn = cmdline.getOptionValue(nSamplesOption);
 
         LOG.info("Tool name: " + this.getClass().getName());
-        LOG.info(" - input file: " + inputPath);
+        LOG.info(" - e input file: " + eInputPath);
+        LOG.info(" - f input file: " + fInputPath);
         LOG.info(" - output file: " + outputPath);
 
         JobConf conf = new JobConf(getConf(), SampleSentenceTranslations.class);
@@ -442,7 +447,8 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(0);
 
-        FileInputFormat.setInputPaths(conf, new Path(inputPath));
+        
+        FileInputFormat.setInputPaths(conf, new Path(eInputPath), new Path(fInputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
         conf.setMapperClass(SignatureMapper.class);

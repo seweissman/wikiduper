@@ -124,11 +124,7 @@ public abstract class WikipediaPage extends Indexable {
   public void readFields(DataInput in) throws IOException {
     int length = WritableUtils.readVInt(in);
     byte[] bytes = new byte[length];
-    try{
     in.readFully(bytes, 0, length);
-    }catch(EOFException e){
-        
-    }
     WikipediaPage.readPage(this, new String(bytes, "UTF-8"));
     language = in.readUTF();
   }
