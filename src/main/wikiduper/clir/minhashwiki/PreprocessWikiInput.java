@@ -190,7 +190,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
  
     private static final String eINPUT = "ewiki";
     private static final String fINPUT = "fwiki";
-    private static final String OUTPUT = "output";
+    private static final String eOUTPUT = "eout";
+    private static final String fOUTPUT = "fout";
     private static final String eLANGUAGE_OPTION = "elang";
     private static final String fLANGUAGE_OPTION = "flang";
     
@@ -203,7 +204,9 @@ public class PreprocessWikiInput extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("bz2 input path").create(eINPUT));
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("output path").create(OUTPUT));
+                .hasArg().withDescription("output path").create(eOUTPUT));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("output path").create(fOUTPUT));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
                 .withDescription("two-letter language code").create(eLANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
@@ -220,7 +223,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
 
         if (!cmdline.hasOption(eINPUT) || !cmdline.hasOption(fINPUT) 
                 || !cmdline.hasOption(eLANGUAGE_OPTION) || !cmdline.hasOption(fLANGUAGE_OPTION) 
-                || !cmdline.hasOption(OUTPUT)){
+                || !cmdline.hasOption(eOUTPUT) || !cmdline.hasOption(fOUTPUT)){
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -230,7 +233,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
 
         String eInputPath = cmdline.getOptionValue(eINPUT);
         String fInputPath = cmdline.getOptionValue(fINPUT);
-        String outputPath = cmdline.getOptionValue(OUTPUT);
+        String eOutputPath = cmdline.getOptionValue(eOUTPUT);
+        String fOutputPath = cmdline.getOptionValue(fOUTPUT);
         String eLanguage = cmdline.getOptionValue(eLANGUAGE_OPTION);
         String fLanguage = cmdline.getOptionValue(fLANGUAGE_OPTION);
         
@@ -238,12 +242,13 @@ public class PreprocessWikiInput extends Configured implements Tool {
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - e input file: " + eInputPath);
         LOG.info(" - f input file: " + fInputPath);
-        LOG.info(" - output file: " + outputPath);
+        LOG.info(" - e output file: " + eOutputPath);
+        LOG.info(" - f output file: " + fOutputPath);
         LOG.info(" - e language: " + eLanguage);
         LOG.info(" - f language: " + fLanguage);
 
         JobConf conf = new JobConf(getConf(), PreprocessWikiInput.class);
-        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, OUTPUT, outputPath,
+        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(4);
@@ -266,44 +271,35 @@ public class PreprocessWikiInput extends Configured implements Tool {
         conf.setOutputKeyClass(PairOfInts.class);
         conf.setOutputValueClass(PairOfStrings.class);
         
-        Path eTmpOutputPath;
-        Path fTmpOutputPath;
-        String tmpOutput;
+        FileSystem fs = FileSystem.get(conf);        
+        Path ePath = new Path(eOutputPath);
+        Path fPath = new Path(fOutputPath);
         
         // Job 1
-        tmpOutput = "e-tmp";
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
-        FileOutputFormat.setOutputPath(conf, new Path(tmpOutput));
+        FileOutputFormat.setOutputPath(conf, ePath);
         
         conf.set("wiki.language", eLanguage);
 
         // Delete the output directory if it exists already.
-        eTmpOutputPath = new Path(tmpOutput);
-        FileSystem fs = FileSystem.get(conf);
-        fs.delete(eTmpOutputPath, true);
+        fs.delete(ePath, true);
 
         JobClient.runJob(conf);
 
         
         // Job 2
-        tmpOutput = "f-tmp";
+
         FileInputFormat.setInputPaths(conf, new Path(fInputPath));
-        FileOutputFormat.setOutputPath(conf, new Path(tmpOutput));
+        FileOutputFormat.setOutputPath(conf, fPath);
         
         conf.set("wiki.language", fLanguage);
 
         // Delete the output directory if it exists already.
-        fTmpOutputPath = new Path(tmpOutput);
-        fs.delete(fTmpOutputPath, true);
+        fs.delete(fPath, true);
         
         JobClient.runJob(conf);
 
         
-        // Combine files??
-        FileUtil.copyMerge(fs, eTmpOutputPath, fs, fTmpOutputPath, false, conf, null);
-        Path combineOutputPath = new Path(outputPath);
-        fs.delete(combineOutputPath, true);
-        FileUtil.copy(fs, fTmpOutputPath, fs, combineOutputPath, false, true, conf);        
         return 0;
     }
 

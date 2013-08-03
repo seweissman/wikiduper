@@ -130,7 +130,7 @@ public class MinhashCLIR extends Configured implements Tool {
             //if(tokenct > MINLEN && tokenct < MAXLEN){
                 // generate N k-minhash-signatures
                 //  start from same seed, otherwise doesn't work so well
-                    
+             //   System.out.println("in tokens: " + tokens);
                 r = new Random(sigseed);
                 for(int j=0; j<N; j++){
                     ArrayListOfIntsWritable keyOut = new ArrayListOfIntsWritable();
@@ -147,6 +147,8 @@ public class MinhashCLIR extends Configured implements Tool {
                         keyOut.add(kval);
                     }
                     output.collect(outsig, keyOut);
+                    //System.out.println("outsig: " + outsig);
+                    //System.out.println("outid: " + keyOut);
                 }
             //}
 
@@ -179,20 +181,6 @@ public class MinhashCLIR extends Configured implements Tool {
 
         }
     }
-
-    public static String sampleTranslateDistribution(List<PairOfFloatInt> fSProbs, float p, Vocab fVocab){
-            Iterator<PairOfFloatInt> it = fSProbs.iterator();
-            PairOfFloatInt probf = null;
-            int f = -1;
-            float psum = 0;
-            while(psum <= p && it.hasNext()){
-                probf = it.next();
-                psum += probf.getLeftElement();
-                f = probf.getRightElement();
-            }
-            String fWord = fVocab.get(f);
-            return fWord;
-        }
 
     /**
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
@@ -242,22 +230,23 @@ public class MinhashCLIR extends Configured implements Tool {
             ArrayListOfIntsWritable valout;
             nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfIntsWritable>();
             valset.clear();
-            //System.out.print("values: ");
+            System.out.print("values: ");
             while (values.hasNext()) {
                 ArrayListOfIntsWritable val = values.next();
-                //System.out.print(val + " ");
+                System.out.print(val + " ");
                 if(!valset.contains(val)){
                     valout = new ArrayListOfIntsWritable();
                     for(int valin : val){
                         valout.add(valin);
                     }
-                    //valout.set(val.get());
                     nearDuplicateSentenceList.add(valout);
                 }
                 valset.add(val);
             }
-            //System.out.println();
-            //System.out.println("output " + nearDuplicateSentenceList);
+            System.out.println();
+            System.out.println(nearDuplicateSentenceList.size());
+            System.out.println("key " + key);
+            System.out.println("output " + nearDuplicateSentenceList);
             if(nearDuplicateSentenceList.size() == 1) return;
             output.collect(key, nearDuplicateSentenceList);
 
