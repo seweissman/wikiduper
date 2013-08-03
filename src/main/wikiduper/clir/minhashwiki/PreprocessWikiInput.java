@@ -131,7 +131,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
             if(!p.isArticle() || p.isEmpty()) return;
             String raw = p.getRawXML();
             String content = cleaner.clean(raw);
-            //cleaner.getTitle(content);
+            //String title = cleaner.getTitle(content);
+            System.out.println(lang + " TITLE = " + p.getTitle());
             if(content == null) return;
             if(p.getDocid() == null) return;
             String cleancontent = content

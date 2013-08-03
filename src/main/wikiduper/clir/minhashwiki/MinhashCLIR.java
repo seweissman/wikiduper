@@ -230,10 +230,10 @@ public class MinhashCLIR extends Configured implements Tool {
             ArrayListOfIntsWritable valout;
             nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfIntsWritable>();
             valset.clear();
-            System.out.print("values: ");
+            //System.out.print("values: ");
             while (values.hasNext()) {
                 ArrayListOfIntsWritable val = values.next();
-                System.out.print(val + " ");
+                //System.out.print(val + " ");
                 if(!valset.contains(val)){
                     valout = new ArrayListOfIntsWritable();
                     for(int valin : val){
@@ -243,10 +243,10 @@ public class MinhashCLIR extends Configured implements Tool {
                 }
                 valset.add(val);
             }
-            System.out.println();
-            System.out.println(nearDuplicateSentenceList.size());
-            System.out.println("key " + key);
-            System.out.println("output " + nearDuplicateSentenceList);
+            //System.out.println();
+            //System.out.println(nearDuplicateSentenceList.size());
+            //System.out.println("key " + key);
+            //System.out.println("output " + nearDuplicateSentenceList);
             if(nearDuplicateSentenceList.size() == 1) return;
             output.collect(key, nearDuplicateSentenceList);
 
