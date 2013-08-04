@@ -132,7 +132,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
             String raw = p.getRawXML();
             String content = cleaner.clean(raw);
             //String title = cleaner.getTitle(content);
-            System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
+            //System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
             if(content == null) return;
             if(p.getDocid() == null) return;
             String cleancontent = content
