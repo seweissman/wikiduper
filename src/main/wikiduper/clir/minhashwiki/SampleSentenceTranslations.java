@@ -55,10 +55,12 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
+import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfInts;
+import edu.umd.cloud9.io.pair.PairOfLongInt;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 import edu.umd.hooka.Vocab;
 import edu.umd.hooka.alignment.HadoopAlign;
@@ -83,8 +85,8 @@ public class SampleSentenceTranslations extends Configured implements Tool {
      * 
      */
 
-    private static class SignatureMapper extends MapReduceBase implements
-    Mapper<PairOfInts, PairOfStrings, ArrayListOfIntsWritable, ArrayListWritable<Text>> {
+    private static class SampleMapper extends MapReduceBase implements
+    Mapper<PairOfLongInt, PairOfStrings, ArrayListOfLongsWritable, ArrayListWritable<Text>> {
         
         static long rseed;
 
@@ -109,7 +111,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         static Random rSample;
         // The minhash signature
 
-        public void map(PairOfInts key, PairOfStrings p, OutputCollector<ArrayListOfIntsWritable, ArrayListWritable<Text>> output,
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<Text>> output,
                     Reporter reporter) throws IOException {
             String outstr;
             String lang = p.getLeftElement();
@@ -119,7 +121,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
             String[] tokens;
             int tokenct = 0;
             HMapSIW sent = new HMapSIW();
-            ArrayListOfIntsWritable idOut;
+            ArrayListOfLongsWritable idOut;
             Text outWord;
             sent.clear();
             //System.out.println("nSamples = " + nSamples);
@@ -128,6 +130,12 @@ public class SampleSentenceTranslations extends Configured implements Tool {
             if(lang.equals(eLang)){
                 
                 tokens = eTokenizer.processContent(line);
+                //System.out.print("eline " + line + "\n");
+                //System.out.print("etokens ");
+                //for(String t : tokens){
+                  //  System.out.print(t + " ");
+                //}
+                //System.out.println();
                 tokenct = 0;
                 outstr = "";
                 outsig = new ArrayListWritable<Text>();
@@ -144,7 +152,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
                 }
                 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-                idOut = new ArrayListOfIntsWritable();
+                idOut = new ArrayListOfLongsWritable();
                 idOut.add(key.getLeftElement());
                 idOut.add(key.getRightElement());
                 idOut.add(-1);
@@ -154,6 +162,13 @@ public class SampleSentenceTranslations extends Configured implements Tool {
             }else if(lang.equals(fLang)){
                 
                 tokens = fTokenizer.processContent(line);
+                //System.out.print("fline " + line + "\n");
+                //System.out.print("ftokens ");
+                //for(String t : tokens){
+                  //  System.out.print(t + " ");
+                //}
+                //System.out.println();
+
                 HashSet<String> sigMap = new HashSet<String>();
                 for(int l=0;l<nSamples;l++){
                     tokenct = 0;
@@ -167,6 +182,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
                                 List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
                                 float pr = rSample.nextFloat();
                                 String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
+                                //System.out.println("fword = " + ftoken + ", eword = " + eWord);
                                 outWord = new Text();
                                 outWord.set(eWord);
                                 outsig.add(outWord);
@@ -178,7 +194,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
                         sent.increment(ftoken);
                     }
                     
-                    idOut = new ArrayListOfIntsWritable();
+                    idOut = new ArrayListOfLongsWritable();
                     if(!sigMap.contains(outstr)){
                         idOut.add(key.getLeftElement());
                         idOut.add(key.getRightElement());
@@ -294,7 +310,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<Text, IntWritable, IntWritable, ArrayListWritable<Text>> {
+    private static class SampleReducer extends MapReduceBase implements Reducer<Text, IntWritable, IntWritable, ArrayListWritable<Text>> {
 
         // collect all sentences that have hashed to the same hash signature
         static int ct = 0;
@@ -451,7 +467,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         FileInputFormat.setInputPaths(conf, new Path(eInputPath), new Path(fInputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
-        conf.setMapperClass(SignatureMapper.class);
+        conf.setMapperClass(SampleMapper.class);
         //conf.setReducerClass(SignatureReducer.class);
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
@@ -470,7 +486,7 @@ public class SampleSentenceTranslations extends Configured implements Tool {
         //conf.setMapOutputKeyClass(Text.class);
         //conf.setMapOutputValueClass(IntWritable.class);
         
-        conf.setOutputKeyClass(ArrayListOfIntsWritable.class);
+        conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setOutputValueClass(ArrayListWritable.class);
 
         // Delete the output directory if it exists already.

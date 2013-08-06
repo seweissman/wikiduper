@@ -128,19 +128,24 @@ public class MinhashCLIR extends Configured implements Tool {
             //if(tokenct > MINLEN && tokenct < MAXLEN){
                 // generate N k-minhash-signatures
                 //  start from same seed, otherwise doesn't work so well
-                    
+            
                 r = new Random(sigseed);
                 for(int j=0; j<N; j++){
                     outsig = new ArrayListOfLongsWritable();
                     for(int i=0; i<K; i++){
                         outsig.add(i, 0);
                     }
+                    System.out.print("tokens : ");        
                     for(int i=0; i<K; i++){
                         int x = r.nextInt(nHash);
                         outsig.set(i, minhash[x]);
+                        System.out.print(hashval[x] + " " );
                     }
+                    System.out.println();
                     //System.out.println("fsig " + outsig);
                     output.collect(outsig, key);
+                    System.out.println("outsig: " + outsig);
+                    System.out.println("outid: " + key);
                 }
             //}
 

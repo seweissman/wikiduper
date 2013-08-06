@@ -58,6 +58,7 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.util.array.ArrayListOfInts;
+import edu.umd.cloud9.util.array.ArrayListOfLongs;
 import edu.umd.hooka.Vocab;
 
 public class MinhashCLIR extends Configured implements Tool {
@@ -80,7 +81,7 @@ public class MinhashCLIR extends Configured implements Tool {
      */
 
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<ArrayListOfInts, ArrayListWritable<Text>, ArrayListOfLongsWritable, ArrayListOfIntsWritable> {
+    Mapper<ArrayListOfLongsWritable, ArrayListWritable<Text>, ArrayListOfLongsWritable, ArrayListOfLongsWritable> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
@@ -100,7 +101,7 @@ public class MinhashCLIR extends Configured implements Tool {
         static ArrayListOfLongsWritable outsig = new ArrayListOfLongsWritable(K);
         // The minhash signature
 
-        public void map(ArrayListOfInts key, ArrayListWritable<Text> tokens, OutputCollector<ArrayListOfLongsWritable, ArrayListOfIntsWritable> output,
+        public void map(ArrayListOfLongsWritable key, ArrayListWritable<Text> tokens, OutputCollector<ArrayListOfLongsWritable, ArrayListOfLongsWritable> output,
                     Reporter reporter) throws IOException {
             int tokenct = 0;
             HMapSIW sent = new HMapSIW();
@@ -130,25 +131,28 @@ public class MinhashCLIR extends Configured implements Tool {
             //if(tokenct > MINLEN && tokenct < MAXLEN){
                 // generate N k-minhash-signatures
                 //  start from same seed, otherwise doesn't work so well
-             //   System.out.println("in tokens: " + tokens);
+             
                 r = new Random(sigseed);
                 for(int j=0; j<N; j++){
-                    ArrayListOfIntsWritable keyOut = new ArrayListOfIntsWritable();
+                    ArrayListOfLongsWritable keyOut = new ArrayListOfLongsWritable();
                     outsig = new ArrayListOfLongsWritable();
                     for(int i=0; i<K; i++){
                         outsig.add(i, 0);
                     }
+                    System.out.print("tokens : ");
                     for(int i=0; i<K; i++){
                         int x = r.nextInt(nHash);
+                        System.out.print(hashval[x] + " " );
                         outsig.set(i, minhash[x]);
                     }
+                    System.out.println();
                     //System.out.println("fsig " + outsig);
-                    for(int kval : key){
+                    for(long kval : key){
                         keyOut.add(kval);
                     }
                     output.collect(outsig, keyOut);
-                    //System.out.println("outsig: " + outsig);
-                    //System.out.println("outid: " + keyOut);
+                    System.out.println("outsig: " + outsig);
+                    System.out.println("outid: " + keyOut);
                 }
             //}
 
@@ -218,25 +222,25 @@ public class MinhashCLIR extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, ArrayListOfIntsWritable, ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfIntsWritable>> {
+    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, ArrayListOfLongsWritable, ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfLongsWritable>> {
 
         // collect all sentences that have hashed to the same hash signature
-        static ArrayListWritable<ArrayListOfIntsWritable> nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfIntsWritable>();
-        static final HashSet<ArrayListOfIntsWritable> valset = new HashSet<ArrayListOfIntsWritable>();
+        static ArrayListWritable<ArrayListOfLongsWritable> nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
+        static final HashSet<ArrayListOfLongsWritable> valset = new HashSet<ArrayListOfLongsWritable>();
         @Override
-        public void reduce(ArrayListOfLongsWritable key, Iterator<ArrayListOfIntsWritable> values,
-                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfIntsWritable>> output, Reporter reporter)
+        public void reduce(ArrayListOfLongsWritable key, Iterator<ArrayListOfLongsWritable> values,
+                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfLongsWritable>> output, Reporter reporter)
                         throws IOException {
-            ArrayListOfIntsWritable valout;
-            nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfIntsWritable>();
+            ArrayListOfLongsWritable valout;
+            nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
             valset.clear();
             //System.out.print("values: ");
             while (values.hasNext()) {
-                ArrayListOfIntsWritable val = values.next();
+                ArrayListOfLongsWritable val = values.next();
                 //System.out.print(val + " ");
                 if(!valset.contains(val)){
-                    valout = new ArrayListOfIntsWritable();
-                    for(int valin : val){
+                    valout = new ArrayListOfLongsWritable();
+                    for(long valin : val){
                         valout.add(valin);
                     }
                     nearDuplicateSentenceList.add(valout);
@@ -365,7 +369,7 @@ public class MinhashCLIR extends Configured implements Tool {
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setMapOutputValueClass(ArrayListOfIntsWritable.class);
+        conf.setMapOutputValueClass(ArrayListOfLongsWritable.class);
         
         conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setOutputValueClass(ArrayListWritable.class);

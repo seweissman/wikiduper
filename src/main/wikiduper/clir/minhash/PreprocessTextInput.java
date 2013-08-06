@@ -1,4 +1,4 @@
-package wikiduper.clir.minhashwiki;
+package wikiduper.clir.minhash;
 
 /*
  * Cloud9: A MapReduce Library for Hadoop
@@ -33,6 +33,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -43,6 +45,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -58,32 +61,11 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
-public class PreprocessWikiInput extends Configured implements Tool {
-    private static final Logger LOG = Logger.getLogger(PreprocessWikiInput.class);
+public class PreprocessTextInput extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(PreprocessTextInput.class);
 
-    /* SignatureeMapper
-     * 
-     * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
-     * 
-     * Pulls out sentences from text input using a regex. 
-     * Emits one NHASH-length minhash signature per sentence.
-     * Each hash is NHASHOUTPUTBITS long. (So signature is NHASH*NHASHOUTPUTBITS long.)
-     * Sentences are shingled by individual words. 
-     * If sentences are less than MINLEN words, then they are skipped.
-     * 
-     * 
-     * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
-     * input text and nsentence is the number of the sentence in the line. (starting from 0)
-     * 
-     */
-
-    private static enum PageTypes {
-        TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
-    };
-    
     private static class LanguageMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, PairOfLongInt, PairOfStrings> {
-    //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    Mapper<LongWritable, Text, PairOfLongInt, PairOfStrings> {
         
         static String lang;
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
@@ -103,39 +85,11 @@ public class PreprocessWikiInput extends Configured implements Tool {
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
         
-        //public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
-          //      Reporter reporter) throws IOException {
-        
-        public static WikiClean cleaner;
-        
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<PairOfLongInt, PairOfStrings> output,
+           public void map(LongWritable key, Text p, OutputCollector<PairOfLongInt, PairOfStrings> output,
                     Reporter reporter) throws IOException {
                
                
-            if (p.isRedirect()) {
-                reporter.incrCounter(PageTypes.REDIRECT, 1);
-
-            } else if (p.isDisambiguation()) {
-                reporter.incrCounter(PageTypes.DISAMBIGUATION, 1);
-            } else if (p.isEmpty()) {
-                reporter.incrCounter(PageTypes.EMPTY, 1);
-            } else if (p.isArticle()) {
-                reporter.incrCounter(PageTypes.ARTICLE, 1);
-
-                if (p.isStub()) {
-                    reporter.incrCounter(PageTypes.STUB, 1);
-                }
-            } else {
-                reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
-            }
-            
-            if(!p.isArticle() || p.isEmpty()) return;
-            String raw = p.getRawXML();
-            String content = cleaner.clean(raw);
-            //String title = cleaner.getTitle(content);
-            //System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
-            if(content == null) return;
-            if(p.getDocid() == null) return;
+               String content = p.toString();
             String cleancontent = content
                     //.replace("\n", " ")
                     .replace("  ", " ")
@@ -168,7 +122,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
                     }
             
                 }catch(Throwable e){
-                    System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid());
+                    System.err.println("WARNING: Possible stack overflow from regex at key " + key);
                 //System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + p.toString());
                 }
             }
@@ -178,20 +132,13 @@ public class PreprocessWikiInput extends Configured implements Tool {
         
         
         public void configure(JobConf job) {
-            
-            lang = job.get("wiki.language", "en");
-            WikiLanguage wikilang = WikiLanguage.valueOf(lang.toUpperCase());
-            cleaner =  new WikiCleanBuilder()
-                        .withLanguage(wikilang)
-                        .withTitle(true)
-                        .withFooter(false).build();
-
+            lang = job.get("doc.language", "en");
         }
     }
 
  
-    private static final String eINPUT = "ewiki";
-    private static final String fINPUT = "fwiki";
+    private static final String eINPUT = "ein";
+    private static final String fINPUT = "fin";
     private static final String eOUTPUT = "eout";
     private static final String fOUTPUT = "fout";
     private static final String eLANGUAGE_OPTION = "elang";
@@ -249,8 +196,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
         LOG.info(" - e language: " + eLanguage);
         LOG.info(" - f language: " + fLanguage);
 
-        JobConf conf = new JobConf(getConf(), PreprocessWikiInput.class);
-        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
+        JobConf conf = new JobConf(getConf(), PreprocessTextInput.class);
+        conf.setJobName(String.format("PreprocessDocInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(4);
@@ -259,7 +206,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
         conf.setMapperClass(LanguageMapper.class);
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
-        conf.setInputFormat(SequenceFileInputFormat.class);
+        conf.setInputFormat(TextInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         //conf.setOutputFormat(TextOutputFormat.class);
         
@@ -281,7 +228,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
         FileOutputFormat.setOutputPath(conf, ePath);
         
-        conf.set("wiki.language", eLanguage);
+        conf.set("doc.language", eLanguage);
 
         // Delete the output directory if it exists already.
         fs.delete(ePath, true);
@@ -294,7 +241,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
         FileInputFormat.setInputPaths(conf, new Path(fInputPath));
         FileOutputFormat.setOutputPath(conf, fPath);
         
-        conf.set("wiki.language", fLanguage);
+        conf.set("doc.language", fLanguage);
 
         // Delete the output directory if it exists already.
         fs.delete(fPath, true);
@@ -305,9 +252,9 @@ public class PreprocessWikiInput extends Configured implements Tool {
         return 0;
     }
 
-    public PreprocessWikiInput() {}
+    public PreprocessTextInput() {}
 
     public static void main(String[] args) throws Exception {
-        ToolRunner.run(new PreprocessWikiInput(), args);
+        ToolRunner.run(new PreprocessTextInput(), args);
     }
 }
