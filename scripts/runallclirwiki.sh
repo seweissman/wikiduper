@@ -3,7 +3,7 @@
 #nHash=50
 #n=80
 #nSamples=100
-ivoryDataDir=../Ivory/data
+
 fin=$1
 flang=$2
 fmapping=${fin}.mapping
@@ -16,7 +16,8 @@ emapping=${ein}.mapping
 epack=${ein}.pack
 epreproc=${ein}.preproc
 
-sentencemap=$5
+#../Ivory/data
+ivoryDataDir=$5
 samples=$6
 
 f2eprobs=${ivoryDataDir}/vocab/ttable.${flang}-${elang}
