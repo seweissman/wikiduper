@@ -106,7 +106,7 @@ public class GetSentenceClusters extends Configured implements Tool {
                 docmap = fdocmap;
             }
             
-            System.out.println("ID " + docid + " " + docmap.containsKey(docid));
+            //System.out.println("ID " + docid + " " + docmap.containsKey(docid));
             if(!docmap.containsKey(docid)) return;
             TreeMap<Long,Long> sentMap = docmap.get(docid);
 
@@ -114,7 +114,7 @@ public class GetSentenceClusters extends Configured implements Tool {
                 long clust = sentMap.get(sentenceid);
                 TITLESENTENCE.set(docid + "\t" + langsentence.getLeftElement() + "\t" + langsentence.getRightElement());
                 CLUSTER.set(clust);
-                System.out.println("cluster " + CLUSTER + " titlesentence " + TITLESENTENCE);
+                //System.out.println("cluster " + CLUSTER + " titlesentence " + TITLESENTENCE);
                 output.collect(CLUSTER,TITLESENTENCE);
             }
         }

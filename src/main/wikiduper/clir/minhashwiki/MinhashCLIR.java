@@ -17,11 +17,17 @@ package wikiduper.clir.minhashwiki;
  */
 
 
+import ivory.core.tokenize.Tokenizer;
+import ivory.core.tokenize.TokenizerFactory;
+
+import java.io.EOFException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -57,9 +63,13 @@ import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
+import edu.umd.cloud9.io.pair.PairOfLongInt;
+import edu.umd.cloud9.io.pair.PairOfStrings;
 import edu.umd.cloud9.util.array.ArrayListOfInts;
 import edu.umd.cloud9.util.array.ArrayListOfLongs;
 import edu.umd.hooka.Vocab;
+import edu.umd.hooka.alignment.HadoopAlign;
+import edu.umd.hooka.ttables.TTable_monolithic_IFAs;
 
 public class MinhashCLIR extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MinhashCLIR.class);
@@ -81,10 +91,31 @@ public class MinhashCLIR extends Configured implements Tool {
      */
 
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<ArrayListOfLongsWritable, ArrayListWritable<Text>, ArrayListOfLongsWritable, ArrayListOfLongsWritable> {
+    Mapper<PairOfLongInt, PairOfStrings, ArrayListOfLongsWritable, ArrayListOfLongsWritable> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+        // Sampling variables
         
         static long rseed;
+
+        static String eLang;
+        static String fLang;
+        static String eTokensFile;
+        static String fTokensFile;
+        static String eStopWordsFile;
+        static String fStopWordsFile;
+        static int nSamples;
+        static long sampleSeed;
+        static Vocab fVocabSrc;
+        static Vocab eVocabTgt;
+        static TTable_monolithic_IFAs e2fProbs;
+        static TTable_monolithic_IFAs f2eProbs;
+        static Tokenizer eTokenizer;
+        static Tokenizer fTokenizer;
+        static Random rSample;
+        // The minhash signature
+        
+        
+        // Minhash variables
         static long seeds[];
         static long sigseed; // Seed to use when randoly selecting signature vectors
         static long minhash[];
@@ -97,12 +128,109 @@ public class MinhashCLIR extends Configured implements Tool {
         static int MAXLEN;
         //static int NSENTENCE = 3; // Number of sentences to match at a time
         static MultiplyShiftHash hashfamily;
-        static int nSamples;
         static ArrayListOfLongsWritable outsig = new ArrayListOfLongsWritable(K);
         // The minhash signature
-
-        public void map(ArrayListOfLongsWritable key, ArrayListWritable<Text> tokens, OutputCollector<ArrayListOfLongsWritable, ArrayListOfLongsWritable> output,
+        
+        static HashSet<String> wordset = new HashSet<String>();
+        static HashSet<String> sigMap = new HashSet<String>();
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<ArrayListOfLongsWritable, ArrayListOfLongsWritable> output,
                     Reporter reporter) throws IOException {
+            
+            String outstr;
+            String lang = p.getLeftElement();
+            String line = p.getRightElement();
+            //System.out.println("key : " + key);
+            //System.out.println("val : " + p);
+            String[] tokens;
+            int tokenct = 0;
+            HMapSIW tokencts = new HMapSIW();
+            ArrayListOfLongsWritable idOut;
+            Text outWord;
+            tokencts.clear();
+            //System.out.println("nSamples = " + nSamples);
+
+            // the "english" case
+            if(lang.equals(eLang)){
+                
+                tokens = eTokenizer.processContent(line);
+                if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
+                //System.out.print("eline " + line + "\n");
+                //System.out.print("etokens ");
+                //for(String t : tokens){
+                  //  System.out.print(t + " ");
+                //}
+                //System.out.println();
+                tokenct = 0;
+                //outstr = "";
+                for (String token : tokens) {
+                    if (!tokencts.containsKey(token)) { // if this is first time we saw token in this sentence
+                       // if(tokenct != 0) outstr += ",";
+                        //outstr += token;
+                        tokenct++;
+                    }
+                    tokencts.increment(token);
+                }
+                
+                // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
+                idOut = new ArrayListOfLongsWritable();
+                idOut.add(key.getLeftElement());
+                idOut.add(key.getRightElement());
+                idOut.add(-1);
+                //System.out.println("idout = " + idOut);
+                doMinhash(idOut,tokencts.keySet(),output);
+            
+            }else if(lang.equals(fLang)){
+                
+                tokens = fTokenizer.processContent(line);
+                if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
+                //System.out.print("fline " + line + "\n");
+                //System.out.print("ftokens ");
+                //for(String t : tokens){
+                  //  System.out.print(t + " ");
+                //}
+                //System.out.println();
+
+                sigMap.clear();
+                
+                for(int l=0;l<nSamples;l++){
+                    tokenct = 0;
+                    tokencts.clear();
+                    wordset.clear();
+                    outstr = "";
+                    for (String ftoken : tokens) {
+                        if (!tokencts.containsKey(ftoken)) { // if this is first time we saw token in this sentence
+                            int f = fVocabSrc.get(ftoken);
+                            if(f != -1){
+                                List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
+                                float pr = rSample.nextFloat();
+                                String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
+                                //System.out.println("fword = " + ftoken + ", eword = " + eWord);
+                                wordset.add(eWord);
+                                if(tokenct != 0) outstr += ",";
+                                outstr += eWord;
+                                tokenct++;
+                            }
+                        }
+                        tokencts.increment(ftoken);
+                    }
+                    
+                    idOut = new ArrayListOfLongsWritable();
+                    if(!sigMap.contains(outstr)){
+                        idOut.add(key.getLeftElement());
+                        idOut.add(key.getRightElement());
+                        idOut.add(l);
+                        doMinhash(idOut,wordset,output);
+                    }
+                    sigMap.add(outstr);
+                    
+
+                }
+            }
+
+
+        }
+        
+        public static void doMinhash(ArrayListOfLongsWritable key, Set<String> set, OutputCollector<ArrayListOfLongsWritable, ArrayListOfLongsWritable> output) throws IOException{
             int tokenct = 0;
             HMapSIW sent = new HMapSIW();
             Random r;
@@ -112,8 +240,8 @@ public class MinhashCLIR extends Configured implements Tool {
                 minhash[i] = Long.MAX_VALUE;
             }
             sent.clear();
-            for (Text token : tokens) {
-                String tokenstr = token.toString();
+            for (String token : set) {
+                String tokenstr = token;
                 if (!sent.containsKey(tokenstr)) { // if this is first time we saw token in this sentence
                     tokenct++;
                     long hash[] = hashfamily.hash(tokenstr);
@@ -153,22 +281,38 @@ public class MinhashCLIR extends Configured implements Tool {
                     }
                     output.collect(outsig, keyOut);
                 }
-            //}
-
+        }
+        
+        public static String sampleTranslateDistribution(List<PairOfFloatInt> eSProbs, float p, Vocab eVocab){
+            Iterator<PairOfFloatInt> it = eSProbs.iterator();
+            PairOfFloatInt probe = null;
+            int e = -1;
+            float psum = 0;
+            while(psum <= p && it.hasNext()){
+                probe = it.next();
+                psum += probe.getLeftElement();
+                e = probe.getRightElement();
+            }
+            String eWord = eVocab.get(e);
+            return eWord;
         }
 
         
         public void configure(JobConf job) {
             rseed = job.getLong("rseed", 112345);
+            Random r = new Random(rseed);            
+            configureMinhash(job, r);
+            configureSampling(job,r);
+        }
+
+        public void configureMinhash(JobConf job, Random r){
             nHash = job.getInt("NHASH", 20);
             NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
             MINLEN = job.getInt("MINLEN", 5);
             MAXLEN = job.getInt("MAXLEN", 100);
             K = job.getInt("K",  10);
             N = job.getInt("N", 10);
-            nSamples = job.getInt("nSamples", 100);
             seeds = new long[nHash];
-            Random r = new Random(rseed);
             int ct = 0;
             while(ct < nHash){
                 seeds[ct] = r.nextLong();
@@ -181,8 +325,54 @@ public class MinhashCLIR extends Configured implements Tool {
             System.out.println("K = " + K);
             System.out.println("nHash = " + nHash);
             System.out.println("nSamples = " + nSamples);
-
         }
+
+        public void configureSampling(JobConf job, Random r){
+
+            nSamples = job.getInt("nSamples", 100);
+            eTokensFile = job.get("eTokensFile");
+            fTokensFile = job.get("fTokensFile");
+            eStopWordsFile = job.get("eStopWordsFile");
+            fStopWordsFile = job.get("fStopWordsFile");
+            System.out.println("eStopWordsFile" + eStopWordsFile);
+            System.out.println("fStopWordsFile" + fStopWordsFile);
+
+            sampleSeed = r.nextLong();
+            rSample = new Random(sampleSeed);
+            eLang = job.get("eLang");
+            fLang = job.get("fLang");
+            
+            String eVocabSrcFile = job.get("eVocabSrcFile");
+            String eVocabTgtFile = job.get("eVocabTgtFile");
+            String fVocabSrcFile = job.get("fVocabSrcFile");
+            String fVocabTgtFile = job.get("fVocabTgtFile");
+            String probTablef2eFile = job.get("probTablef2eFile");
+            String probTablee2fFile = job.get("probTablee2fFile");
+            
+            eTokenizer = TokenizerFactory.createTokenizer(eLang, eTokensFile, true, eStopWordsFile, eStopWordsFile + ".stemmed", null);
+            fTokenizer = TokenizerFactory.createTokenizer(fLang, fTokensFile, true, fStopWordsFile, fStopWordsFile + ".stemmed", null);
+            
+            FileSystem fs;
+            try {
+                fs = FileSystem.get(job);
+                fVocabSrc = HadoopAlign.loadVocab(new Path(fVocabSrcFile), fs);
+                //eVocabTgt = HadoopAlign.loadVocab(new Path(eVocabTgtFile), fs);
+                //fVocabSrc = HadoopAlign.loadVocab(new Path(fVocabSrcFile), fs);
+                eVocabTgt = HadoopAlign.loadVocab(new Path(eVocabTgtFile), fs);
+        
+                try{
+                    f2eProbs = new TTable_monolithic_IFAs(fs, new Path(probTablef2eFile), true);
+                }catch(EOFException e){}
+                try{
+                    e2fProbs = new TTable_monolithic_IFAs(fs, new Path(probTablee2fFile), true);
+                }catch(EOFException e){}
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        }
+        
     }
 
     /**
@@ -253,25 +443,38 @@ public class MinhashCLIR extends Configured implements Tool {
             //System.out.println("key " + key);
             //System.out.println("output " + nearDuplicateSentenceList);
             if(nearDuplicateSentenceList.size() == 1) return;
-            System.out.println("nearDuplicateSentenceList " + nearDuplicateSentenceList);
+            //System.out.println("nearDuplicateSentenceList " + nearDuplicateSentenceList);
             output.collect(key, nearDuplicateSentenceList);
 
         }
     }
     
+    private static final String fINPUT = "fin";
+    private static final String eINPUT = "ein";
     private static final String OUTPUT = "output";
-    private static final String INPUT = "input";
     private static final String NUM_REDUCERS = "numReducers";
+    
+    //Minhash options
     private static final String NHASH_IN = "nHash";
     private static final String K_IN = "k";
     private static final String N_IN = "n";
     private static final String HASHBITS = "bits";
-    private static final String nSamplesOption = "M";
     
-    static int NHASH; // Total number of hashes per sentence
-    static int K; // Length of hash vector
-    static int N; // Number of hashes per input sentence (N < NHASH)
-    static int NHASHOUTPUTBITS;
+    //Sampling Options
+    private static final String eVocabSrcOption = "eVocabSrc";
+    private static final String fVocabSrcOption = "fVocabSrc";
+    private static final String eStopWordsOption = "eStopWords";
+    private static final String fStopWordsOption = "fStopWords";
+    private static final String eTokensOption = "eTokens";
+    private static final String fTokensOption = "fTokens";
+    private static final String eLangOption = "eLang";
+    private static final String fLangOption = "fLang";
+    private static final String eVocabTgtOption = "eVocabTgt";
+    private static final String fVocabTgtOption = "fVocabTgt";
+    private static final String e2fProbsOption = "e2fprobs";
+    private static final String f2eProbsOption = "f2eprobs";
+    private static final String nSamplesOption = "M";
+
     
     
     @SuppressWarnings("static-access")
@@ -279,11 +482,15 @@ public class MinhashCLIR extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("input").create(INPUT));
-        options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("output path").create(OUTPUT));
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("input").create(fINPUT));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("input").create(eINPUT));
+        
+        // Minhsh Options
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of hashes").create(NHASH_IN));
         options.addOption(OptionBuilder.withArgName("num").hasArg()
@@ -292,8 +499,38 @@ public class MinhashCLIR extends Configured implements Tool {
                 .withDescription("number of signatures").create(N_IN));
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("size of hash in bits").create(HASHBITS));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("n Samples").create(nSamplesOption));
+
+        // Sampling Options
+        options.addOption(OptionBuilder.withArgName("string")
+                .hasArg().withDescription("e language").create(eLangOption));
+        options.addOption(OptionBuilder.withArgName("string")
+                .hasArg().withDescription("f language").create(fLangOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("e stop words").create(eStopWordsOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("f stop words").create(fStopWordsOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("e tokens").create(eTokensOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("f tokens").create(fTokensOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("e vocab src").create(eVocabSrcOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("f vocab src").create(fVocabSrcOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("e vocab tgt").create(eVocabTgtOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("f vocab tgt").create(fVocabTgtOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("e2f prob table").create(e2fProbsOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("f2e prob table").create(f2eProbsOption));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("output path").create(OUTPUT));
+        options.addOption(OptionBuilder.withArgName("integer")
+                .hasArg().withDescription("n samples").create(nSamplesOption));
+        
+        
         
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -304,9 +541,18 @@ public class MinhashCLIR extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT) 
+        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(fINPUT) || !cmdline.hasOption(eINPUT) 
                 || !cmdline.hasOption(NHASH_IN) || !cmdline.hasOption(K_IN) || !cmdline.hasOption(N_IN)
-                || !cmdline.hasOption(HASHBITS) || !cmdline.hasOption(nSamplesOption)) {
+                || !cmdline.hasOption(HASHBITS) || !cmdline.hasOption(nSamplesOption)
+                || !cmdline.hasOption(eVocabSrcOption) || !cmdline.hasOption(fVocabSrcOption) 
+                || !cmdline.hasOption(eVocabTgtOption) || !cmdline.hasOption(fVocabTgtOption)
+                || !cmdline.hasOption(e2fProbsOption) || !cmdline.hasOption(f2eProbsOption)
+                || !cmdline.hasOption(eLangOption) || !cmdline.hasOption(fLangOption) 
+                || !cmdline.hasOption(eStopWordsOption) || !cmdline.hasOption(fStopWordsOption) 
+                || !cmdline.hasOption(eTokensOption) || !cmdline.hasOption(fTokensOption)
+                || !cmdline.hasOption(nSamplesOption)
+                
+                ) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -314,17 +560,35 @@ public class MinhashCLIR extends Configured implements Tool {
             return -1;
         }
 
-        String inputPath = cmdline.getOptionValue(INPUT);
+        String fInputPath = cmdline.getOptionValue(fINPUT);
+        String eInputPath = cmdline.getOptionValue(eINPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
+
         int nHash = Integer.parseInt(cmdline.getOptionValue(NHASH_IN));
         int k = Integer.parseInt(cmdline.getOptionValue(K_IN));
         int n = Integer.parseInt(cmdline.getOptionValue(N_IN));
         int nBits = Integer.parseInt(cmdline.getOptionValue(HASHBITS)); 
+
+        String eLang = cmdline.getOptionValue(eLangOption);
+        String fLang = cmdline.getOptionValue(fLangOption);
+        String eTokensPath = cmdline.getOptionValue(eTokensOption);
+        String fTokensPath = cmdline.getOptionValue(fTokensOption);
+        String eStopWordsPath = cmdline.getOptionValue(eStopWordsOption);
+        String fStopWordsPath = cmdline.getOptionValue(fStopWordsOption);
+        String eVocabSrcPath = cmdline.getOptionValue(eVocabSrcOption);
+        String fVocabSrcPath = cmdline.getOptionValue(fVocabSrcOption);
+        String eVocabTgtPath = cmdline.getOptionValue(eVocabTgtOption);
+        String fVocabTgtPath = cmdline.getOptionValue(fVocabTgtOption);
+        String e2fProbsPath = cmdline.getOptionValue(e2fProbsOption);
+        String f2eProbsPath = cmdline.getOptionValue(f2eProbsOption);
         int nSamples = Integer.parseInt(cmdline.getOptionValue(nSamplesOption));
 
+        
+        
         LOG.info("Tool name: " + this.getClass().getName());
-        LOG.info(" - input file: " + inputPath);
+        LOG.info(" - e input file: " + eInputPath);
+        LOG.info(" - f input file: " + fInputPath);
         LOG.info(" - output file: " + outputPath);
         LOG.info(" - number hashes: " + nHash);
         LOG.info(" - hash bits: " + nBits);
@@ -343,16 +607,29 @@ public class MinhashCLIR extends Configured implements Tool {
         conf.setInt("K",  k);
         //conf.setInt("N", 10);
         conf.setInt("N", n);
-        conf.setInt("M", 100);
         conf.setInt("MINLEN", 5);
         conf.setInt("MAXLEN", 100);
         conf.setInt("nSamples", nSamples);
 
+        conf.set("eLang", eLang);
+        conf.set("fLang", fLang);
+        conf.set("eTokensFile", eTokensPath);
+        conf.set("fTokensFile", fTokensPath);
+        conf.set("eStopWordsFile", eStopWordsPath);
+        conf.set("fStopWordsFile", fStopWordsPath);
+        conf.set("eVocabSrcFile", eVocabSrcPath);
+        conf.set("eVocabTgtFile", eVocabTgtPath);
+        conf.set("fVocabSrcFile", fVocabSrcPath);
+        conf.set("fVocabTgtFile", fVocabTgtPath);
+        conf.set("probTablef2eFile", f2eProbsPath);
+        conf.set("probTablee2fFile", e2fProbsPath);
 
+
+        
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(reduceTasks);
 
-        FileInputFormat.setInputPaths(conf, new Path(inputPath));
+        FileInputFormat.setInputPaths(conf, new Path(eInputPath), new Path(fInputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
         conf.setMapperClass(SignatureMapper.class);
