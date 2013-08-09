@@ -48,7 +48,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -57,9 +56,11 @@ import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.wikipedia.WikipediaPage;
-import wikiduper.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfInts;
+import edu.umd.cloud9.io.pair.PairOfLongInt;
+import edu.umd.cloud9.io.pair.PairOfLongs;
+import edu.umd.cloud9.io.pair.PairOfStrings;
+
 
 public class GetSentenceClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(GetSentenceClusters.class);
@@ -75,101 +76,88 @@ public class GetSentenceClusters extends Configured implements Tool {
      *
      */
     private static class ClusterMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
+    Mapper<PairOfLongInt, PairOfStrings, LongWritable, Text> {
     //Mapper<LongWritable, WikipediaPage, IntWritable, Text> {
         
         // Map from docid -> sentence number -> cluster number
-        static final TreeMap<Integer, TreeMap<Integer, Integer>> docmap = new TreeMap<Integer, TreeMap<Integer, Integer>>();
+        static final TreeMap<Long, TreeMap<Long, Long>> fdocmap = new TreeMap<Long, TreeMap<Long, Long>>();
+        static final TreeMap<Long, TreeMap<Long, Long>> edocmap = new TreeMap<Long, TreeMap<Long, Long>>();
         
         // The document-sentence identifier
-        static final IntWritable CLUSTER = new IntWritable();
+        static final LongWritable CLUSTER = new LongWritable();
         static final Text TITLESENTENCE = new Text();
         
+        static String elang;
+        static String flang;
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
-        static final Pattern sentenceregex = Pattern.compile(
-                "# Match a sentence ending in punctuation or EOS.\n" +
-                        "[\\s]*    # Leading white space\n" + 
-                        "([A-Z\"]    # First char capital letter or quotation\n" +
-                        "[^.!?\\n]*      # Greedily consume up to punctuation.\n" +
-                        "(?:          # Group for unrolling the loop.\n" +
-                        "  [.!?]      # (special) inner punctuation ok if\n" +
-                        "  (?!['\"]?\\s|$)  # not followed by ws or EOS.\n" +
-                        "  [^.!?]*    # Greedily consume up to punctuation.\n" +
-                        ")*           # Zero or more (special normal*)\n" +
-                        "[.!?]?       # Optional ending punctuation.\n" +
-                        "['\"]?)       # Optional closing quote.\n" +
-                        "(\\s|\\n)*$?       # Trailing white space or new line\n",
-                        Pattern.MULTILINE | Pattern.COMMENTS);
 
-        public static WikiClean cleaner;
-
-        public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+        public void map(PairOfLongInt docIdSentenceId, PairOfStrings langsentence, OutputCollector<LongWritable, Text> output,
                 Reporter reporter) throws IOException {
           //public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
             //        Reporter reporter) throws IOException {
 
-            if(!p.isArticle() || p.isEmpty()) return;
-            String raw = p.getRawXML();
-            String content = cleaner.clean(raw);
-
-            //cleaner.getTitle(content);
-            //String content = p.getContent();
-            if(content == null) return;
-            String line = content
-                    //.replace("\n", " ")
-                    .replace("  ", " ")
-                    .replace(",","")
-                    .replace("(b.", "(b")
-                    .replace("(d.", "(d");
-            Matcher m = sentenceregex.matcher(line);
-            
-            // Assume a whole Wikipedia article has been passed to the mapper; track sentence number by counting
-            int sentencect = 0;
-            int id = Integer.parseInt(p.getDocid());
-            if(!docmap.containsKey(id)) return;
-            TreeMap<Integer,Integer> sentMap = docmap.get(id);
-
-            try{
-            // For each sentence in the input text:
-            while(m.find()){
-                String sentence = m.group(1);
-                if(sentMap.containsKey(sentencect)){
-                    int clust = sentMap.get(sentencect);
-                    TITLESENTENCE.set(p.getTitle() + "\t" + sentence);
-                    CLUSTER.set(clust);
-                    output.collect(CLUSTER,TITLESENTENCE);
-                }
-                sentencect++;
+            long docid = docIdSentenceId.getLeftElement(); 
+            long sentenceid = docIdSentenceId.getRightElement();
+            String lang = langsentence.getLeftElement();
+            TreeMap<Long, TreeMap<Long, Long>> docmap;
+            if(lang.equals(elang)){
+                docmap = edocmap;
+            }else{
+                docmap = fdocmap;
             }
-            }catch(Throwable e){
-                System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + sentencect);
+            
+            System.out.println("ID " + docid + " " + docmap.containsKey(docid));
+            if(!docmap.containsKey(docid)) return;
+            TreeMap<Long,Long> sentMap = docmap.get(docid);
+
+            if(sentMap.containsKey(sentenceid)){
+                long clust = sentMap.get(sentenceid);
+                TITLESENTENCE.set(docid + "\t" + langsentence.getLeftElement() + "\t" + langsentence.getRightElement());
+                CLUSTER.set(clust);
+                System.out.println("cluster " + CLUSTER + " titlesentence " + TITLESENTENCE);
+                output.collect(CLUSTER,TITLESENTENCE);
             }
         }
 
         public void configure(JobConf job) {
             String docMapFile = job.get("docmapfile");
             
-            String language = job.get("wiki.language", "en");
-            WikiLanguage wikilang = WikiLanguage.valueOf(language.toUpperCase());
-            cleaner =  new WikiCleanBuilder()
-                        .withLanguage(wikilang)
-                        .withTitle(true)
-                        .withFooter(false).build();
+            elang = job.get("wiki.language.e","en");
+            flang = job.get("wiki.language.f","de");
+            
+            int ecode = job.getInt("wiki.language.code.e",-1);
+            int fcode = job.getInt("wiki.language.code.f",1);
+            
+            
             try{
                 FileSystem fs = FileSystem.get(job);
                 FSDataInputStream in = fs.open(new Path(docMapFile));
                 SequenceFile.Reader reader;
                 reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
-                IntWritable docid = new IntWritable();
-                ArrayListWritable<PairOfInts> sentlist = new ArrayListWritable<PairOfInts>();
-                while(reader.next(docid, sentlist)){
-                    docmap.put(docid.get(), new TreeMap<Integer, Integer>());
-                    for(PairOfInts p : sentlist){
-                        if(docmap.get(docid.get()).containsKey(p.getLeftElement())){
-                            System.out.println("Sentence in more than one cluster: " + p);
+                PairOfLongs docidcode = new PairOfLongs();
+                ArrayListWritable<PairOfLongs> sentlist = new ArrayListWritable<PairOfLongs>();
+                while(reader.next(docidcode, sentlist)){
+                    long docid = docidcode.getLeftElement();
+                    long incode = docidcode.getRightElement();
+                    if(incode == ecode){
+                        edocmap.put(docid, new TreeMap<Long, Long>());
+                        for(PairOfLongs p : sentlist){
+                            if(edocmap.get(docid).containsKey(p.getLeftElement())){
+                                System.out.println("Sentence in more than one cluster: " + p);
+                            }
+                            edocmap.get(docid).put(p.getLeftElement(), p.getRightElement());
                         }
-                        docmap.get(docid.get()).put(p.getLeftElement(), p.getRightElement());
                     }
+                    if(incode == fcode){
+                        fdocmap.put(docid, new TreeMap<Long, Long>());
+                        for(PairOfLongs p : sentlist){
+                            if(fdocmap.get(docid).containsKey(p.getLeftElement())){
+                                System.out.println("Sentence in more than one cluster: " + p);
+                            }
+                            fdocmap.get(docid).put(p.getLeftElement(), p.getRightElement());
+                        }
+                    }
+
                 }
                 reader.close();
             }catch (EOFException e) {
@@ -178,13 +166,16 @@ public class GetSentenceClusters extends Configured implements Tool {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+
             /*
-           for(int d : docmap.keySet()){
-                for(Entry<Integer, Integer> e : docmap.get(d).entrySet()){
-                    System.out.println(e.getKey() + " " + e.getValue());
+            System.out.println("Docmap for code " + code + " for language + " + language);
+           for(long d : docmap.keySet()){
+               System.out.println("doc = " + d);
+                for(long sentence : docmap.get(d).keySet()){
+                    System.out.println("\t" + sentence + " " + docmap.get(d).get(sentence));
                 }
             }
-            */
+    */
 
         }
     }
@@ -308,7 +299,6 @@ public class GetSentenceClusters extends Configured implements Tool {
         conf.setMapperClass(ClusterMapper.class);
         //conf.setReducerClass(ClusterReducer.class);
         
-        //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         
@@ -318,30 +308,23 @@ public class GetSentenceClusters extends Configured implements Tool {
         conf.set("mapred.job.reduce.memory.mb", "4096");
         conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         
-        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputKeyClass(LongWritable.class);
         conf.setOutputValueClass(Text.class);
 
         // Job 1
-        FileInputFormat.setInputPaths(conf, new Path(eInputPath));
-        FileOutputFormat.setOutputPath(conf, new Path(outputPath));
+        Path outputDir = new Path(outputPath);
+        FileInputFormat.setInputPaths(conf, new Path(eInputPath), new Path(fInputPath));
+        FileOutputFormat.setOutputPath(conf, outputDir);
 
-        conf.set("wiki.language.code", eLang);
-
-        Path outputDir = new Path(outputPath+"-"+eLang);
+        conf.set("wiki.language.e", eLang);
+        conf.setInt("wiki.language.code.e", -1);
+        conf.set("wiki.language.f", fLang);
+        conf.setInt("wiki.language.code.f", 1);
+        
         FileSystem.get(conf).delete(outputDir, true);
 
         JobClient.runJob(conf);
 
-        // Job 2
-        FileInputFormat.setInputPaths(conf, new Path(eInputPath));
-        FileOutputFormat.setOutputPath(conf, new Path(outputPath));
-
-        conf.set("wiki.language", fLang);
-
-        outputDir = new Path(outputPath+"-"+fLang);
-        FileSystem.get(conf).delete(outputDir, true);
-
-        JobClient.runJob(conf);
 
         return 0;
     }

@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Tool;
@@ -45,9 +44,7 @@ import org.apache.log4j.Logger;
 
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfInts;
 import edu.umd.cloud9.io.pair.PairOfLongs;
-import edu.umd.cloud9.io.pair.PairOfStringInt;
 
 public class MergeClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MergeClusters.class);
@@ -115,7 +112,7 @@ public class MergeClusters extends Configured implements Tool {
                 for(ArrayListOfLongsWritable p : comp){
                     long docid = p.get(0);
                     long sentencenum = p.get(1);
-                    long lang = (p.get(2)>=0?1:-1);
+                    long lang = p.get(2);
                     PairOfLongs doclang = new PairOfLongs();
                     doclang.set(docid, lang);
                     if(!docmap.containsKey(doclang)){
@@ -213,39 +210,7 @@ public class MergeClusters extends Configured implements Tool {
 
     }
     
-    static HashSet<PairOfInts> getConnectedComponent(PairOfInts entity, TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap){
-        HashSet<PairOfInts> component = new HashSet<PairOfInts>();
-        component.add(entity);
-        boolean hasmatchcomponent = true;
-        while(!matchmap.isEmpty() && hasmatchcomponent){
-            hasmatchcomponent = false;
-            HashSet<PairOfInts> comp = (HashSet<PairOfInts>) component.clone();
-            for(PairOfInts e : comp){
-                if(matchmap.containsKey(e)){
-                    hasmatchcomponent = true;
-                    HashSet <PairOfInts> matches = matchmap.remove(e);
-                    component.addAll(matches);
-                }
-            }
-        }
-
-        return component;
-    }
     
-    static HashSet<PairOfInts> getConnectedComponentRecursive(PairOfInts entity, TreeMap<PairOfInts, HashSet<PairOfInts>> matchmap){
-        HashSet<PairOfInts> component = new HashSet<PairOfInts>();
-        component.add(entity);
-        if(matchmap.isEmpty() || !matchmap.containsKey(entity)){
-            return component;
-        }
-
-        HashSet <PairOfInts> matches = matchmap.remove(entity);
-        for(PairOfInts m : matches){
-            HashSet<PairOfInts> c = getConnectedComponentRecursive(m, matchmap);
-            component.addAll(c);
-        }
-        return component;
-    }
 
     public MergeClusters() {}
 

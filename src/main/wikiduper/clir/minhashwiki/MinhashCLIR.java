@@ -131,7 +131,6 @@ public class MinhashCLIR extends Configured implements Tool {
             //if(tokenct > MINLEN && tokenct < MAXLEN){
                 // generate N k-minhash-signatures
                 //  start from same seed, otherwise doesn't work so well
-             
                 r = new Random(sigseed);
                 for(int j=0; j<N; j++){
                     ArrayListOfLongsWritable keyOut = new ArrayListOfLongsWritable();
@@ -139,20 +138,20 @@ public class MinhashCLIR extends Configured implements Tool {
                     for(int i=0; i<K; i++){
                         outsig.add(i, 0);
                     }
-                    System.out.print("tokens : ");
                     for(int i=0; i<K; i++){
                         int x = r.nextInt(nHash);
-                        System.out.print(hashval[x] + " " );
                         outsig.set(i, minhash[x]);
                     }
-                    System.out.println();
                     //System.out.println("fsig " + outsig);
-                    for(long kval : key){
-                        keyOut.add(kval);
+                    keyOut.add(key.get(0));
+                    keyOut.add(key.get(1));
+                    long sample = key.get(2);
+                    if(sample >= 0){
+                        keyOut.add(1);
+                    }else{
+                        keyOut.add(-1);
                     }
                     output.collect(outsig, keyOut);
-                    System.out.println("outsig: " + outsig);
-                    System.out.println("outid: " + keyOut);
                 }
             //}
 
@@ -226,7 +225,7 @@ public class MinhashCLIR extends Configured implements Tool {
 
         // collect all sentences that have hashed to the same hash signature
         static ArrayListWritable<ArrayListOfLongsWritable> nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
-        static final HashSet<ArrayListOfLongsWritable> valset = new HashSet<ArrayListOfLongsWritable>();
+        static final HashSet<String> valset = new HashSet<String>();
         @Override
         public void reduce(ArrayListOfLongsWritable key, Iterator<ArrayListOfLongsWritable> values,
                 OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfLongsWritable>> output, Reporter reporter)
@@ -234,24 +233,27 @@ public class MinhashCLIR extends Configured implements Tool {
             ArrayListOfLongsWritable valout;
             nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
             valset.clear();
+            //System.out.println("key: " + key);
             //System.out.print("values: ");
             while (values.hasNext()) {
                 ArrayListOfLongsWritable val = values.next();
+                String valstr = val.toString();
                 //System.out.print(val + " ");
-                if(!valset.contains(val)){
+                if(!valset.contains(valstr)){
                     valout = new ArrayListOfLongsWritable();
                     for(long valin : val){
                         valout.add(valin);
                     }
                     nearDuplicateSentenceList.add(valout);
                 }
-                valset.add(val);
+                valset.add(valstr);
             }
             //System.out.println();
             //System.out.println(nearDuplicateSentenceList.size());
             //System.out.println("key " + key);
             //System.out.println("output " + nearDuplicateSentenceList);
             if(nearDuplicateSentenceList.size() == 1) return;
+            System.out.println("nearDuplicateSentenceList " + nearDuplicateSentenceList);
             output.collect(key, nearDuplicateSentenceList);
 
         }

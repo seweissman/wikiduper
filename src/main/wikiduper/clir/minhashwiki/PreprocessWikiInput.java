@@ -136,6 +136,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
             //System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
             if(content == null) return;
             if(p.getDocid() == null) return;
+            long id = Long.parseLong(p.getDocid());
             String cleancontent = content
                     //.replace("\n", " ")
                     .replace("  ", " ")
@@ -161,8 +162,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
                         docIdSentenceCt = new PairOfLongInt();
                         String sentence = m.group(1);
                         langSentence.set(lang, sentence);
-                        docIdSentenceCt.set(key.get(),sentencect);
-                        //System.out.println("SENTENCE: " + langSentence.toString());
+                        //docIdSentenceCt.set(key.get(),sentencect);
+                        docIdSentenceCt.set(id,sentencect);
                         output.collect(docIdSentenceCt, langSentence);
                         sentencect++;
                     }
