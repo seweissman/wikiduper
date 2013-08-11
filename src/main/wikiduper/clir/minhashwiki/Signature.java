@@ -24,11 +24,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+
+import edu.umd.cloud9.io.pair.PairOfInts;
 
 /**
  * 
  */
-public class Signature implements Writable {
+public class Signature implements WritableComparable<Signature> {
  
   private long sig[];
   private int length;
@@ -139,6 +142,15 @@ public class Signature implements Writable {
   public static Signature create(byte[] bytes) throws IOException {
     return create(new DataInputStream(new ByteArrayInputStream(bytes)));
   }
+  
+public int compareTo(Signature s) {
+    for(int i=0;i<length;i++){
+        if(sig[i] < s.get(i)) return -1;
+        if(sig[i] > s.get(i)) return 1;
+    }
+    return 0;
+
+}
 
 
 
