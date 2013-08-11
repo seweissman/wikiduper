@@ -91,7 +91,7 @@ public class MinhashCLIR extends Configured implements Tool {
      */
 
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<PairOfLongInt, PairOfStrings, ArrayListOfLongsWritable, ArrayListOfLongsWritable> {
+    Mapper<PairOfLongInt, PairOfStrings, ArrayListOfLongsWritable, DocSentence> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         // Sampling variables
         
@@ -133,7 +133,7 @@ public class MinhashCLIR extends Configured implements Tool {
         
         static HashSet<String> wordset = new HashSet<String>();
         static HashSet<String> sigMap = new HashSet<String>();
-        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<ArrayListOfLongsWritable, ArrayListOfLongsWritable> output,
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<ArrayListOfLongsWritable, DocSentence> output,
                     Reporter reporter) throws IOException {
             
             String outstr;
@@ -144,7 +144,7 @@ public class MinhashCLIR extends Configured implements Tool {
             String[] tokens;
             int tokenct = 0;
             HMapSIW tokencts = new HMapSIW();
-            ArrayListOfLongsWritable idOut;
+            DocSentence idOut;
             Text outWord;
             tokencts.clear();
             //System.out.println("nSamples = " + nSamples);
@@ -172,10 +172,7 @@ public class MinhashCLIR extends Configured implements Tool {
                 }
                 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-                idOut = new ArrayListOfLongsWritable();
-                idOut.add(key.getLeftElement());
-                idOut.add(key.getRightElement());
-                idOut.add(-1);
+                idOut = new DocSentence(key.getLeftElement(),key.getRightElement(),eLang);
                 //System.out.println("idout = " + idOut);
                 doMinhash(idOut,tokencts.keySet(),output);
             
@@ -214,11 +211,9 @@ public class MinhashCLIR extends Configured implements Tool {
                         tokencts.increment(ftoken);
                     }
                     
-                    idOut = new ArrayListOfLongsWritable();
+                    
                     if(!sigMap.contains(outstr)){
-                        idOut.add(key.getLeftElement());
-                        idOut.add(key.getRightElement());
-                        idOut.add(l);
+                        idOut = new DocSentence(key.getLeftElement(),key.getRightElement(),fLang);
                         doMinhash(idOut,wordset,output);
                     }
                     sigMap.add(outstr);
@@ -230,7 +225,7 @@ public class MinhashCLIR extends Configured implements Tool {
 
         }
         
-        public static void doMinhash(ArrayListOfLongsWritable key, Set<String> set, OutputCollector<ArrayListOfLongsWritable, ArrayListOfLongsWritable> output) throws IOException{
+        public static void doMinhash(DocSentence idOut, Set<String> set, OutputCollector<ArrayListOfLongsWritable, DocSentence> output) throws IOException{
             int tokenct = 0;
             HMapSIW sent = new HMapSIW();
             Random r;
@@ -261,7 +256,6 @@ public class MinhashCLIR extends Configured implements Tool {
                 //  start from same seed, otherwise doesn't work so well
                 r = new Random(sigseed);
                 for(int j=0; j<N; j++){
-                    ArrayListOfLongsWritable keyOut = new ArrayListOfLongsWritable();
                     outsig = new ArrayListOfLongsWritable();
                     for(int i=0; i<K; i++){
                         outsig.add(i, 0);
@@ -271,15 +265,7 @@ public class MinhashCLIR extends Configured implements Tool {
                         outsig.set(i, minhash[x]);
                     }
                     //System.out.println("fsig " + outsig);
-                    keyOut.add(key.get(0));
-                    keyOut.add(key.get(1));
-                    long sample = key.get(2);
-                    if(sample >= 0){
-                        keyOut.add(1);
-                    }else{
-                        keyOut.add(-1);
-                    }
-                    output.collect(outsig, keyOut);
+                    output.collect(outsig, idOut);
                 }
         }
         
@@ -411,29 +397,25 @@ public class MinhashCLIR extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, ArrayListOfLongsWritable, ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfLongsWritable>> {
+    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, DocSentence, ArrayListOfLongsWritable, ArrayListWritable<DocSentence>> {
 
         // collect all sentences that have hashed to the same hash signature
-        static ArrayListWritable<ArrayListOfLongsWritable> nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
+        static ArrayListWritable<DocSentence> nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
         static final HashSet<String> valset = new HashSet<String>();
         @Override
-        public void reduce(ArrayListOfLongsWritable key, Iterator<ArrayListOfLongsWritable> values,
-                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<ArrayListOfLongsWritable>> output, Reporter reporter)
+        public void reduce(ArrayListOfLongsWritable key, Iterator<DocSentence> values,
+                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<DocSentence>> output, Reporter reporter)
                         throws IOException {
-            ArrayListOfLongsWritable valout;
-            nearDuplicateSentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
+            DocSentence valout;
+            nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
             valset.clear();
             //System.out.println("key: " + key);
             //System.out.print("values: ");
             while (values.hasNext()) {
-                ArrayListOfLongsWritable val = values.next();
-                String valstr = val.toString();
-                //System.out.print(val + " ");
+                DocSentence id = values.next();
+                String valstr = id.toString();
                 if(!valset.contains(valstr)){
-                    valout = new ArrayListOfLongsWritable();
-                    for(long valin : val){
-                        valout.add(valin);
-                    }
+                    valout = new DocSentence(id.getId(),id.getSentence(),id.getLanguage());
                     nearDuplicateSentenceList.add(valout);
                 }
                 valset.add(valstr);
@@ -648,7 +630,7 @@ public class MinhashCLIR extends Configured implements Tool {
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setMapOutputValueClass(ArrayListOfLongsWritable.class);
+        conf.setMapOutputValueClass(DocSentence.class);
         
         conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
         conf.setOutputValueClass(ArrayListWritable.class);
