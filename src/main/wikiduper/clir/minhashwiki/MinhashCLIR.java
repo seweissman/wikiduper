@@ -424,8 +424,7 @@ public class MinhashCLIR extends Configured implements Tool {
         }
     }
     
-    private static final String fINPUT = "fin";
-    private static final String eINPUT = "ein";
+    private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
     
@@ -461,9 +460,7 @@ public class MinhashCLIR extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("input").create(fINPUT));
-        options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("input").create(eINPUT));
+                .hasArg().withDescription("input").create(INPUT));
         
         // Minhsh Options
         options.addOption(OptionBuilder.withArgName("num").hasArg()
@@ -516,7 +513,7 @@ public class MinhashCLIR extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(fINPUT) || !cmdline.hasOption(eINPUT) 
+        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT)
                 || !cmdline.hasOption(NHASH_IN) || !cmdline.hasOption(K_IN) || !cmdline.hasOption(N_IN)
                 || !cmdline.hasOption(HASHBITS) || !cmdline.hasOption(nSamplesOption)
                 || !cmdline.hasOption(eVocabSrcOption) || !cmdline.hasOption(fVocabSrcOption) 
@@ -535,8 +532,7 @@ public class MinhashCLIR extends Configured implements Tool {
             return -1;
         }
 
-        String fInputPath = cmdline.getOptionValue(fINPUT);
-        String eInputPath = cmdline.getOptionValue(eINPUT);
+        String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
 
@@ -562,8 +558,7 @@ public class MinhashCLIR extends Configured implements Tool {
         
         
         LOG.info("Tool name: " + this.getClass().getName());
-        LOG.info(" - e input file: " + eInputPath);
-        LOG.info(" - f input file: " + fInputPath);
+        LOG.info(" - nput file: " + inputPath);
         LOG.info(" - output file: " + outputPath);
         LOG.info(" - number hashes: " + nHash);
         LOG.info(" - hash bits: " + nBits);
@@ -582,8 +577,6 @@ public class MinhashCLIR extends Configured implements Tool {
         conf.setInt("K",  k);
         //conf.setInt("N", 10);
         conf.setInt("N", n);
-        conf.setInt("MINLEN", 5);
-        conf.setInt("MAXLEN", 100);
         conf.setInt("nSamples", nSamples);
 
         conf.set("eLang", eLang);
@@ -604,7 +597,7 @@ public class MinhashCLIR extends Configured implements Tool {
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(reduceTasks);
 
-        FileInputFormat.setInputPaths(conf, new Path(eInputPath), new Path(fInputPath));
+        FileInputFormat.setInputPaths(conf, new Path(inputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
         conf.setMapperClass(SignatureMapper.class);

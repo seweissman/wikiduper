@@ -18,6 +18,7 @@ package wikiduper.clir.minhashwiki;
 
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -189,12 +191,22 @@ public class PreprocessWikiInput extends Configured implements Tool {
 
         }
     }
+    
+    
 
+    
+    private static class RandomPartitioner extends MapReduceBase implements Partitioner<PairOfLongInt,PairOfStrings>{
+        public static final Random r = new Random();
+        @Override
+        public int getPartition(PairOfLongInt key, PairOfStrings val,int nReducers) {
+            return (r.nextInt() & Integer.MAX_VALUE)%nReducers;
+        }
+        
+    }
  
     private static final String eINPUT = "ewiki";
     private static final String fINPUT = "fwiki";
-    private static final String eOUTPUT = "eout";
-    private static final String fOUTPUT = "fout";
+    private static final String OUTPUT = "output";
     private static final String eLANGUAGE_OPTION = "elang";
     private static final String fLANGUAGE_OPTION = "flang";
     
@@ -207,9 +219,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("bz2 input path").create(eINPUT));
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("output path").create(eOUTPUT));
-        options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("output path").create(fOUTPUT));
+                .hasArg().withDescription("output path").create(OUTPUT));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
                 .withDescription("two-letter language code").create(eLANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
@@ -226,7 +236,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
 
         if (!cmdline.hasOption(eINPUT) || !cmdline.hasOption(fINPUT) 
                 || !cmdline.hasOption(eLANGUAGE_OPTION) || !cmdline.hasOption(fLANGUAGE_OPTION) 
-                || !cmdline.hasOption(eOUTPUT) || !cmdline.hasOption(fOUTPUT)){
+                || !cmdline.hasOption(OUTPUT)){
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -236,8 +246,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
 
         String eInputPath = cmdline.getOptionValue(eINPUT);
         String fInputPath = cmdline.getOptionValue(fINPUT);
-        String eOutputPath = cmdline.getOptionValue(eOUTPUT);
-        String fOutputPath = cmdline.getOptionValue(fOUTPUT);
+        String outputPath = cmdline.getOptionValue(OUTPUT);
         String eLanguage = cmdline.getOptionValue(eLANGUAGE_OPTION);
         String fLanguage = cmdline.getOptionValue(fLANGUAGE_OPTION);
         
@@ -245,13 +254,12 @@ public class PreprocessWikiInput extends Configured implements Tool {
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - e input file: " + eInputPath);
         LOG.info(" - f input file: " + fInputPath);
-        LOG.info(" - e output file: " + eOutputPath);
-        LOG.info(" - f output file: " + fOutputPath);
+        LOG.info(" - output file: " + outputPath);
         LOG.info(" - e language: " + eLanguage);
         LOG.info(" - f language: " + fLanguage);
 
         JobConf conf = new JobConf(getConf(), PreprocessWikiInput.class);
-        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
+        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, OUTPUT, outputPath,
                 eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(4);
@@ -275,17 +283,18 @@ public class PreprocessWikiInput extends Configured implements Tool {
         conf.setOutputValueClass(PairOfStrings.class);
         
         FileSystem fs = FileSystem.get(conf);        
-        Path ePath = new Path(eOutputPath);
-        Path fPath = new Path(fOutputPath);
+        Path eTmpPath = new Path("etmp");
+        Path fTmpPath = new Path("ftmp");
+        Path outPath = new Path(outputPath);
         
         // Job 1
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
-        FileOutputFormat.setOutputPath(conf, ePath);
+        FileOutputFormat.setOutputPath(conf, eTmpPath);
         
         conf.set("wiki.language", eLanguage);
 
         // Delete the output directory if it exists already.
-        fs.delete(ePath, true);
+        fs.delete(eTmpPath, true);
 
         JobClient.runJob(conf);
 
@@ -293,15 +302,51 @@ public class PreprocessWikiInput extends Configured implements Tool {
         // Job 2
 
         FileInputFormat.setInputPaths(conf, new Path(fInputPath));
-        FileOutputFormat.setOutputPath(conf, fPath);
+        FileOutputFormat.setOutputPath(conf, fTmpPath);
         
         conf.set("wiki.language", fLanguage);
 
         // Delete the output directory if it exists already.
-        fs.delete(fPath, true);
+        fs.delete(fTmpPath, true);
         
         JobClient.runJob(conf);
 
+        
+        // Job 3
+        conf = new JobConf(getConf(), PreprocessWikiInput.class);
+        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, OUTPUT, outputPath,
+                eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
+
+        conf.setNumMapTasks(4);
+        conf.setNumReduceTasks(1);
+        conf.setInputFormat(SequenceFileInputFormat.class);
+        conf.setOutputFormat(SequenceFileOutputFormat.class);
+        
+        FileInputFormat.setInputPaths(conf, fTmpPath, eTmpPath);
+        FileOutputFormat.setOutputPath(conf, outPath);
+        conf.setPartitionerClass(RandomPartitioner.class);
+
+        conf.setNumReduceTasks(1);
+
+        // Set heap space - using old API
+        conf.set("mapred.job.map.memory.mb", "2048");
+        conf.set("mapred.map.child.java.opts", "-Xmx2048m");
+        conf.set("mapred.job.reduce.memory.mb", "6144");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+        //conf.set("mapred.child.java.opts", "-Xmx2048m");
+        
+        conf.setOutputKeyClass(PairOfLongInt.class);
+        conf.setOutputValueClass(PairOfStrings.class);
+        
+        fs = FileSystem.get(conf);        
+
+        
+        // Delete the output directory if it exists already.
+        fs.delete(outPath, true);
+        
+        JobClient.runJob(conf);
+        fs.delete(eTmpPath, true);
+        fs.delete(fTmpPath, true);
         
         return 0;
     }
