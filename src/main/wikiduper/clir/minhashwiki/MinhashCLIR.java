@@ -594,7 +594,7 @@ public class MinhashCLIR extends Configured implements Tool {
 
 
         
-        conf.setNumMapTasks(4);
+        conf.setNumMapTasks(20);
         conf.setNumReduceTasks(reduceTasks);
 
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
