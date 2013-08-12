@@ -182,7 +182,6 @@ public class MergeClusters extends Configured implements Tool {
         int clusterct = 0;
         long ct = 0;
         for(FileStatus filestatus : infiles){
-
             System.out.println(filestatus.getPath().toString());
             try{
             FSDataInputStream in = fs.open(filestatus.getPath());
@@ -238,7 +237,7 @@ public class MergeClusters extends Configured implements Tool {
                 //bucket = new ArrayListOfLongsWritable();
                 //sentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
                 clusterct++;
-                
+                sentenceList.clear();
             }
             reader.close();
           }catch (EOFException e) {
