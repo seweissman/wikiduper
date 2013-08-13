@@ -61,7 +61,6 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
-import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 import edu.umd.hooka.Vocab;
 import edu.umd.hooka.alignment.HadoopAlign;
@@ -390,19 +389,17 @@ public class MinhashCLIR extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<Signature, DocSentence, IntWritable, ArrayListWritable<PairOfLongs>> {
+    private static class SignatureReducer extends MapReduceBase implements Reducer<Signature, DocSentence, Signature, DocSentence> {
 
         // collect all sentences that have hashed to the same hash signature
-        static ArrayListWritable<PairOfLongs> nearDuplicateSentenceList = new ArrayListWritable<PairOfLongs>();
+        static ArrayListWritable<DocSentence> nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
         static final HashSet<String> valset = new HashSet<String>();
-        static final IntWritable ONE = new IntWritable(1);
         @Override
         public void reduce(Signature key, Iterator<DocSentence> values,
-                OutputCollector<IntWritable, ArrayListWritable<PairOfLongs>> output, Reporter reporter)
+                OutputCollector<Signature, DocSentence> output, Reporter reporter)
                         throws IOException {
-            //DocSentence valout;
-            PairOfLongs valout;
-            nearDuplicateSentenceList = new ArrayListWritable<PairOfLongs>();
+            DocSentence valout;
+            nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
             valset.clear();
             //System.out.println("key: " + key);
             //System.out.print("values: ");
@@ -410,15 +407,7 @@ public class MinhashCLIR extends Configured implements Tool {
                 DocSentence id = values.next();
                 String valstr = id.toString();
                 if(!valset.contains(valstr)){
-                    //valout = new DocSentence(id.getId(),id.getSentence(),id.getLanguage());
-                    valout = new PairOfLongs();
-                    long langsentence = id.getSentence();
-                    if(id.getLanguage().equals("de")){
-                        langsentence = (langsentence << 1) + 1; 
-                    }else{
-                        langsentence = langsentence << 1;
-                    }
-                    valout.set(id.getId(), langsentence);
+                    valout = new DocSentence(id.getId(),id.getSentence(),id.getLanguage());
                     nearDuplicateSentenceList.add(valout);
                 }
                 valset.add(valstr);
@@ -429,7 +418,9 @@ public class MinhashCLIR extends Configured implements Tool {
             //System.out.println("output " + nearDuplicateSentenceList);
             if(nearDuplicateSentenceList.size() == 1) return;
             //System.out.println("nearDuplicateSentenceList " + nearDuplicateSentenceList);
-            output.collect(ONE, nearDuplicateSentenceList);
+            for(DocSentence ds : nearDuplicateSentenceList){
+                output.collect(key, ds);
+            }
 
         }
     }
@@ -628,7 +619,7 @@ public class MinhashCLIR extends Configured implements Tool {
         conf.setMapOutputKeyClass(Signature.class);
         conf.setMapOutputValueClass(DocSentence.class);
         
-        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputKeyClass(Signature.class);
         conf.setOutputValueClass(ArrayListWritable.class);
 
         // Delete the output directory if it exists already.

@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Tool;
@@ -47,7 +46,6 @@ import org.apache.log4j.Logger;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfInts;
-import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
 
 public class MergeClusters extends Configured implements Tool {
@@ -104,23 +102,22 @@ public class MergeClusters extends Configured implements Tool {
     public static void getClusters(String filein, JobConf conf, String docmapFile){
 
         try {
-            TreeMap<Integer, HashSet<PairOfLongs>> clustermap = new TreeMap<Integer, HashSet<PairOfLongs>>();
+            TreeMap<Integer, HashSet<PairOfStringInt>> clustermap = new TreeMap<Integer, HashSet<PairOfStringInt>>();
             // map from doc id to sentence numbers
-            TreeMap<Long, TreeSet<PairOfLongs>> docmap = new TreeMap<Long, TreeSet<PairOfLongs>>();
+            TreeMap<Integer, TreeSet<PairOfInts>> docmap = new TreeMap<Integer, TreeSet<PairOfInts>>();
             readBuckets(filein,conf,clustermap);
             
             // Renumber components
             int componentct = 0;
             for(Integer cnum : clustermap.keySet()){
-                HashSet<PairOfLongs> comp = clustermap.get(cnum);
-                for(PairOfLongs p : comp){
-                    long docid = p.getLeftElement(); //Integer.valueOf(p.getLeftElement());
-                    long sentencenum = p.getRightElement() >> 1;
-                    //int sentencenum = p.getRightElement();
+                HashSet<PairOfStringInt> comp = clustermap.get(cnum);
+                for(PairOfStringInt p : comp){
+                    int docid = Integer.valueOf(p.getLeftElement());
+                    int sentencenum = p.getRightElement();
                     if(!docmap.containsKey(docid)){
-                        docmap.put(docid, new TreeSet<PairOfLongs>());
+                        docmap.put(docid, new TreeSet<PairOfInts>());
                     }
-                    docmap.get(docid).add(new PairOfLongs(sentencenum, componentct));
+                    docmap.get(docid).add(new PairOfInts(sentencenum, componentct));
                 }
                 componentct++;
 
@@ -133,14 +130,14 @@ public class MergeClusters extends Configured implements Tool {
                     SequenceFile.Writer.file(clustersOut), 
                     SequenceFile.Writer.keyClass(IntWritable.class), 
                     SequenceFile.Writer.valueClass(ArrayListWritable.class));
-            ArrayListWritable<PairOfLongs> sentlist;
-            LongWritable doc;
-            for(long docid : docmap.navigableKeySet()){
-                doc = new LongWritable();
-                sentlist = new ArrayListWritable<PairOfLongs>();
+            ArrayListWritable<PairOfInts> sentlist;
+            IntWritable doc;
+            for(int docid : docmap.navigableKeySet()){
+                doc = new IntWritable();
+                sentlist = new ArrayListWritable<PairOfInts>();
                 sentlist.clear();
                 doc.set(docid);
-                for(PairOfLongs sentcomp : docmap.get(docid)){
+                for(PairOfInts sentcomp : docmap.get(docid)){
                     sentlist.add(sentcomp);
                 }
                 writer.append(doc,sentlist);
@@ -155,8 +152,8 @@ public class MergeClusters extends Configured implements Tool {
         }
     }
 
-    public static void readBuckets(String filein, JobConf conf, TreeMap<Integer, HashSet<PairOfLongs>> cluster2sentencemap){
-        HashMap<PairOfLongs, Integer> sentence2clustermap = new HashMap<PairOfLongs,Integer>();
+    public static void readBuckets(String filein, JobConf conf, TreeMap<Integer, HashSet<PairOfStringInt>> cluster2sentencemap){
+        HashMap<PairOfStringInt, Integer> sentence2clustermap = new HashMap<PairOfStringInt,Integer>();
         try {
         FileSystem fs = FileSystem.get(conf);
         System.out.println("filein = " + filein);
@@ -169,9 +166,9 @@ public class MergeClusters extends Configured implements Tool {
             FSDataInputStream in = fs.open(filestatus.getPath());
             SequenceFile.Reader reader;
             reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
-            //ArrayListOfLongsWritable bucket = new ArrayListOfLongsWritable();
-            IntWritable bucket = new IntWritable();
-            ArrayListWritable<PairOfLongs> sentenceList = new ArrayListWritable<PairOfLongs>();
+            ArrayListOfLongsWritable bucket = new ArrayListOfLongsWritable();
+            
+            ArrayListWritable<PairOfStringInt> sentenceList = new ArrayListWritable<PairOfStringInt>();
             HashSet<Integer> clusterSet = new HashSet<Integer>();
             while(reader.next(bucket, sentenceList)){
                 //System.out.println("cluster2sentencemap");
@@ -186,18 +183,18 @@ public class MergeClusters extends Configured implements Tool {
                 if(ct % 1000 == 0) System.out.println("\t"+sentenceList.size());
                 clusterSet.clear();
                 //System.out.println("Sentencelist " + sentenceList);
-                for(PairOfLongs docsentence : sentenceList){
+                for(PairOfStringInt docsentence : sentenceList){
                     if(sentence2clustermap.containsKey(docsentence)){
                        clusterSet.add(sentence2clustermap.get(docsentence));
                     }
                 }
                 if(ct % 1000 == 0) System.out.println("\t"+clusterSet.size());
                 //System.out.println("Cluster set" + clusterSet);
-                cluster2sentencemap.put(clusterct, new HashSet<PairOfLongs>());
+                cluster2sentencemap.put(clusterct, new HashSet<PairOfStringInt>());
                 if(!clusterSet.isEmpty()){
                     for(int cluster : clusterSet){
                         // for each cluster merge the sentences into a new cluster
-                        for(PairOfLongs docsentence : cluster2sentencemap.get(cluster)){
+                        for(PairOfStringInt docsentence : cluster2sentencemap.get(cluster)){
                             cluster2sentencemap.get(clusterct).add(docsentence);
                             sentence2clustermap.put(docsentence, clusterct);
                         }
@@ -207,11 +204,11 @@ public class MergeClusters extends Configured implements Tool {
                 }
                 // Add all of the docsentences in the current list to the new cluster
                 cluster2sentencemap.get(clusterct).addAll(sentenceList);
-                for(PairOfLongs docsentence : sentenceList){
+                for(PairOfStringInt docsentence : sentenceList){
                     sentence2clustermap.put(docsentence, clusterct);
                 }
                 //bucket = new ArrayListOfLongsWritable();
-                sentenceList = new ArrayListWritable<PairOfLongs>();
+                sentenceList = new ArrayListWritable<PairOfStringInt>();
                 clusterct++;
                 
             }
