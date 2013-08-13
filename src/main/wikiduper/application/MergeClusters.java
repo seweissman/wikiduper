@@ -169,8 +169,8 @@ public class MergeClusters extends Configured implements Tool {
             FSDataInputStream in = fs.open(filestatus.getPath());
             SequenceFile.Reader reader;
             reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
-            ArrayListOfLongsWritable bucket = new ArrayListOfLongsWritable();
-            
+            //ArrayListOfLongsWritable bucket = new ArrayListOfLongsWritable();
+            IntWritable bucket = new IntWritable();
             ArrayListWritable<PairOfLongs> sentenceList = new ArrayListWritable<PairOfLongs>();
             HashSet<Integer> clusterSet = new HashSet<Integer>();
             while(reader.next(bucket, sentenceList)){
