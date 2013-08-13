@@ -61,6 +61,7 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
+import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 import edu.umd.hooka.Vocab;
 import edu.umd.hooka.alignment.HadoopAlign;
@@ -389,18 +390,19 @@ public class MinhashCLIR extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<Signature, DocSentence, IntWritable, ArrayListWritable<DocSentence>> {
+    private static class SignatureReducer extends MapReduceBase implements Reducer<Signature, DocSentence, IntWritable, ArrayListWritable<PairOfLongs>> {
 
         // collect all sentences that have hashed to the same hash signature
-        static ArrayListWritable<DocSentence> nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
+        static ArrayListWritable<PairOfLongs> nearDuplicateSentenceList = new ArrayListWritable<PairOfLongs>();
         static final HashSet<String> valset = new HashSet<String>();
         static final IntWritable ONE = new IntWritable(1);
         @Override
         public void reduce(Signature key, Iterator<DocSentence> values,
-                OutputCollector<IntWritable, ArrayListWritable<DocSentence>> output, Reporter reporter)
+                OutputCollector<IntWritable, ArrayListWritable<PairOfLongs>> output, Reporter reporter)
                         throws IOException {
-            DocSentence valout;
-            nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
+            //DocSentence valout;
+            PairOfLongs valout;
+            nearDuplicateSentenceList = new ArrayListWritable<PairOfLongs>();
             valset.clear();
             //System.out.println("key: " + key);
             //System.out.print("values: ");
@@ -408,7 +410,15 @@ public class MinhashCLIR extends Configured implements Tool {
                 DocSentence id = values.next();
                 String valstr = id.toString();
                 if(!valset.contains(valstr)){
-                    valout = new DocSentence(id.getId(),id.getSentence(),id.getLanguage());
+                    //valout = new DocSentence(id.getId(),id.getSentence(),id.getLanguage());
+                    valout = new PairOfLongs();
+                    long langsentence = id.getSentence();
+                    if(id.getLanguage().equals("de")){
+                        langsentence = (langsentence << 1) + 1; 
+                    }else{
+                        langsentence = langsentence << 1;
+                    }
+                    valout.set(id.getId(), langsentence);
                     nearDuplicateSentenceList.add(valout);
                 }
                 valset.add(valstr);
