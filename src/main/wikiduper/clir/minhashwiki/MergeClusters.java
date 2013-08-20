@@ -49,6 +49,7 @@ import org.apache.log4j.Logger;
 
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
+import edu.umd.cloud9.io.pair.PairOfLongString;
 import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
 
@@ -110,13 +111,14 @@ public class MergeClusters extends Configured implements Tool {
             TreeMap<Integer, HashSet<DocSentence>> clustermap = new TreeMap<Integer, HashSet<DocSentence>>();
             //TreeMap<Integer, HashSet<ArrayListOfLongsWritable>> clustermap = new TreeMap<Integer, HashSet<ArrayListOfLongsWritable>>();
             // map from doc id to sentence numbers
-            TreeMap<PairOfLongs, TreeSet<PairOfLongs>> docmap = new TreeMap<PairOfLongs, TreeSet<PairOfLongs>>();
-            readBuckets2(filein,conf,clustermap);
+            TreeMap<PairOfLongString, TreeSet<PairOfLongs>> docmap = new TreeMap<PairOfLongString, TreeSet<PairOfLongs>>();
+            readBuckets22(filein,conf,clustermap);
             
             // Renumber components
             int componentct = 0;
             for(Integer cnum : clustermap.keySet()){
                 HashSet<DocSentence> comp = clustermap.get(cnum);
+                System.out.println("cnum="+cnum + "," + comp.size()+"\n");
                 for(DocSentence p : comp){
                 //for(ArrayListOfLongsWritable p : comp){
                     
@@ -127,9 +129,9 @@ public class MergeClusters extends Configured implements Tool {
                        // System.out.println(m.group(1));// + " " + m.group(2) + " " + m.group(3));
                     long docid = p.getId();
                     long sentencenum = p.getSentence();
-                    long lang = p.getLanguage().equals("en")?1:-1;
+                    String lang = p.getLanguage();
 
-                    PairOfLongs doclang = new PairOfLongs();
+                    PairOfLongString doclang = new PairOfLongString();
                     doclang.set(docid, lang);
                     if(!docmap.containsKey(doclang)){
                          docmap.put(doclang, new TreeSet<PairOfLongs>());
@@ -146,12 +148,12 @@ public class MergeClusters extends Configured implements Tool {
             FileSystem.get(conf).delete(clustersOut, true);
             SequenceFile.Writer writer = SequenceFile.createWriter(conf, 
                     SequenceFile.Writer.file(clustersOut), 
-                    SequenceFile.Writer.keyClass(PairOfLongs.class), 
+                    SequenceFile.Writer.keyClass(PairOfLongString.class), 
                     SequenceFile.Writer.valueClass(ArrayListWritable.class));
             ArrayListWritable<PairOfLongs> sentlist;
-            PairOfLongs doc;
-            for(PairOfLongs doclang : docmap.navigableKeySet()){
-                doc = new PairOfLongs();
+            PairOfLongString doc;
+            for(PairOfLongString doclang : docmap.navigableKeySet()){
+                doc = new PairOfLongString();
                 sentlist = new ArrayListWritable<PairOfLongs>();
                 doc.set(doclang.getLeftElement(),doclang.getRightElement());
                 for(PairOfLongs sentcomp : docmap.get(doclang)){
@@ -178,6 +180,8 @@ public class MergeClusters extends Configured implements Tool {
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
         int clusterct = 0;
         long ct = 0;
+        HashSet<Integer> clusterSet = new HashSet<Integer>();
+        HashMap<Integer,Integer> cluster2clustermap = new HashMap<Integer,Integer>();
         for(FileStatus filestatus : infiles){
             System.out.println(filestatus.getPath().toString());
             try{
@@ -187,8 +191,9 @@ public class MergeClusters extends Configured implements Tool {
             Signature bucket = new Signature();
             Signature lastbucket = null;
             DocSentence ds = new DocSentence();
-            HashSet<Integer> clusterSet = new HashSet<Integer>();
+            HashSet<DocSentence> newCluster = new HashSet<DocSentence>();
             while(reader.next(bucket, ds)){
+                //System.out.println("Doc sentence : " + ds + "\t" + sentence2clustermap.containsKey(ds) + "\t" + ds.hashCode());
                 //System.out.println("cluster2sentencemap");
                 //System.out.println("\t" + cluster2sentencemap.keySet());
                 
@@ -196,37 +201,47 @@ public class MergeClusters extends Configured implements Tool {
                 //System.out.println("\t" + sentence2clustermap.keySet());
                 
                 
-                ct++;
+
                 if(ct % 1000 == 0) System.out.println("Count:"+ct);
                 if(ct % 1000 == 0) System.out.println("\t"+cluster2sentencemap.keySet().size());
                 if(ct % 1000 == 0) System.out.println("\t"+sentence2clustermap.keySet().size());
 
                 //System.out.println("Sentencelist " + sentenceList);
                if(sentence2clustermap.containsKey(ds)){
-                       clusterSet.add(sentence2clustermap.get(ds));
+                   clusterSet.add(sentence2clustermap.get(ds));
+                   clusterSet.add(cluster2clustermap.get(sentence2clustermap.get(ds)));
                 }
                 if(ct % 1000 == 0) System.out.println("\t"+clusterSet.size());
                 //System.out.println("Cluster set" + clusterSet);
                 
                 if(lastbucket != null && !(bucket.equals(lastbucket))){
-                    cluster2sentencemap.put(clusterct, new HashSet<DocSentence>());
+                    for(DocSentence docsentence : newCluster){
+                        sentence2clustermap.put(docsentence, clusterct);
+                    }
                     if(!clusterSet.isEmpty()){
                         for(int cluster : clusterSet){
+                            cluster2clustermap.put(cluster, clusterct);
                         // for each cluster merge the sentences into a new cluster
                             for(DocSentence docsentence : cluster2sentencemap.get(cluster)){
-                                cluster2sentencemap.get(clusterct).add(docsentence);
+                            //    newCluster.add(docsentence);
+                                //cluster2sentencemap.get(clusterct).add(docsentence);
                                 sentence2clustermap.put(docsentence, clusterct);
                             }
                                                     // Remove the old cluster from cluster2sentencemap
-                            cluster2sentencemap.remove(cluster);
+                            //cluster2sentencemap.remove(cluster);
                         }
                     }
+                    cluster2sentencemap.put(clusterct, newCluster);
                     clusterSet.clear();
                     clusterct++;
+                    ct++;
+                    newCluster = new HashSet<DocSentence>();
                 }
                 // Add all of the docsentences in the current list to the new cluster
-                cluster2sentencemap.get(clusterct).add(ds);    
-                sentence2clustermap.put(ds, clusterct);
+                newCluster.add(ds);
+                //cluster2sentencemap.get(clusterct).add(ds);    
+
+                //System.out.println("Adding " + ds + " to sentence2clustermap with cluster " + clusterct);
                 lastbucket = bucket;
                 bucket = new Signature();
                 ds = new DocSentence();
@@ -247,6 +262,109 @@ public class MergeClusters extends Configured implements Tool {
 
     }
     
+    
+    public static void readBuckets22(String filein, JobConf conf, TreeMap<Integer, HashSet<DocSentence>> cluster2sentencemap){
+        HashMap<DocSentence, Integer> sentence2clustermap = new HashMap<DocSentence,Integer>();
+        try {
+        FileSystem fs = FileSystem.get(conf);
+        System.out.println("filein = " + filein);
+        FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
+        int clusterct = 0;
+        int ct = 0;
+        TreeSet<Integer> clusterSet = new TreeSet<Integer>();
+        Signature bucket = new Signature();
+        for(FileStatus filestatus : infiles){
+            System.out.println(filestatus.getPath().toString());
+            try{
+            FSDataInputStream in = fs.open(filestatus.getPath());
+            SequenceFile.Reader reader;
+            reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
+
+            Signature lastbucket = null;
+            DocSentence ds = new DocSentence();
+            HashSet<DocSentence> newCluster = new HashSet<DocSentence>();
+
+            while(reader.next(bucket, ds)){
+                //System.out.println("bucket = " + bucket);
+                //System.out.println("lastbucket = " + lastbucket);
+
+                if(ct % 1000 == 0) System.out.println("Count:"+ct);
+                if(ct % 1000 == 0) System.out.println("\t"+cluster2sentencemap.keySet().size());
+                if(ct % 1000 == 0) System.out.println("\t"+sentence2clustermap.keySet().size());
+
+                //System.out.println("Sentencelist " + sentenceList);
+                if(sentence2clustermap.containsKey(ds)){
+                   clusterSet.add(sentence2clustermap.get(ds));
+                   //System.out.println("Sentence in cluster " + sentence2clustermap.get(ds));
+                }else{
+                    newCluster.add(ds);
+                }
+                if(ct % 1000 == 0) System.out.println("\t"+clusterSet.size());
+                
+
+                //System.out.println("Cluster set" + clusterSet);
+                
+                if(lastbucket != null && !(bucket.equals(lastbucket))){
+                    ct++;
+                    int addToCluster;
+                    //System.out.println("Buckets not equal\n");
+                    if(!clusterSet.isEmpty()){
+                        addToCluster = clusterSet.first();
+                        //System.out.println("addtocluster " + addToCluster);
+                        for(int c : clusterSet){
+                            if(c == addToCluster) continue;
+                            cluster2sentencemap.get(addToCluster).addAll(cluster2sentencemap.get(c));
+                            cluster2sentencemap.remove(c);
+                        }
+                        cluster2sentencemap.get(addToCluster).addAll(newCluster);
+                        newCluster.clear();
+                    }else{
+                        clusterct++;
+                        addToCluster = clusterct;
+                        cluster2sentencemap.put(addToCluster, newCluster);
+                        newCluster = new HashSet<DocSentence>();
+                    }
+                                       
+                   for(DocSentence s : cluster2sentencemap.get(addToCluster)){
+                      sentence2clustermap.put(s, addToCluster);
+                   }
+                   //System.out.println("Cluster size: " + addToCluster + "," + cluster2sentencemap.get(addToCluster).size());
+                    clusterSet.clear();
+                }
+                // Add all of the docsentences in the current list to the new cluster
+
+                //cluster2sentencemap.get(clusterct).add(ds);    
+
+                //System.out.println("Adding " + ds + " to sentence2clustermap with cluster " + clusterct);
+                lastbucket = bucket;
+                bucket = new Signature();
+                ds = new DocSentence();
+                //sentenceList = new ArrayListWritable<ArrayListOfLongsWritable>();
+            }
+            reader.close();
+          }catch (EOFException e) {
+           // For some reason it doesn't know when the input stream is done??
+          }
+        }
+    }catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+        
+        
+        boolean changes = true;
+        while(changes){
+            changes = false;
+            
+           for(int i=0;i<cluster2sentencemap.size(); i++){
+               
+           }
+        }
+        
+        
+        
+
+    }
     
     public static void readBuckets(String filein, JobConf conf, TreeMap<Integer, HashSet<ArrayListOfLongsWritable>> cluster2sentencemap){
         //HashMap<String, Integer> sentence2clustermap = new HashMap<String,Integer>();

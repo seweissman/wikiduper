@@ -58,6 +58,7 @@ import org.wikiclean.WikiCleanBuilder;
 import wikiduper.wikipedia.WikipediaPage;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
+import edu.umd.cloud9.io.pair.PairOfLongString;
 import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
@@ -125,21 +126,18 @@ public class GetSentenceClusters extends Configured implements Tool {
             elang = job.get("wiki.language.e","en");
             flang = job.get("wiki.language.f","de");
             
-            int ecode = job.getInt("wiki.language.code.e",-1);
-            int fcode = job.getInt("wiki.language.code.f",1);
-            
-            
+
             try{
                 FileSystem fs = FileSystem.get(job);
                 FSDataInputStream in = fs.open(new Path(docMapFile));
                 SequenceFile.Reader reader;
                 reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
-                PairOfLongs docidcode = new PairOfLongs();
+                PairOfLongString docidlang = new PairOfLongString();
                 ArrayListWritable<PairOfLongs> sentlist = new ArrayListWritable<PairOfLongs>();
-                while(reader.next(docidcode, sentlist)){
-                    long docid = docidcode.getLeftElement();
-                    long incode = docidcode.getRightElement();
-                    if(incode == ecode){
+                while(reader.next(docidlang, sentlist)){
+                    long docid = docidlang.getLeftElement();
+                    String inlang = docidlang.getRightElement();
+                    if(inlang.equals(elang)){
                         edocmap.put(docid, new TreeMap<Long, Long>());
                         for(PairOfLongs p : sentlist){
                             if(edocmap.get(docid).containsKey(p.getLeftElement())){
@@ -148,7 +146,7 @@ public class GetSentenceClusters extends Configured implements Tool {
                             edocmap.get(docid).put(p.getLeftElement(), p.getRightElement());
                         }
                     }
-                    if(incode == fcode){
+                    if(inlang.equals(flang)){
                         fdocmap.put(docid, new TreeMap<Long, Long>());
                         for(PairOfLongs p : sentlist){
                             if(fdocmap.get(docid).containsKey(p.getLeftElement())){
@@ -317,9 +315,7 @@ public class GetSentenceClusters extends Configured implements Tool {
         FileOutputFormat.setOutputPath(conf, outputDir);
 
         conf.set("wiki.language.e", eLang);
-        conf.setInt("wiki.language.code.e", -1);
         conf.set("wiki.language.f", fLang);
-        conf.setInt("wiki.language.code.f", 1);
         
         FileSystem.get(conf).delete(outputDir, true);
 

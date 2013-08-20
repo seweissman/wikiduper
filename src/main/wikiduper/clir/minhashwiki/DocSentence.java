@@ -135,5 +135,18 @@ public void setLanguage(String language) {
     this.language = language;
 }
 
+@Override
+public int hashCode(){
+    String str = id + "," + sentence + "," + language;
+    return str.hashCode();
+}
+@Override
+public boolean equals(Object o){
+    if(!(o instanceof DocSentence)){
+        return false;
+    }
+    DocSentence otherdoc = (DocSentence) o;
+    return (otherdoc.id==this.id) && otherdoc.language.equals(this.language) && (otherdoc.sentence==this.sentence);
+}
 
 }

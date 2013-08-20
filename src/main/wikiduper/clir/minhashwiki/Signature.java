@@ -152,6 +152,12 @@ public int compareTo(Signature s) {
 
 }
 
+@Override
+public boolean equals(Object o){
+    if(!(o instanceof Signature)) return false;
+    return (this.compareTo((Signature) o) == 0);
+
+}
 
 
 
