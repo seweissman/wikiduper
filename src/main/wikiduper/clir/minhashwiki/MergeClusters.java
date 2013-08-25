@@ -118,7 +118,7 @@ public class MergeClusters extends Configured implements Tool {
             int componentct = 0;
             for(Integer cnum : clustermap.keySet()){
                 HashSet<DocSentence> comp = clustermap.get(cnum);
-                System.out.println("cnum="+cnum + "," + comp.size()+"\n");
+                //System.out.println("cnum="+cnum + "," + comp.size()+"\n");
                 for(DocSentence p : comp){
                 //for(ArrayListOfLongsWritable p : comp){
                     
@@ -247,12 +247,12 @@ public class MergeClusters extends Configured implements Tool {
             int cnum = clusterNumMap.get(headn.data);
             cluster2sentencemap.get(cnum).add(ds);
         }
-        
+        /*
         System.out.println("Num clusters " + clusterNumMap.keySet().size());
         for(int c : cluster2sentencemap.keySet()){
             System.out.println(c + " " + cluster2sentencemap.get(c));
         }
-        
+        */
         
     }catch (IOException e) {
         // TODO Auto-generated catch block

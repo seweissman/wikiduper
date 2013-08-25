@@ -223,8 +223,7 @@ public class GetSentenceClusters extends Configured implements Tool {
     private static final String CLUSTERMAP = "clustermap";
     //private static final String INDEXFILE = "indexfile";
     //private static final String MAPFILE = "mapfile";
-    private static final String eINPUT = "ewiki";
-    private static final String fINPUT = "fwiki";
+    private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
     private static final String eLANG = "elang";
@@ -235,9 +234,7 @@ public class GetSentenceClusters extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("bz2 input path").create(eINPUT));
-        options.addOption(OptionBuilder.withArgName("path")
-                .hasArg().withDescription("bz2 input path").create(fINPUT));
+                .hasArg().withDescription("bz2 input path").create(INPUT));
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("output path").create(OUTPUT));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
@@ -258,7 +255,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(eINPUT) || !cmdline.hasOption(fINPUT) 
+        if (!cmdline.hasOption(INPUT) 
                 || !cmdline.hasOption(eLANG) || !cmdline.hasOption(fLANG)
                 || !cmdline.hasOption(OUTPUT) || !cmdline.hasOption(CLUSTERMAP)){
                 //|| !cmdline.hasOption(INDEXFILE) || !cmdline.hasOption(MAPFILE)) {
@@ -270,8 +267,7 @@ public class GetSentenceClusters extends Configured implements Tool {
         }
 
 
-        String eInputPath = cmdline.getOptionValue(eINPUT);
-        String fInputPath = cmdline.getOptionValue(fINPUT);
+        String inputPath = cmdline.getOptionValue(INPUT);
         String eLang = cmdline.getOptionValue(eLANG);
         String fLang = cmdline.getOptionValue(fLANG);
         String outputPath = cmdline.getOptionValue(OUTPUT);
@@ -280,8 +276,7 @@ public class GetSentenceClusters extends Configured implements Tool {
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
 
         LOG.info("Tool name: " + this.getClass().getName());
-        LOG.info(" - bz2 file: " + eInputPath);
-        LOG.info(" - bz2 file: " + fInputPath);
+        LOG.info(" - bz2 file: " + inputPath);
         LOG.info(" - output file: " + outputPath);
         LOG.info(" - e language: " + eLang);
         LOG.info(" - f language: " + fLang);
@@ -289,7 +284,7 @@ public class GetSentenceClusters extends Configured implements Tool {
         JobConf conf = new JobConf(getConf(), GetSentenceClusters.class);
 
         conf.set("docmapfile", clusterPath);
-        conf.setJobName(String.format("GetSentenceClusters[%s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, OUTPUT, outputPath, eLANG, eLang));
+        conf.setJobName(String.format("GetSentenceClusters[%s: %s, %s: %s, %s: %s]", INPUT, inputPath, OUTPUT, outputPath, eLANG, eLang));
 
         conf.setNumMapTasks(4);
         conf.setNumReduceTasks(reduceTasks);
@@ -311,7 +306,7 @@ public class GetSentenceClusters extends Configured implements Tool {
 
         // Job 1
         Path outputDir = new Path(outputPath);
-        FileInputFormat.setInputPaths(conf, new Path(eInputPath), new Path(fInputPath));
+        FileInputFormat.setInputPaths(conf, new Path(inputPath));
         FileOutputFormat.setOutputPath(conf, outputDir);
 
         conf.set("wiki.language.e", eLang);
