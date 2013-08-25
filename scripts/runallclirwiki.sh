@@ -49,5 +49,5 @@ etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${
 echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MergeClusters -input ${mhoutput} -output ${mergeoutput}"
 etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MergeClusters -input ${mhoutput} -output ${mergeoutput}
 echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -elang ${elang} -ewiki ${epreproc} -flang ${flang} -fwiki ${fpreproc} -output ${sentenceoutput}"
-etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -elang ${elang} -ewiki ${epreproc} -flang ${flang} -fwiki ${fpreproc} -output ${sentenceoutput}
+etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -input ${preprocout} -elang ${elang} -flang ${flang} -output ${sentenceoutput}
 
