@@ -18,6 +18,9 @@ import java.util.Random;
 public class MultiplyShiftHash {
 
   long []seeds;
+  int MAXLENGTH = 1000;
+  long acoeffmatrix[][]; 
+  long bcoeffmatrix[][]; 
   int m;
   
   /**
@@ -30,6 +33,15 @@ public class MultiplyShiftHash {
   public MultiplyShiftHash(int m, long seeds[]){
     this.seeds = seeds;
     this.m = m;
+    acoeffmatrix = new long[seeds.length][MAXLENGTH];
+    bcoeffmatrix = new long[seeds.length][MAXLENGTH];
+    for(int i=0; i<seeds.length;i++){
+    	Random r = new Random(seeds[i]);
+    	for(int j=0;j<MAXLENGTH;j++){
+    		acoeffmatrix[i][j] = r.nextLong();
+    		bcoeffmatrix[i][j] = r.nextLong();
+    	}
+    }
   }
   
   /**
@@ -40,14 +52,17 @@ public class MultiplyShiftHash {
    * @return
    */
   public long[] hash(long []v){
-    long hashvec[] = new long[seeds.length];
+    
+	  long hashvec[] = new long[seeds.length];
     for(int s=0;s<seeds.length;s++){
-      Random r = new Random(seeds[s]);
+    	//Random r = new Random(seeds[s]);
 
       long sum = 0;
-      for(int i=0;i<v.length; i++){
-        long a = r.nextLong();
-        long b = r.nextLong();
+      for(int i=0;i<v.length&&i<MAXLENGTH; i++){
+          //long a = r.nextLong();
+          //long b = r.nextLong();
+          long a = acoeffmatrix[s][i];
+          long b = bcoeffmatrix[s][i];
         if(a%2 == 0){
           // make sure a is odd (better way to do this?)
           a += 1;

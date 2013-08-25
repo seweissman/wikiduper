@@ -106,7 +106,12 @@ public class MinhashCLIR extends Configured implements Tool {
         static TTable_monolithic_IFAs f2eProbs;
         static Tokenizer eTokenizer;
         static Tokenizer fTokenizer;
-        static Random rSample;
+        //static Random rSample;
+        static int MAXSamples = 10000;
+        static int s = 0;
+        static float samples[]; 
+        int m;
+        
         // The minhash signature
         
         
@@ -194,7 +199,8 @@ public class MinhashCLIR extends Configured implements Tool {
                             int f = fVocabSrc.get(ftoken);
                             if(f != -1){
                                 List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
-                                float pr = rSample.nextFloat();
+                                float pr = samples[s%MAXSamples];
+                                s++;
                                 String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
                                 //System.out.println("fword = " + ftoken + ", eword = " + eWord);
                                 wordset.add(eWord);
@@ -316,7 +322,12 @@ public class MinhashCLIR extends Configured implements Tool {
             System.out.println("fStopWordsFile" + fStopWordsFile);
 
             sampleSeed = r.nextLong();
-            rSample = new Random(sampleSeed);
+            Random rSample = new Random(sampleSeed);
+            samples = new float[MAXSamples];
+            for(int i=0;i<MAXSamples;i++){
+                samples[i] = rSample.nextFloat();
+            }
+            
             eLang = job.get("eLang");
             fLang = job.get("fLang");
             
