@@ -113,15 +113,20 @@ public class MergeClusters extends Configured implements Tool {
             // map from doc id to sentence numbers
             TreeMap<PairOfLongString, TreeSet<PairOfLongs>> docmap = new TreeMap<PairOfLongString, TreeSet<PairOfLongs>>();
             readBuckets3(filein,conf,clustermap);
-            
+            HashSet<String> langSet = new HashSet<String>();
             // Renumber components
             int componentct = 0;
             for(Integer cnum : clustermap.keySet()){
                 HashSet<DocSentence> comp = clustermap.get(cnum);
                 //System.out.println("cnum="+cnum + "," + comp.size()+"\n");
+                if(comp.size() != 2) continue;
+                langSet.clear();
+                for(DocSentence p : comp){
+                    langSet.add(p.getLanguage());    
+                }
+                if(langSet.size() != 2) continue;
                 for(DocSentence p : comp){
                 //for(ArrayListOfLongsWritable p : comp){
-                    
                     //Matcher m = sentencepattern.matcher(p);
                     //;System.out.println(">>>>"+p+"<<<<< " + m.matches() + " " + m.groupCount());
                     //if(m.matches()){
