@@ -201,6 +201,11 @@ public class MinhashCLIR extends Configured implements Tool {
                                 if(tokenct != 0) outstr += ",";
                                 outstr += eWord;
                                 tokenct++;
+                            }else{
+                                wordset.add(ftoken);
+                                if(tokenct != 0) outstr += ",";
+                                outstr += ftoken;
+                                tokenct++;
                             }
                         }
                         tokencts.increment(ftoken);
