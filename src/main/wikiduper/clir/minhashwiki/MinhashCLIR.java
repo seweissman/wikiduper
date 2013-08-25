@@ -180,12 +180,6 @@ public class MinhashCLIR extends Configured implements Tool {
                 
                 tokens = fTokenizer.processContent(line);
                 if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
-                //System.out.print("fline " + line + "\n");
-                //System.out.print("ftokens ");
-                //for(String t : tokens){
-                  //  System.out.print(t + " ");
-                //}
-                //System.out.println();
 
                 sigMap.clear();
                 
@@ -213,7 +207,7 @@ public class MinhashCLIR extends Configured implements Tool {
                     }
                     
                     
-                    if(!sigMap.contains(outstr)){
+                    if(!sigMap.contains(outstr) && tokenct >= MINLEN && tokenct <= MAXLEN){
                         idOut = new DocSentence(key.getLeftElement(),key.getRightElement(),fLang);
                         doMinhash(idOut,wordset,output);
                     }
