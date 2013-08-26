@@ -197,12 +197,13 @@ public class MergeClusters extends Configured implements Tool {
             Signature lastbucket = null;
             DocSentence ds = new DocSentence();
             long linect = 0;
+            long newnodect = 0;
             while(reader.next(bucket, ds)){
                 //System.out.println("bucket = " + bucket);
                 //System.out.println("lastbucket = " + lastbucket);
                 linect++;
                 //if(ct % 1000 == 0) System.out.println("Count:"+ct);
-                if(linect % 100000 == 0) System.out.println(linect+"\t"+ct);
+                if(linect % 100000 == 0) System.out.println(linect+"\t"+ct+"\t"+newnodect);
 
                 //System.out.println("Sentencelist " + sentenceList);
                 
@@ -214,6 +215,7 @@ public class MergeClusters extends Configured implements Tool {
                 if(nodeMap.containsKey(ds)){
                     n = nodeMap.get(ds);
                 }else{
+                    newnodect++;
                     n = new UnionFindSet(ds);
                     nodeMap.put(ds, n);
                 }
