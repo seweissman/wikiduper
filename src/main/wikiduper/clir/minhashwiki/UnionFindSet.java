@@ -17,7 +17,7 @@ public class UnionFindSet {
         }
         return testparent;
     }
-    
+    /*
     public static UnionFindSet merge(UnionFindSet s1, UnionFindSet s2){
         if(s1 == s2) return s1;
         UnionFindSet head1 = UnionFindSet.find(s1);
@@ -25,5 +25,20 @@ public class UnionFindSet {
         head2.parent = head1;
         return head1;
     }
-    
+    */
+    public static UnionFindSet merge(UnionFindSet s1, UnionFindSet s2){
+        if(s1 == s2) return s1;
+        UnionFindSet testparent = s2;
+        UnionFindSet tmp;
+        UnionFindSet head1 = UnionFindSet.find(s1);
+        while(testparent.parent != testparent){
+            tmp = testparent.parent;
+            testparent.parent = head1;
+            testparent = tmp;
+        }
+
+        testparent.parent = head1;
+        return head1;
+    }
+      
 }
