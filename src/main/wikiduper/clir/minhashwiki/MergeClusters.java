@@ -202,7 +202,7 @@ public class MergeClusters extends Configured implements Tool {
                 //System.out.println("lastbucket = " + lastbucket);
 
                 //if(ct % 1000 == 0) System.out.println("Count:"+ct);
-                if(ct % 10000 == 0) System.out.println("\t"+cluster2sentencemap.keySet().size());
+                if(ct % 100000 == 0) System.out.println("\t"+ct);
 
                 //System.out.println("Sentencelist " + sentenceList);
                 
