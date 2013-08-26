@@ -107,7 +107,7 @@ public class MinhashCLIR extends Configured implements Tool {
         static Tokenizer eTokenizer;
         static Tokenizer fTokenizer;
         //static Random rSample;
-        static int MAXSamples = 10000;
+        static int MAXSamples = 100000;
         static int s = 0;
         static float samples[]; 
         int m;
