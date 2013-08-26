@@ -40,5 +40,31 @@ public class UnionFindSet {
         testparent.parent = head1;
         return head1;
     }
+    /*
+    @Override
+    public int hashCode(){
+        String str = id + "," + sentence + "," + language;
+        return str.hashCode();
+    }
+    @Override
+    public boolean equals(Object o){
+        if(!(o instanceof DocSentence)){
+            return false;
+        }
+        DocSentence otherdoc = (DocSentence) o;
+        return (otherdoc.id==this.id) && otherdoc.language.equals(this.language) && (otherdoc.sentence==this.sentence);
+    }
+
+    
+    public int compareTo(UnionFindSet s) {
+        s.datafor(int i=0;i<length;i++){
+            if(sig[i] < s.get(i)) return -1;
+            if(sig[i] > s.get(i)) return 1;
+        }
+        return 0;
+
+    }
+    */
+
       
 }
