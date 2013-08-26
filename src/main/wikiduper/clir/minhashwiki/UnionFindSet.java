@@ -11,8 +11,11 @@ public class UnionFindSet {
     
     
     public static UnionFindSet find(UnionFindSet s){
-        if(s.parent == s) return s;
-        return UnionFindSet.find(s.parent);
+        UnionFindSet testparent = s;
+        while(testparent.parent != testparent){
+            testparent = testparent.parent;
+        }
+        return testparent;
     }
     
     public static UnionFindSet merge(UnionFindSet s1, UnionFindSet s2){
