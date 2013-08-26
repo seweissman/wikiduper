@@ -220,7 +220,7 @@ public class MergeClusters extends Configured implements Tool {
                     nodeMap.put(ds, n);
                 }
                 if(currentSet == null){
-                    currentSet = n;
+                    currentSet = UnionFindSet.find(n);
                 }
                 UnionFindSet.merge(currentSet, n);                
                 
