@@ -294,7 +294,7 @@ public class MinhashCLIR extends Configured implements Tool {
         public void configureMinhash(JobConf job, Random r){
             nHash = job.getInt("NHASH", 20);
             NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
-            MINLEN = job.getInt("MINLEN", 5);
+            MINLEN = job.getInt("MINLEN", 10);
             MAXLEN = job.getInt("MAXLEN", 100);
             K = job.getInt("K",  10);
             N = job.getInt("N", 10);
