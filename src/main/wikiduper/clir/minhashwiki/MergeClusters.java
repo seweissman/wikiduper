@@ -121,12 +121,13 @@ public class MergeClusters extends Configured implements Tool {
                 //System.out.println("cnum="+cnum + "," + comp.size()+"\n");
                 /*
                 if(comp.size() != 2) continue;
+                */
                 langSet.clear();
                 for(DocSentence p : comp){
                     langSet.add(p.getLanguage());    
                 }
                 if(langSet.size() != 2) continue;
-                */
+
                 for(DocSentence p : comp){
                 //for(ArrayListOfLongsWritable p : comp){
                     //Matcher m = sentencepattern.matcher(p);
