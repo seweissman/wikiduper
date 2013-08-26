@@ -165,8 +165,8 @@ public class MinhashCLIR extends Configured implements Tool {
                 //outstr = "";
                 for (String token : tokens) {
                     if (!tokencts.containsKey(token)) { // if this is first time we saw token in this sentence
-                       // if(tokenct != 0) outstr += ",";
-                        //outstr += token;
+                       //if(tokenct != 0) outstr += ",";
+                       //outstr += token;
                         tokenct++;
                     }
                     tokencts.increment(token);
@@ -182,13 +182,13 @@ public class MinhashCLIR extends Configured implements Tool {
                 tokens = fTokenizer.processContent(line);
                 if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
 
-                //sigMap.clear();
+                sigMap.clear();
                 
                 for(int l=0;l<nSamples;l++){
                     tokenct = 0;
                     tokencts.clear();
                     wordset.clear();
-                    //outstr = "";
+                    outstr = "";
                     for (String ftoken : tokens) {
                         if (!tokencts.containsKey(ftoken)) { // if this is first time we saw token in this sentence
                             int f = fVocabSrc.get(ftoken);
@@ -199,13 +199,13 @@ public class MinhashCLIR extends Configured implements Tool {
                                 String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
                                 //System.out.println("fword = " + ftoken + ", eword = " + eWord);
                                 wordset.add(eWord);
-                                //if(tokenct != 0) outstr += ",";
-                                //outstr += eWord;
+                                if(tokenct != 0) outstr += ",";
+                                outstr += eWord;
                                 tokenct++;
                             }else{
                                 wordset.add(ftoken);
-                                //if(tokenct != 0) outstr += ",";
-                                //outstr += ftoken;
+                                if(tokenct != 0) outstr += ",";
+                                outstr += ftoken;
                                 tokenct++;
                             }
                         }
@@ -213,12 +213,12 @@ public class MinhashCLIR extends Configured implements Tool {
                     }
                     
                     
-                    //if(!sigMap.contains(outstr) && tokenct >= MINLEN && tokenct <= MAXLEN){
-                    if(tokenct >= MINLEN && tokenct <= MAXLEN){
+                    if(!sigMap.contains(outstr) && tokenct >= MINLEN && tokenct <= MAXLEN){
+                    //if(tokenct >= MINLEN && tokenct <= MAXLEN){
                         idOut = new DocSentence(key.getLeftElement(),key.getRightElement(),fLang);
                         doMinhash(idOut,wordset,output);
                     }
-                    //sigMap.add(outstr);
+                    sigMap.add(outstr);
                     
 
                 }
