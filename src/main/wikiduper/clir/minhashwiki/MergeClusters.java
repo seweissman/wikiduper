@@ -222,7 +222,8 @@ public class MergeClusters extends Configured implements Tool {
                 if(currentSet == null){
                     currentSet = UnionFindSet.find(n);
                 }
-                UnionFindSet.merge(currentSet, n);                
+                UnionFindSet.merge(currentSet, n);
+                nodeMap.put(ds, currentSet);
                 
                 lastbucket = bucket;
                 bucket = new Signature();
