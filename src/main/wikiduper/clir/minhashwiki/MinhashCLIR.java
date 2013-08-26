@@ -117,7 +117,8 @@ public class MinhashCLIR extends Configured implements Tool {
         
         // Minhash variables
         static long seeds[];
-        static long sigseed; // Seed to use when randoly selecting signature vectors
+        
+        static int sigorder[]; 
         static long minhash[];
 
         static int nHash; // Total number of hashes per sentence
@@ -227,19 +228,19 @@ public class MinhashCLIR extends Configured implements Tool {
         }
         
         public static void doMinhash(DocSentence idOut, Set<String> set, OutputCollector<Signature, DocSentence> output) throws IOException{
-            int tokenct = 0;
-            HMapSIW sent = new HMapSIW();
-            Random r;
+            //int tokenct = 0;
+            //HMapSIW sent = new HMapSIW();
+                        
             String hashval[] = new String[nHash];
             // Process F sentence;
             for(int i=0;i<nHash;i++){
                 minhash[i] = Long.MAX_VALUE;
             }
-            sent.clear();
+            //sent.clear();
             for (String token : set) {
                 String tokenstr = token;
-                if (!sent.containsKey(tokenstr)) { // if this is first time we saw token in this sentence
-                    tokenct++;
+              //  if (!sent.containsKey(tokenstr)) { // if this is first time we saw token in this sentence
+                    //tokenct++;
                     long hash[] = hashfamily.hash(tokenstr);
                     for(int j=0;j<nHash;j++){
                         if(hash[j] < minhash[j]){
@@ -248,18 +249,19 @@ public class MinhashCLIR extends Configured implements Tool {
                         }
                     }
 
-                    sent.increment(tokenstr);
-                }
+                //    sent.increment(tokenstr);
+                //}
             }
             // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
             //if(tokenct > MINLEN && tokenct < MAXLEN){
                 // generate N k-minhash-signatures
                 //  start from same seed, otherwise doesn't work so well
-                r = new Random(sigseed);
+            int r=0;
                 for(int j=0; j<N; j++){
                     outsig = new Signature(K);
                     for(int i=0; i<K; i++){
-                        int x = r.nextInt(nHash);
+                        int x = sigorder[r]; //r.nextInt(nHash);
+                        r++;
                         outsig.set(i, minhash[x]);
                     }
                     //System.out.println("fsig " + outsig);
@@ -302,7 +304,13 @@ public class MinhashCLIR extends Configured implements Tool {
                 seeds[ct] = r.nextLong();
                 ct++;
             }
-            sigseed = r.nextLong();
+            
+            long sigseed = r.nextLong();
+            Random rsig = new Random(sigseed);
+            sigorder = new int[N*K];
+            for(int i=0;i<N*K;i++){
+                sigorder[i] = rsig.nextInt(nHash);
+            }
             hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
             minhash = new long[nHash];
             System.out.println("N = " + N);
