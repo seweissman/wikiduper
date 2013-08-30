@@ -18,7 +18,7 @@ import java.util.Random;
 public class MultiplyShiftHash {
 
   long []seeds;
-  int MAXLENGTH = 1000;
+  int MAXLENGTH = 10000;
   long acoeffmatrix[][]; 
   long bcoeffmatrix[][]; 
   int m;
@@ -121,7 +121,9 @@ long radix = 128;
 public long[] hash(String str){
   byte b[] = str.getBytes();
   int longbytes = Long.SIZE/8;
-  long[] v = new long[8*b.length/longbytes + 1];
+  long[] v = new long[b.length/longbytes + 1];
+  //System.out.println("longbytes=" + longbytes);
+  //System.out.println("String = " + str);
   //System.out.println("n bytes = " + b.length);
   //System.out.println("n long = " + v.length);
   
@@ -138,7 +140,7 @@ public long[] hash(String str){
 
 public long hash(String str, int i){
     byte b[] = str.getBytes();
-    long[] v = new long[8*b.length/Long.SIZE + 1];
+    long[] v = new long[b.length/Long.SIZE + 1];
     //System.out.println("n bytes = " + b.length);
     //System.out.println("n long = " + v.length);
     for(int j=0;j<b.length;j++){
