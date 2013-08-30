@@ -143,6 +143,7 @@ public class Signature implements WritableComparable<Signature> {
     return create(new DataInputStream(new ByteArrayInputStream(bytes)));
   }
   
+  @Override
 public int compareTo(Signature s) {
     for(int i=0;i<length;i++){
         if(sig[i] < s.get(i)) return -1;
