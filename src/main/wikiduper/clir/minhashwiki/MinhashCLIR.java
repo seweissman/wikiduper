@@ -155,12 +155,14 @@ public class MinhashCLIR extends Configured implements Tool {
                 
                 tokens = eTokenizer.processContent(line);
                 if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
-                //System.out.print("eline " + line + "\n");
-                //System.out.print("etokens ");
-                //for(String t : tokens){
-                  //  System.out.print(t + " ");
-                //}
-                //System.out.println();
+                /*
+                System.out.print("eline " + line + "\n");
+                System.out.print("etokens ");
+                for(String t : tokens){
+                    System.out.print(t + " ");
+                }
+                System.out.println();
+                */
                 tokenct = 0;
                 //outstr = "";
                 for (String token : tokens) {

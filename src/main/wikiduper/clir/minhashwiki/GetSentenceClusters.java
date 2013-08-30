@@ -113,7 +113,7 @@ public class GetSentenceClusters extends Configured implements Tool {
 
             if(sentMap.containsKey(sentenceid)){
                 long clust = sentMap.get(sentenceid);
-                TITLESENTENCE.set(docid + "\t" + langsentence.getLeftElement() + "\t" + langsentence.getRightElement());
+                TITLESENTENCE.set(docid + "\t" + sentenceid + "\t" + langsentence.getLeftElement() + "\t" + langsentence.getRightElement());
                 CLUSTER.set(clust);
                 //System.out.println("cluster " + CLUSTER + " titlesentence " + TITLESENTENCE);
                 output.collect(CLUSTER,TITLESENTENCE);
