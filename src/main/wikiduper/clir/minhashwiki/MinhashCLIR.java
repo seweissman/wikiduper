@@ -422,6 +422,7 @@ public class MinhashCLIR extends Configured implements Tool {
             DocSentence valout;
             nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
             valset.clear();
+            //System.out.println("In Reducer: ");
             //System.out.println("key: " + key);
             //System.out.print("values: ");
             while (values.hasNext()) {
