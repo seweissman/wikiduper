@@ -18,16 +18,16 @@ epack=${ein}.pack
 ivoryDataDir=$5
 samples=$6
 
-f2eprobs=${ivoryDataDir}/vocab/ttable.${flang}-${elang}
-e2fprobs=${ivoryDataDir}/vocab/ttable.${elang}-${flang}
-fvocabsrc=${ivoryDataDir}/vocab/vocab.${flang}-${elang}.${flang}
-fvocabtgt=${ivoryDataDir}/vocab/vocab.${elang}-${flang}.${flang}
-evocabsrc=${ivoryDataDir}/vocab/vocab.${elang}-${flang}.${elang}
-evocabtgt=${ivoryDataDir}/vocab/vocab.${flang}-${elang}.${elang}
-fstopwords=${ivoryDataDir}/tokenizer/${flang}.stop
-estopwords=${ivoryDataDir}/tokenizer/${elang}.stop
-ftokens=${ivoryDataDir}/tokenizer/${flang}-token.bin
-etokens=${ivoryDataDir}/tokenizer/${elang}-token.bin
+f2eprobs=${ivoryDataDir}/ttable.${flang}-${elang}
+e2fprobs=${ivoryDataDir}/ttable.${elang}-${flang}
+fvocabsrc=${ivoryDataDir}/vocab.${flang}-${elang}.${flang}
+fvocabtgt=${ivoryDataDir}/vocab.${elang}-${flang}.${flang}
+evocabsrc=${ivoryDataDir}/vocab.${elang}-${flang}.${elang}
+evocabtgt=${ivoryDataDir}/vocab.${flang}-${elang}.${elang}
+fstopwords=${ivoryDataDir}/token/${flang}.stop
+estopwords=${ivoryDataDir}/tokenr/${elang}.stop
+ftokens=${ivoryDataDir}/token/${flang}-token.bin
+etokens=${ivoryDataDir}/token/${elang}-token.bin
 
 bits=$7
 k=$8
