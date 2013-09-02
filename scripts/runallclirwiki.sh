@@ -25,7 +25,7 @@ fvocabtgt=${ivoryDataDir}/vocab.${elang}-${flang}.${flang}
 evocabsrc=${ivoryDataDir}/vocab.${elang}-${flang}.${elang}
 evocabtgt=${ivoryDataDir}/vocab.${flang}-${elang}.${elang}
 fstopwords=${ivoryDataDir}/token/${flang}.stop
-estopwords=${ivoryDataDir}/tokenr/${elang}.stop
+estopwords=${ivoryDataDir}/token/${elang}.stop
 ftokens=${ivoryDataDir}/token/${flang}-token.bin
 etokens=${ivoryDataDir}/token/${elang}-token.bin
 
