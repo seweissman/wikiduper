@@ -148,7 +148,26 @@ public class JaccardSim {
         return intersect/efSet.size();
     }
     
-    
+    public static float jaccardSim(String[] eList, String[] fList){
+        HashSet<String> eSet = new HashSet<String>();
+        HashSet<String> fSet = new HashSet<String>();
+        HashSet<String> efSet = new HashSet<String>();
+        for(String w : eList){
+            eSet.add(w);
+        }
+        for(String w : fList){
+            fSet.add(w);
+        }
+        efSet.addAll(eSet);
+        efSet.addAll(fSet);
+        float intersect = 0;
+        for(String w : fSet){
+            if(eSet.contains(w)){
+                intersect++;
+            }
+        }
+        return intersect/efSet.size();
+    }
     public float[][] jaccardActual(String eLang, String eToken, String eStopWordsFile){
         Tokenizer eTokenizer = TokenizerFactory.createTokenizer(eLang, eToken, true, eStopWordsFile, eStopWordsFile + ".stemmed", null);
         HashSet<String> e1Set = new HashSet<String>();
