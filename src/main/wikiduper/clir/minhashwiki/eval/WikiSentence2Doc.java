@@ -183,28 +183,28 @@ public class WikiSentence2Doc extends Configured implements Tool {
 
         
         public static String makePageText(String line,String title){
-            String text = "<page>\n"
+            String text = "<page>"
                     +"<title>"
                     + title
-                    + "</title>\n"
-                    + "<ns>0</ns>\n"
-                    + "<id>20408</id>\n"
-                    + "<revision>\n"
-                    + "<id>560581215</id>\n"
-                    + "<parentid>560575666</parentid>\n"
-                    + "<timestamp>2013-06-19T09:39:33Z</timestamp>\n"
-                    + "<contributor>\n"
-                    + "<username>Jerzy</username>\n"
-                    + "<id>21860</id>\n"
-                    + "</contributor>\n"
-                    + "<comment>nothing</comment>\n"
+                    + "</title>"
+                    + "<ns>0</ns>"
+                    + "<id>20408</id>"
+                    + "<revision>"
+                    + "<id>560581215</id>"
+                    + "<parentid>560575666</parentid>"
+                    + "<timestamp>2013-06-19T09:39:33Z</timestamp>"
+                    + "<contributor>"
+                    + "<username>Jerzy</username>"
+                    + "<id>21860</id>"
+                    + "</contributor>"
+                    + "<comment>nothing</comment>"
                     + "<text xml:space=\"preserve\">"
                     + line
-                    + "</text>\n"
-                    + "<sha1>04cbg4kl87va6z9u5w5eepb2jtagilz</sha1>\n"
-                    + "<model>wikitext</model>\n"
-                    + "<format>text/x-wiki</format>\n"
-                    + "</revision>\n"
+                    + "</text>"
+                    + "<sha1>04cbg4kl87va6z9u5w5eepb2jtagilz</sha1>"
+                    + "<model>wikitext</model>"
+                    + "<format>text/x-wiki</format>"
+                    + "</revision>"
                     + "</page>";
             return text;
         }
