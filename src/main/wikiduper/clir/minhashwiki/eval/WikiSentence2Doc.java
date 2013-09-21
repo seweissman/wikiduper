@@ -167,7 +167,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                     while(m.find()){
                         outPage = new Text();
                         String sentence = m.group(1);
-                        String xmlPage = makePageText(sentence,title,sentencect);
+                        String xmlPage = makePageText(sentence,title,id,sentencect);
                         outPage.set(xmlPage);
                         output.collect(key,outPage);
                         sentencect++;
@@ -182,14 +182,15 @@ public class WikiSentence2Doc extends Configured implements Tool {
         }
 
         
-        public static String makePageText(String line,String title,int id){
+        public static String makePageText(String line,String title,long id,int sentencect){
+            long newid = id<<15 + sentencect;
             String text = "<page>"
                     +"<title>"
-                    + title + id
+                    + title + "-" + id
                     + "</title>"
                     + "<ns>0</ns>"
                     + "<id>"
-                    + id
+                    + newid
                     + "</id>"
                     + "<revision>"
                     + "<id>560581215</id>"
