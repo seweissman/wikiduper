@@ -183,7 +183,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
 
         
         public static String makePageText(String line,String title,long id,int sentencect){
-            long newid = id<<15 + sentencect;
+            long newid = id<<10 + sentencect;
             String text = "<page>"
                     +"<title>"
                     + title + "-" + id
