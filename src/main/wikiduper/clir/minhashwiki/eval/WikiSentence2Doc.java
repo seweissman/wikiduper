@@ -139,7 +139,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
             if(!p.isArticle() || p.isEmpty()) return;
             String raw = p.getRawXML();
             String content = cleaner.clean(raw);
-            String title = cleaner.getTitle(content);
+            String title = p.getTitle();
             //System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
             if(content == null) return;
             if(p.getDocid() == null) return;
@@ -167,7 +167,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                     while(m.find()){
                         outPage = new Text();
                         String sentence = m.group(1);
-                        String xmlPage = makePageText(sentence,title);
+                        String xmlPage = makePageText(sentence,title,sentencect);
                         outPage.set(xmlPage);
                         output.collect(key,outPage);
                         sentencect++;
@@ -182,13 +182,15 @@ public class WikiSentence2Doc extends Configured implements Tool {
         }
 
         
-        public static String makePageText(String line,String title){
+        public static String makePageText(String line,String title,int id){
             String text = "<page>"
                     +"<title>"
-                    + title
+                    + title + id
                     + "</title>"
                     + "<ns>0</ns>"
-                    + "<id>20408</id>"
+                    + "<id>"
+                    + id
+                    + "</id>"
                     + "<revision>"
                     + "<id>560581215</id>"
                     + "<parentid>560575666</parentid>"
