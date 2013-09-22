@@ -176,6 +176,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
             
                 }catch(Throwable e){
                     System.err.println(e.toString());
+                    e.printStackTrace();
                     System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid());
                 //System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + p.toString());
                 }
@@ -335,7 +336,6 @@ public class WikiSentence2Doc extends Configured implements Tool {
         // Job 1
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
         FileOutputFormat.setOutputPath(conf, eOutPath);
-        conf.setOutputValueClass(EnglishWikipediaPage.class);
         
         conf.set("wiki.language", eLanguage);
 
@@ -349,7 +349,6 @@ public class WikiSentence2Doc extends Configured implements Tool {
 
         FileInputFormat.setInputPaths(conf, new Path(fInputPath));
         FileOutputFormat.setOutputPath(conf, fOutPath);
-        conf.setOutputValueClass(GermanWikipediaPage.class);
         
         conf.set("wiki.language", fLanguage);
 
