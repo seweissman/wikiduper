@@ -18,6 +18,7 @@ package wikiduper.clir.minhashwiki.eval;
 
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +44,7 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Partitioner;
+import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -89,7 +91,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
     };
     
     private static class LanguageMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
+    Mapper<IntWritable, WikipediaPage, Text, Text> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static String lang;
@@ -115,7 +117,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         public static WikiClean cleaner;
         
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<Text, Text> output,
                     Reporter reporter) throws IOException {
                
                
@@ -143,7 +145,6 @@ public class WikiSentence2Doc extends Configured implements Tool {
             //System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
             if(content == null) return;
             if(p.getDocid() == null) return;
-            long id = Long.parseLong(p.getDocid());
             String cleancontent = content
                     //.replace("\n", " ")
                     .replace("  ", " ")
@@ -153,7 +154,6 @@ public class WikiSentence2Doc extends Configured implements Tool {
             
             String lines[] = cleancontent.split("\n");
             Matcher m;
-            Text outPage;
             
             int sentencect = 0;
             for(String line: lines){
@@ -165,11 +165,12 @@ public class WikiSentence2Doc extends Configured implements Tool {
                     //if(!m.matches()) continue;
                     // For each sentence in the input text:
                     while(m.find()){
-                        outPage = new Text();
                         String sentence = m.group(1);
-                        String xmlPage = makePageText(sentence,title,id,sentencect);
-                        outPage.set(xmlPage);
-                        output.collect(key,outPage);
+                        Text titleOut = new Text();
+                        titleOut.set(title);
+                        Text sentenceOut = new Text();
+                        sentenceOut.set(sentence);
+                        output.collect(titleOut,sentenceOut);
                         sentencect++;
                     }
             
@@ -180,17 +181,46 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 }
             }
         }
-
         
-        public static String makePageText(String line,String title,long id,int sentencect){
-            long newid = id<<10 + sentencect;
+        public void configure(JobConf job) {
+            
+            lang = job.get("wiki.language", "en");
+            WikiLanguage wikilang = WikiLanguage.valueOf(lang.toUpperCase());
+            cleaner =  new WikiCleanBuilder()
+                        .withLanguage(wikilang)
+                        .withTitle(true)
+                        .withFooter(false).build();
+
+        }
+    }
+    
+    private static class LanguageReducer extends MapReduceBase implements
+        Reducer<Text, Text, Text, Text> {
+
+        static int id=0;
+        
+           public void reduce(Text title, Iterator<Text> values, OutputCollector<Text, Text> output,
+                    Reporter reporter) throws IOException {
+               
+               while(values.hasNext()){
+                   Text value = values.next();
+                   String sentence = value.toString();
+                   Text outPage = new Text();
+                   String xmlPage = makePageText(sentence,title.toString(),id);
+                   outPage.set(xmlPage);
+                   output.collect(title,outPage);
+                   id++;
+                 }
+            }
+        
+        public static String makePageText(String line,String title,long id){
             String text = "<page>"
                     +"<title>"
-                    + title + "-" + id
+                    + title 
                     + "</title>"
                     + "<ns>0</ns>"
                     + "<id>"
-                    + newid
+                    + id
                     + "</id>"
                     + "<revision>"
                     + "<id>560581215</id>"
@@ -212,17 +242,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
             return text;
         }
         
-        public void configure(JobConf job) {
-            
-            lang = job.get("wiki.language", "en");
-            WikiLanguage wikilang = WikiLanguage.valueOf(lang.toUpperCase());
-            cleaner =  new WikiCleanBuilder()
-                        .withLanguage(wikilang)
-                        .withTitle(true)
-                        .withFooter(false).build();
-
-        }
     }
+    
     
     private static final String eINPUT = "ewiki";
     private static final String fINPUT = "fwiki";
@@ -288,9 +309,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(4);
-        conf.setNumReduceTasks(0);
+        conf.setNumReduceTasks(1);
 
         conf.setMapperClass(LanguageMapper.class);
+        conf.setReducerClass(LanguageReducer.class);
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
