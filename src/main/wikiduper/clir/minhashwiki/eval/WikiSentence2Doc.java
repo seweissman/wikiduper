@@ -326,8 +326,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
-        conf.setOutputKeyClass(IntWritable.class);
-        
+        conf.setOutputKeyClass(Text.class);
+        conf.setOutputValueClass(Text.class);
         FileSystem fs = FileSystem.get(conf);        
         Path eOutPath = new Path(eOutputPath);
         Path fOutPath = new Path(fOutputPath);
