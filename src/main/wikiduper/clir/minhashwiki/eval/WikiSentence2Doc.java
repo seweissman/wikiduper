@@ -170,8 +170,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
                         titleOut.set(title);
                         Text sentenceOut = new Text();
                         sentenceOut.set(sentence);
-                        output.collect(titleOut,sentenceOut);
-                        sentencect++;
+                        if (p.getTitle().length() <= 0.3*p.getContent().length()) {
+                             output.collect(titleOut,sentenceOut);
+                             sentencect++;
+                        }
                     }
             
                 }catch(Throwable e){
@@ -198,7 +200,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
     private static class LanguageReducer extends MapReduceBase implements
         Reducer<Text, Text, Text, Text> {
 
-        static int id=0;
+        static int id=1;
         
            public void reduce(Text title, Iterator<Text> values, OutputCollector<Text, Text> output,
                     Reporter reporter) throws IOException {
