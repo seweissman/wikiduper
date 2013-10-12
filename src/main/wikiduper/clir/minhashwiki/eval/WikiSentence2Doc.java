@@ -308,10 +308,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
         LOG.info(" - f language: " + fLanguage);
 
         JobConf conf = new JobConf(getConf(), WikiSentence2Doc.class);
-        conf.setJobName(String.format("PreprocessWikiInput[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
+        conf.setJobName(String.format("WikiSentence2Doc[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
-        conf.setNumMapTasks(4);
+        conf.setNumMapTasks(20);
         conf.setNumReduceTasks(1);
 
         conf.setMapperClass(LanguageMapper.class);
@@ -323,8 +323,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
-        conf.set("mapred.job.map.memory.mb", "4096");
-        conf.set("mapred.map.child.java.opts", "-Xmx4096m");
+        conf.set("mapred.job.map.memory.mb", "6144");
+        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
