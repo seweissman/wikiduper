@@ -48,7 +48,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -57,9 +56,9 @@ import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.wikipedia.WikipediaPage;
-import wikiduper.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfInts;
+import edu.umd.cloud9.io.pair.PairOfLongString;
+import edu.umd.cloud9.io.pair.PairOfLongs;
 
 public class GetSentenceClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(GetSentenceClusters.class);
@@ -75,14 +74,14 @@ public class GetSentenceClusters extends Configured implements Tool {
      *
      */
     private static class ClusterMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, IntWritable, Text> {
+    Mapper<IntWritable, WikipediaPage, LongWritable, Text> {
     //Mapper<LongWritable, WikipediaPage, IntWritable, Text> {
         
         // Map from docid -> sentence number -> cluster number
-        static final TreeMap<Integer, TreeMap<Integer, Integer>> docmap = new TreeMap<Integer, TreeMap<Integer, Integer>>();
+        static final TreeMap<Long, TreeMap<Long, Long>> docmap = new TreeMap<Long, TreeMap<Long, Long>>();
         
         // The document-sentence identifier
-        static final IntWritable CLUSTER = new IntWritable();
+        static final LongWritable CLUSTER = new LongWritable();
         static final Text TITLESENTENCE = new Text();
         
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
@@ -103,7 +102,7 @@ public class GetSentenceClusters extends Configured implements Tool {
 
         public static WikiClean cleaner;
 
-        public void map(IntWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
+        public void map(IntWritable key, WikipediaPage p, OutputCollector<LongWritable, Text> output,
                 Reporter reporter) throws IOException {
           //public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
             //        Reporter reporter) throws IOException {
@@ -127,14 +126,14 @@ public class GetSentenceClusters extends Configured implements Tool {
             int sentencect = 0;
             int id = Integer.parseInt(p.getDocid());
             if(!docmap.containsKey(id)) return;
-            TreeMap<Integer,Integer> sentMap = docmap.get(id);
+            TreeMap<Long,Long> sentMap = docmap.get(id);
 
             try{
             // For each sentence in the input text:
             while(m.find()){
                 String sentence = m.group(1);
                 if(sentMap.containsKey(sentencect)){
-                    int clust = sentMap.get(sentencect);
+                    long clust = sentMap.get(sentencect);
                     TITLESENTENCE.set(p.getTitle() + "\t" + sentence);
                     CLUSTER.set(clust);
                     output.collect(CLUSTER,TITLESENTENCE);
@@ -160,15 +159,16 @@ public class GetSentenceClusters extends Configured implements Tool {
                 FSDataInputStream in = fs.open(new Path(docMapFile));
                 SequenceFile.Reader reader;
                 reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
-                IntWritable docid = new IntWritable();
-                ArrayListWritable<PairOfInts> sentlist = new ArrayListWritable<PairOfInts>();
+                PairOfLongString docid = new PairOfLongString();
+
+                ArrayListWritable<PairOfLongs> sentlist = new ArrayListWritable<PairOfLongs>();
                 while(reader.next(docid, sentlist)){
-                    docmap.put(docid.get(), new TreeMap<Integer, Integer>());
-                    for(PairOfInts p : sentlist){
-                        if(docmap.get(docid.get()).containsKey(p.getLeftElement())){
+                    docmap.put(docid.getLeftElement(), new TreeMap<Long, Long>());
+                    for(PairOfLongs p : sentlist){
+                        if(docmap.get(docid.getLeftElement()).containsKey(p.getLeftElement())){
                             System.out.println("Sentence in more than one cluster: " + p);
                         }
-                        docmap.get(docid.get()).put(p.getLeftElement(), p.getRightElement());
+                        docmap.get(docid.getLeftElement()).put(p.getLeftElement(), p.getRightElement());
                     }
                 }
                 reader.close();

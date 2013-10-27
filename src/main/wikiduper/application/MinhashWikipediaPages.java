@@ -55,6 +55,8 @@ import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.hash.MultiplyShiftHash;
+import wikiduper.utils.DocSentence;
+import wikiduper.utils.Signature;
 import wikiduper.wikipedia.WikipediaPage;
 import wikiduper.wikipedia.WikipediaPageInputFormat;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
@@ -85,7 +87,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     };
     
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    Mapper<IntWritable, WikipediaPage, Signature, DocSentence> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static long rseed;
@@ -104,10 +106,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         static MultiplyShiftHash hashfamily;
 
         // The minhash signature
-        static final ArrayListOfLongsWritable SIG = new ArrayListOfLongsWritable(K);
+        static final Signature SIG = new Signature(K);
 
         // The document-sentence identifier
-        static final PairOfStringInt DOCSENT = new PairOfStringInt();
+        static final DocSentence DOCSENT = new DocSentence();
 
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         static final Pattern sentenceregex = Pattern.compile(
@@ -131,7 +133,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
         public static WikiClean cleaner;
         
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<Signature, DocSentence> output,
                     Reporter reporter) throws IOException {
                
                
@@ -202,7 +204,8 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
                 if(shinglect > MINLEN && shinglect < MAXLEN){
-                    DOCSENT.set(p.getDocid(), sentencect);
+                    DOCSENT.setId(Long.valueOf(p.getDocid()));
+                    DOCSENT.setSentence(sentencect);
                     
                     // generate N k-minhash-signatures
                     // start from same seed, otherwise doesn't work so well
@@ -257,11 +260,11 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             sigseed = r.nextLong();
             hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
             MINHASH = new long[NHASH];
-            if(SIG.size() != K){
-                for(int i=0; i<K; i++){
-                    SIG.add(0);
-                }
-            }
+            //if(SIG.getLength() != K){
+              //  for(int i=0; i<K; i++){
+                //    SIG.set(i,0);
+                //}
+            //}
 
         }
     }
@@ -303,23 +306,29 @@ public class MinhashWikipediaPages extends Configured implements Tool {
      * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
      *
      */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> {
+    private static class SignatureReducer extends MapReduceBase implements Reducer<Signature, DocSentence, Signature, DocSentence> {
 
         // collect all sentences that have hashed to the same hash signature
-        static final ArrayListWritable<PairOfStringInt> nearDuplicateSentenceList = new ArrayListWritable<PairOfStringInt>();
+        static final ArrayListWritable<DocSentence> nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
         @Override
-        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStringInt> values,
-                OutputCollector<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>> output, Reporter reporter)
+        public void reduce(Signature key, Iterator<DocSentence> values,
+                OutputCollector<Signature, DocSentence> output, Reporter reporter)
                         throws IOException {
             nearDuplicateSentenceList.clear();
 
             while (values.hasNext()) {
-                PairOfStringInt val = values.next().clone();
+                DocSentence val = new DocSentence();
+                DocSentence tmpval = values.next();
+                val.setId(tmpval.getId());
+                val.setSentence(tmpval.getSentence());
                 nearDuplicateSentenceList.add(val);
             }
             
             if(nearDuplicateSentenceList.size() == 1) return;
-            output.collect(key, nearDuplicateSentenceList);
+            //System.out.println("nearDuplicateSentenceList " + nearDuplicateSentenceList);
+            for(DocSentence ds : nearDuplicateSentenceList){
+                output.collect(key, ds);
+            }
 
         }
     }
@@ -455,10 +464,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
-        conf.setMapOutputKeyClass(ArrayListOfLongsWritable.class);
-        conf.setMapOutputValueClass(PairOfStringInt.class);
+        conf.setMapOutputKeyClass(Signature.class);
+        conf.setMapOutputValueClass(DocSentence.class);
         
-        conf.setOutputKeyClass(ArrayListOfLongsWritable.class);
+        conf.setOutputKeyClass(Signature.class);
         conf.setOutputValueClass(ArrayListWritable.class);
 
         // Delete the output directory if it exists already.
