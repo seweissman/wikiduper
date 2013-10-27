@@ -10,3 +10,6 @@ build/
 docs/
 etc/*.sh
 lib/
+
+#data
+data/
