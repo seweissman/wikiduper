@@ -468,7 +468,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         conf.setMapOutputValueClass(DocSentence.class);
         
         conf.setOutputKeyClass(Signature.class);
-        conf.setOutputValueClass(ArrayListWritable.class);
+        conf.setOutputValueClass(DocSentence.class);
 
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
