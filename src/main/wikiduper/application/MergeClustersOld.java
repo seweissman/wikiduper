@@ -48,8 +48,8 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfInts;
 import edu.umd.cloud9.io.pair.PairOfStringInt;
 
-public class MergeClusters extends Configured implements Tool {
-    private static final Logger LOG = Logger.getLogger(MergeClusters.class);
+public class MergeClustersOld extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(MergeClustersOld.class);
 
 
     private static final String INPUT = "input";
@@ -87,7 +87,7 @@ public class MergeClusters extends Configured implements Tool {
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - output file: " + outputPath);
         
-        JobConf conf = new JobConf(getConf(), MergeClusters.class);
+        JobConf conf = new JobConf(getConf(), MergeClustersOld.class);
 
         /* Get Clusters from MinhashWikipediaPages pair output */
         
@@ -259,9 +259,9 @@ public class MergeClusters extends Configured implements Tool {
         return component;
     }
 
-    public MergeClusters() {}
+    public MergeClustersOld() {}
 
     public static void main(String[] args) throws Exception {
-        ToolRunner.run(new MergeClusters(), args);
+        ToolRunner.run(new MergeClustersOld(), args);
     }
 }
