@@ -1,7 +1,7 @@
-package wikiduper.clir.minhashwiki;
+package wikiduper.utils;
 
 public class UnionFindSet {
-    DocSentence data;
+    public DocSentence data;
     UnionFindSet parent;
     
     public UnionFindSet(DocSentence d){

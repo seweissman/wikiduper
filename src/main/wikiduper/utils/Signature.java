@@ -1,4 +1,4 @@
-package wikiduper.clir.minhashwiki;
+package wikiduper.utils;
 /*
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
