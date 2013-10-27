@@ -200,6 +200,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
                 if(shinglect > MINLEN && shinglect < MAXLEN){                    
+                    System.out.println("In loop N=" + N + " K= " + K);
                     DOCSENT.setId(Long.valueOf(p.getDocid()));
                     DOCSENT.setSentence(sentencect);
                     DOCSENT.setLanguage(language);
