@@ -90,7 +90,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         static long sigseed; // Seed to use when randoly selecting signature vectors
         static long MINHASH[];
 
-        String language;
+        static String language;
         static int NHASH; // Total number of hashes per sentence
         static int K; // Length of hash vector
         static int N; // Number of hashes per input sentence (N < NHASH)
