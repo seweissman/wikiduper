@@ -199,8 +199,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 }
                 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-                if(shinglect > MINLEN && shinglect < MAXLEN){
-                    System.out.println("Printing sentence");
+                if(shinglect > MINLEN && shinglect < MAXLEN){                    
                     DOCSENT.setId(Long.valueOf(p.getDocid()));
                     DOCSENT.setSentence(sentencect);
                     DOCSENT.setLanguage(language);
@@ -213,6 +212,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                             SIG.set(i, MINHASH[x]);
                         }
                         //context.write(SIG, DOCSENT);
+                        System.out.println("Writing " + SIG + " " + DOCSENT);
                         output.collect(SIG, DOCSENT);
                     }
 
