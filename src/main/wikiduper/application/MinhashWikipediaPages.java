@@ -18,7 +18,6 @@ package wikiduper.application;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -35,7 +34,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -58,10 +56,7 @@ import wikiduper.hash.MultiplyShiftHash;
 import wikiduper.utils.DocSentence;
 import wikiduper.utils.Signature;
 import wikiduper.wikipedia.WikipediaPage;
-import wikiduper.wikipedia.WikipediaPageInputFormat;
-import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfStringInt;
 
 public class MinhashWikipediaPages extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MinhashWikipediaPages.class);
@@ -95,6 +90,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         static long sigseed; // Seed to use when randoly selecting signature vectors
         static long MINHASH[];
 
+        String language;
         static int NHASH; // Total number of hashes per sentence
         static int K; // Length of hash vector
         static int N; // Number of hashes per input sentence (N < NHASH)
@@ -206,7 +202,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 if(shinglect > MINLEN && shinglect < MAXLEN){
                     DOCSENT.setId(Long.valueOf(p.getDocid()));
                     DOCSENT.setSentence(sentencect);
-                    
+                    DOCSENT.setLanguage(language);
                     // generate N k-minhash-signatures
                     // start from same seed, otherwise doesn't work so well
                     Random r = new Random(sigseed);
@@ -234,7 +230,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         
         public void configure(JobConf job) {
             
-            String language = job.get("wiki.language", "en");
+            language = job.get("wiki.language", "en");
             WikiLanguage wikilang = WikiLanguage.valueOf(language.toUpperCase());
             cleaner =  new WikiCleanBuilder()
                         .withLanguage(wikilang)
