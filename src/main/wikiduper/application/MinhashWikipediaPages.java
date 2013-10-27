@@ -208,6 +208,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     // start from same seed, otherwise doesn't work so well
                     Random r = new Random(sigseed);
                     for(int j=0; j<N; j++){
+                        System.out.println("Setting signature");
                         for(int i=0; i<K; i++){
                             int x = r.nextInt(NHASH);
                             SIG.set(i, MINHASH[x]);
