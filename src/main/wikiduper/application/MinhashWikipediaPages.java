@@ -317,6 +317,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 DocSentence tmpval = values.next();
                 val.setId(tmpval.getId());
                 val.setSentence(tmpval.getSentence());
+                val.setLanguage(tmpval.getLanguage());
                 nearDuplicateSentenceList.add(val);
             }
             
