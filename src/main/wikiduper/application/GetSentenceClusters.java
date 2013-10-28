@@ -126,6 +126,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             long sentencect = 0;
             long id = Long.parseLong(p.getDocid());
             if(!docmap.containsKey(id)) return;
+            System.out.println("Doc map contains id " + id);
             TreeMap<Long,Long> sentMap = docmap.get(id);
 
             try{
