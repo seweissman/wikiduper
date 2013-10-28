@@ -286,8 +286,8 @@ public class HistogramClusters extends Configured implements Tool {
         
         System.out.println("N lines: " + linect);
         System.out.println("N clusters: " + clusterct);            
-        System.out.println("N unique titles: " + titleset.size());
-        System.out.println("N unique sentences: " + sentenceset.size());
+        //System.out.println("N unique titles: " + titleset.size());
+        //System.out.println("N unique sentences: " + sentenceset.size());
         
         
         StringBuffer histvals = new StringBuffer();
