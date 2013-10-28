@@ -222,6 +222,7 @@ public class HistogramClusters extends Configured implements Tool {
                     if(m2.matches()){
                         System.out.println("Matches linepat2");
                         System.out.println("Group count " + m2.groupCount());
+                        System.out.println(m2.group(1));
                     }else{
                         System.out.println("No match");
                     }
