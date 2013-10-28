@@ -217,7 +217,7 @@ public class HistogramClusters extends Configured implements Tool {
                 }else{
                     //System.err.println("Bad line " + linect + " : " + articlesentence.toString());
                     System.err.println("Bad line " + linect + " : " + linetext);
-                    Pattern linepat2 = Pattern.compile("^([^\t]+)$");
+                    Pattern linepat2 = Pattern.compile("^([^\t]+)");
                     Matcher m2 = linepat2.matcher(linetext);
                     if(m2.matches()){
                         System.out.println("Matches linepat2");
