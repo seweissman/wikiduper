@@ -199,8 +199,8 @@ public class MergeClusters extends Configured implements Tool {
             long linect = 0;
             long newnodect = 0;
             while(reader.next(bucket, ds)){
-                System.out.println("bucket = " + bucket);
-                System.out.println("lastbucket = " + lastbucket);
+                //System.out.println("bucket = " + bucket);
+                //System.out.println("lastbucket = " + lastbucket);
                 linect++;
                 if(ct % 1000 == 0) System.out.println("Count:"+ct);
                 if(linect % 100000 == 0) System.out.println(linect+"\t"+ct+"\t"+newnodect);
@@ -255,12 +255,12 @@ public class MergeClusters extends Configured implements Tool {
             int cnum = clusterNumMap.get(headn.data);
             cluster2sentencemap.get(cnum).add(ds);
         }
-        /*
+
         System.out.println("Num clusters " + clusterNumMap.keySet().size());
         for(int c : cluster2sentencemap.keySet()){
             System.out.println(c + " " + cluster2sentencemap.get(c));
         }
-        */
+
         
     }catch (IOException e) {
         // TODO Auto-generated catch block
