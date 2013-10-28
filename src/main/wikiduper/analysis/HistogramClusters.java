@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
@@ -121,7 +122,7 @@ public class HistogramClusters extends Configured implements Tool {
         int smallclusterlinect = 0;
         int clusterct = 0;
         int linect = 0;
-        int clustcurr = -1;
+        long clustcurr = -1;
         int maxclustersize = 0;
         Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
         try {
@@ -135,7 +136,7 @@ public class HistogramClusters extends Configured implements Tool {
             FSDataInputStream in = fs.open(filestatus.getPath());
             SequenceFile.Reader reader;
             reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
-            IntWritable clusterid = new IntWritable();
+            LongWritable clusterid = new LongWritable();
             Text articlesentence = new Text();
             while(reader.next(clusterid, articlesentence)){
                 String linetext = articlesentence.toString().replace("\n", " ");
@@ -220,7 +221,7 @@ public class HistogramClusters extends Configured implements Tool {
 
                 
                 linect++;
-                clusterid = new IntWritable();
+                clusterid = new LongWritable();
                 articlesentence = new Text();
 
             }
