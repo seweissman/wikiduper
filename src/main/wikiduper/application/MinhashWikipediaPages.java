@@ -211,6 +211,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                         System.out.println("Setting signature");
                         for(int i=0; i<K; i++){
                             int x = r.nextInt(NHASH);
+                            System.out.println("Setting " + i + " to " + MINHASH[x]);
                             SIG.set(i, MINHASH[x]);
                         }
                         //context.write(SIG, DOCSENT);
