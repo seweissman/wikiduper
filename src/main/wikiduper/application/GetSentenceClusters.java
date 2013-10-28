@@ -144,6 +144,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             }catch(Throwable e){
                 System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + sentencect);
             }
+            System.out.println("Max sentence ct " + sentencect);
         }
 
         public void configure(JobConf job) {
