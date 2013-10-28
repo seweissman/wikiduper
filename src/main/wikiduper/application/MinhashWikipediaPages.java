@@ -102,7 +102,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
         static MultiplyShiftHash hashfamily;
 
         // The minhash signature
-        static final Signature SIG = new Signature(K);
+        static Signature SIG;
 
         // The document-sentence identifier
         static final DocSentence DOCSENT = new DocSentence();
@@ -249,7 +249,7 @@ public class MinhashWikipediaPages extends Configured implements Tool {
             K = job.getInt("K",  10);
             N = job.getInt("N", 10);
             SHINGLELEN = job.getInt("SHINGLELEN",12);
-
+            SIG = new Signature(K);
             seeds = new long[NHASH];
             Random r = new Random(rseed);
             int ct = 0;
