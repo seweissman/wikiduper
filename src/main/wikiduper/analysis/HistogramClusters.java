@@ -111,8 +111,8 @@ public class HistogramClusters extends Configured implements Tool {
         TreeMap<Integer,Integer> sentencehistogram = new TreeMap<Integer,Integer>();
         
         // Sets to keep track of overall unique title and sentences
-        HashSet<String> titleset = new HashSet<String>();
-        HashSet<String> sentenceset = new HashSet<String>();
+        //HashSet<String> titleset = new HashSet<String>();
+        //HashSet<String> sentenceset = new HashSet<String>();
         
         // Per cluster data structures
         ArrayList<String> cluster = new ArrayList<String>();
@@ -214,8 +214,8 @@ public class HistogramClusters extends Configured implements Tool {
                     clustersentences.add(sentence);
                     clustertitles.add(title);
                     
-                    titleset.add(title);
-                    sentenceset.add(sentence);
+                    //titleset.add(title);
+                    //sentenceset.add(sentence);
                 }else{
                     //System.err.println("Bad line " + linect + " : " + articlesentence.toString());
                     System.err.println("Bad line " + linect + " : " + linetext);
