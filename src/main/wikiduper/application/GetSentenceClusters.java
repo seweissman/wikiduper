@@ -123,8 +123,8 @@ public class GetSentenceClusters extends Configured implements Tool {
             Matcher m = sentenceregex.matcher(line);
             
             // Assume a whole Wikipedia article has been passed to the mapper; track sentence number by counting
-            int sentencect = 0;
-            int id = Integer.parseInt(p.getDocid());
+            long sentencect = 0;
+            long id = Long.parseLong(p.getDocid());
             if(!docmap.containsKey(id)) return;
             TreeMap<Long,Long> sentMap = docmap.get(id);
 
