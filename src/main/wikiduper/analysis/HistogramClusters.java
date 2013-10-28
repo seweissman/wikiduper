@@ -124,7 +124,9 @@ public class HistogramClusters extends Configured implements Tool {
         int linect = 0;
         long clustcurr = -1;
         int maxclustersize = 0;
-        Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
+        //Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
+        Pattern linepat = Pattern.compile("^([^\t]+)\t(\\p{L}*)$");
+
         try {
         FileSystem fs = FileSystem.get(conf);
         
