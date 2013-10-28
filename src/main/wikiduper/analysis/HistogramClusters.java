@@ -215,7 +215,8 @@ public class HistogramClusters extends Configured implements Tool {
                     titleset.add(title);
                     sentenceset.add(sentence);
                 }else{
-                    System.err.println("Bad line " + linect + " : " + articlesentence.toString());
+                    //System.err.println("Bad line " + linect + " : " + articlesentence.toString());
+                    System.err.println("Bad line " + linect + " : " + linetext);
                     System.exit(-1);
                }
 
