@@ -126,7 +126,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             long sentencect = 0;
             long id = Long.parseLong(p.getDocid());
             if(!docmap.containsKey(id)) return;
-            System.out.println("Doc map contains id " + id);
+            //System.out.println("Doc map contains id " + id);
             TreeMap<Long,Long> sentMap = docmap.get(id);
 
             try{
@@ -144,7 +144,7 @@ public class GetSentenceClusters extends Configured implements Tool {
             }catch(Throwable e){
                 System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + sentencect);
             }
-            System.out.println("Max sentence ct " + sentencect);
+            //System.out.println("Max sentence ct " + sentencect);
         }
 
         public void configure(JobConf job) {
@@ -343,7 +343,7 @@ public class GetSentenceClusters extends Configured implements Tool {
         conf.set("mapred.job.reduce.memory.mb", "4096");
         conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         
-        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputKeyClass(LongWritable.class);
         conf.setOutputValueClass(Text.class);
 
         //conf.setMapOutputKeyClass(IntWritable.class);
