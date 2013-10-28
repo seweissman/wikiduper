@@ -200,7 +200,6 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                 
                 // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
                 if(shinglect > MINLEN && shinglect < MAXLEN){                    
-                    System.out.println("In loop N=" + N + " K= " + K);
                     DOCSENT.setId(Long.valueOf(p.getDocid()));
                     DOCSENT.setSentence(sentencect);
                     DOCSENT.setLanguage(language);
@@ -208,14 +207,11 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                     // start from same seed, otherwise doesn't work so well
                     Random r = new Random(sigseed);
                     for(int j=0; j<N; j++){
-                        System.out.println("Setting signature");
                         for(int i=0; i<K; i++){
                             int x = r.nextInt(NHASH);
-                            System.out.println("Setting " + i + " to " + MINHASH[x]);
                             SIG.set(i, MINHASH[x]);
                         }
                         //context.write(SIG, DOCSENT);
-                        System.out.println("Writing " + SIG + " " + DOCSENT);
                         output.collect(SIG, DOCSENT);
                     }
 
