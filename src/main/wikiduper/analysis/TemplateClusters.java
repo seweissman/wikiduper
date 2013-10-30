@@ -196,7 +196,7 @@ public class TemplateClusters extends Configured implements Tool {
             SequenceFile.Writer speciesWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(speciesOut)),
                     Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer scoresWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(scoresOut)),
-                    Writer.keyClass(IntWritable.class), Writer.valueClass(ArrayListOfIntsWritable.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(ArrayListOfIntsWritable.class));
             
         System.out.println("filein = " + filein);
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
