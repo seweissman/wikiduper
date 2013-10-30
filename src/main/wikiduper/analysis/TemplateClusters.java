@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
@@ -173,7 +174,7 @@ public class TemplateClusters extends Configured implements Tool {
         int otherCt2 = 0;
         
         
-        IntWritable clusterid = null;
+        LongWritable clusterid = null;
         ClassifyClusters.ClusterTypes clist[] = ClassifyClusters.ClusterTypes.values();
         try {
             
