@@ -186,15 +186,15 @@ public class TemplateClusters extends Configured implements Tool {
             
             FileSystem fs = FileSystem.get(conf);
             SequenceFile.Writer templateWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(templateOut)),
-                    Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer identicalWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(identicalOut)),
-                    Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer otherWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(otherOut)),
-                    Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer otherWriter2  = SequenceFile.createWriter(conf, Writer.file(new Path(otherOut2)),
-                    Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer speciesWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(speciesOut)),
-                    Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer scoresWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(scoresOut)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(ArrayListOfIntsWritable.class));
             
