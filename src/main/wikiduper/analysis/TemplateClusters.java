@@ -204,7 +204,7 @@ public class TemplateClusters extends Configured implements Tool {
             try{
                 FSDataInputStream in = fs.open(filestatus.getPath());
                 SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
-                clusterid = new IntWritable();
+                clusterid = new LongWritable();
                 Text articlesentence = new Text();
             
             while(reader.next(clusterid, articlesentence)){
