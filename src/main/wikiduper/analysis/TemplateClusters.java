@@ -151,8 +151,8 @@ public class TemplateClusters extends Configured implements Tool {
         float count_threshold = conf.getInt(COUNT_THRESH, 3);
         
         // Sets to keep track of overall unique title and sentences
-        HashSet<String> titleset = new HashSet<String>();
-        HashSet<String> sentenceset = new HashSet<String>();
+        //HashSet<String> titleset = new HashSet<String>();
+        //HashSet<String> sentenceset = new HashSet<String>();
         
         // Per cluster data structures
         ArrayList<String> cluster = new ArrayList<String>();
@@ -331,8 +331,8 @@ public class TemplateClusters extends Configured implements Tool {
                     clustertitlesentences.add(title + " " + sentence);
                     clustertitles.add(title);
                     
-                    titleset.add(title);
-                    sentenceset.add(sentence);
+                    //titleset.add(title);
+                    //sentenceset.add(sentence);
                 }else{
                     System.err.println("Bad line " + linect + " : " + articlesentence.toString());
                     System.exit(-1);
@@ -439,8 +439,8 @@ public class TemplateClusters extends Configured implements Tool {
 
         System.out.println("N lines: " + linect);
         System.out.println("N clusters: " + clusterct);            
-        System.out.println("N unique titles: " + titleset.size());
-        System.out.println("N unique sentences: " + sentenceset.size());
+        //System.out.println("N unique titles: " + titleset.size());
+        //System.out.println("N unique sentences: " + sentenceset.size());
         
         System.out.println("N identical clusters: " + identicalCt);
         System.out.println("N template clusters: " + templateCt);
