@@ -165,8 +165,9 @@ public class TemplateClusters extends Configured implements Tool {
         int linect = 0;
         long clustcurr = -1;
         int maxclustersize = 0;
-        Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
-
+        //Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
+        Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
+        
         int templateCt = 0;
         int identicalCt = 0;
         int otherCt = 0;
