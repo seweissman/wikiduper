@@ -121,7 +121,7 @@ public class TemplateClusters extends Configured implements Tool {
                 gtInputPath = cmdline.getOptionValue(GT_IN);
                 conf.set(GT_IN, gtInputPath);
             }
-
+            conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
             conf.set(INPUT, inputPath);
             conf.set(TEMPLATE_OUT, templateOutputPath);
             conf.set(IDENTICAL_OUT, identicalOutputPath);
