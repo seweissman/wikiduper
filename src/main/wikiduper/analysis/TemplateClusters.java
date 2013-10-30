@@ -38,6 +38,13 @@ import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
 
 import wikiduper.application.MergeClusters;
 
+/**
+ * A class for heuristically classifying clusters as templates, identical
+ * 
+ * 
+ * @author weissman
+ *
+ */
 public class TemplateClusters extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(MergeClusters.class);
@@ -83,7 +90,7 @@ public class TemplateClusters extends Configured implements Tool {
                 return -1;
             }
 
-            if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(GT_IN) 
+            if (!cmdline.hasOption(INPUT) 
                     || !cmdline.hasOption(TEMPLATE_OUT) || !cmdline.hasOption(IDENTICAL_OUT)  || !cmdline.hasOption(OTHER_OUT) 
                     || !cmdline.hasOption(SCORES_OUT) 
                     || !cmdline.hasOption(SCORE_THRESH) || !cmdline.hasOption(COUNT_THRESH)){
@@ -95,7 +102,11 @@ public class TemplateClusters extends Configured implements Tool {
             }
 
             String inputPath = cmdline.getOptionValue(INPUT);
-            String gtInputPath = cmdline.getOptionValue(GT_IN);
+            // GT comparison is optional
+            String gtInputPath = null;
+            if(cmdline.hasOption(GT_IN)){ 
+                gtInputPath = cmdline.getOptionValue(GT_IN);
+            }
             String templateOutputPath = cmdline.getOptionValue(TEMPLATE_OUT);
             String identicalOutputPath = cmdline.getOptionValue(IDENTICAL_OUT);
             String otherOutputPath = cmdline.getOptionValue(OTHER_OUT);
@@ -164,7 +175,11 @@ public class TemplateClusters extends Configured implements Tool {
         ClassifyClusters.ClusterTypes clist[] = ClassifyClusters.ClusterTypes.values();
         try {
             
-            HashMap<Integer,Integer> clustercategorymap = readGtData(gtin, conf);
+            HashMap<Integer,Integer> clustercategorymap = null;
+            if(gtin != null){
+                clustercategorymap = readGtData(gtin, conf);
+            }
+            clustercategorymap = new HashMap<Integer,Integer>();
             
             FileSystem fs = FileSystem.get(conf);
             SequenceFile.Writer templateWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(templateOut)),
@@ -437,7 +452,6 @@ public class TemplateClusters extends Configured implements Tool {
     }
     
     private HashMap<Integer, Integer> readGtData(String gtin, JobConf conf) throws IOException {
-        // TODO Auto-generated method stub
         HashMap<Integer,Integer> clustercategorymap = new HashMap<Integer,Integer>();
         FileSystem fs = FileSystem.get(conf);
         IntWritable clusterid = new IntWritable();
