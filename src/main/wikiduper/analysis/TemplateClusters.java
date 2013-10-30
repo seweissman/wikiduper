@@ -102,11 +102,6 @@ public class TemplateClusters extends Configured implements Tool {
             }
 
             String inputPath = cmdline.getOptionValue(INPUT);
-            // GT comparison is optional
-            String gtInputPath = null;
-            if(cmdline.hasOption(GT_IN)){ 
-                gtInputPath = cmdline.getOptionValue(GT_IN);
-            }
             String templateOutputPath = cmdline.getOptionValue(TEMPLATE_OUT);
             String identicalOutputPath = cmdline.getOptionValue(IDENTICAL_OUT);
             String otherOutputPath = cmdline.getOptionValue(OTHER_OUT);
@@ -118,8 +113,15 @@ public class TemplateClusters extends Configured implements Tool {
             LOG.info("Tool name: " + this.getClass().getName());
             
             JobConf conf = new JobConf(getConf(), MergeClusters.class);
+
+            // GT comparison is optional
+            String gtInputPath = null;
+            if(cmdline.hasOption(GT_IN)){ 
+                gtInputPath = cmdline.getOptionValue(GT_IN);
+                conf.set(GT_IN, gtInputPath);
+            }
+
             conf.set(INPUT, inputPath);
-            conf.set(GT_IN, gtInputPath);
             conf.set(TEMPLATE_OUT, templateOutputPath);
             conf.set(IDENTICAL_OUT, identicalOutputPath);
             conf.set(OTHER_OUT, otherOutputPath);
