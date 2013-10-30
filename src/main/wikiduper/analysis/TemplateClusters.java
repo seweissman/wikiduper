@@ -163,7 +163,7 @@ public class TemplateClusters extends Configured implements Tool {
         
         int clusterct = 0;
         int linect = 0;
-        int clustcurr = -1;
+        long clustcurr = -1;
         int maxclustersize = 0;
         Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
 
@@ -339,7 +339,7 @@ public class TemplateClusters extends Configured implements Tool {
 
                 
                 linect++;
-                clusterid = new IntWritable();
+                clusterid = new LongWritable();
                 articlesentence = new Text();
 
             }
@@ -585,7 +585,7 @@ public class TemplateClusters extends Configured implements Tool {
             System.out.println("otehrct: " + otherct);
         }
         ArrayListOfIntsWritable scoreList = new ArrayListOfIntsWritable();
-        IntWritable clusterIdOut = new IntWritable();
+        LongWritable clusterIdOut = new LongWritable();
         clusterIdOut.set(clusterid);
         int totalct = numberct + properct + otherct;
         scoreList.add(numberct);
@@ -611,7 +611,7 @@ public class TemplateClusters extends Configured implements Tool {
 
     
     private double scoreClusterWords(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
-            int clusterid, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
+            long clustcurr, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
         // TODO Auto-generated method stub
         
         int numberct = 0;
@@ -647,8 +647,8 @@ public class TemplateClusters extends Configured implements Tool {
             System.out.println("otehrct: " + otherct);
         }
         ArrayListOfIntsWritable scoreList = new ArrayListOfIntsWritable();
-        IntWritable clusterIdOut = new IntWritable();
-        clusterIdOut.set(clusterid);
+        LongWritable clusterIdOut = new LongWritable();
+        clusterIdOut.set(clustcurr);
         int totalct = numberct + properct + otherct;
         scoreList.add(numberct);
         scoreList.add(properct);
