@@ -59,7 +59,7 @@ public class TemplateClusters extends Configured implements Tool {
 
     private static final String SCORE_THRESH = "score_threshold";
     private static final String COUNT_THRESH = "count_threshold";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     @SuppressWarnings("static-access")
     @Override
     public int run(String[] args) throws Exception {
@@ -253,7 +253,8 @@ public class TemplateClusters extends Configured implements Tool {
                                 isTemplate = 0;
                             }
                         }
-
+                        LongWritable clusterIdOut = new LongWritable();
+                        clusterIdOut.set(clustcurr);
                         double score = scoreClusterWords(clusterwordct, sentencewordmap, 
                                 clustersentences.size(), clustertitlesentences.size(), clustcurr, 
                                 scoresWriter,isTemplate, isSpecies);
@@ -264,35 +265,35 @@ public class TemplateClusters extends Configured implements Tool {
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
-                                identicalWriter.append(clusterid, textout);
+                                identicalWriter.append(clusterIdOut, textout);
                             }
                         }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                             templateCt++;
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
-                                templateWriter.append(clusterid, textout);
+                                templateWriter.append(clusterIdOut, textout);
                             }
                         }else if(isSpecies == 1){
                             speciesCt++;
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
-                                speciesWriter.append(clusterid, textout);
+                                speciesWriter.append(clusterIdOut, textout);
                             }
                         }else if(clustersentences.size() == 2){
                             otherCt2++;
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
-                                otherWriter2.append(clusterid, textout);
+                                otherWriter2.append(clusterIdOut, textout);
                             }
                         }else{
                             otherCt++;
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
-                                otherWriter.append(clusterid, textout);
+                                otherWriter.append(clusterIdOut, textout);
                             }
                         }
 
@@ -353,6 +354,8 @@ public class TemplateClusters extends Configured implements Tool {
 
           // Update one time at the end of each file input loop to add remaining cluster            
             //getClusterWordCounts(clustersentences,clusterwordct);
+            LongWritable clusterIdOut = new LongWritable();
+            clusterIdOut.set(clustcurr);
             ArrayList<HashSet<String>> sentencewordmap = new ArrayList<HashSet<String>>();
             getClusterWordCounts(clustertitlesentences,clusterwordct, sentencewordmap);
             int category = -1;
@@ -378,35 +381,35 @@ public class TemplateClusters extends Configured implements Tool {
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
-                    identicalWriter.append(clusterid, textout);
+                    identicalWriter.append(clusterIdOut, textout);
                 }
             }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                 templateCt++;
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
-                    templateWriter.append(clusterid, textout);
+                    templateWriter.append(clusterIdOut, textout);
                 }
             }else if(isSpecies == 1){
                 speciesCt++;
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
-                    speciesWriter.append(clusterid, textout);
+                    speciesWriter.append(clusterIdOut, textout);
                 }
             }else if(clustersentences.size() == 2){
                 otherCt2++;
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
-                    otherWriter2.append(clusterid, textout);
+                    otherWriter2.append(clusterIdOut, textout);
                 }
             }else{
                 otherCt++;
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
-                    otherWriter.append(clusterid, textout);
+                    otherWriter.append(clusterIdOut, textout);
                 }
             }
 
