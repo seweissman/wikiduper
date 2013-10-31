@@ -59,7 +59,7 @@ public class TemplateClusters extends Configured implements Tool {
 
     private static final String SCORE_THRESH = "score_threshold";
     private static final String COUNT_THRESH = "count_threshold";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     @SuppressWarnings("static-access")
     @Override
     public int run(String[] args) throws Exception {
