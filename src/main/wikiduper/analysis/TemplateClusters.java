@@ -295,17 +295,18 @@ public class TemplateClusters extends Configured implements Tool {
                                 otherWriter.append(clusterid, textout);
                             }
                         }
-                        /*
+
                         if(DEBUG){
                             System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
                             System.out.println("score: " + score);
+                            /*
                             System.out.println("CLUSTER TYPE TEMPLTE = " + ClassifyClusters.ClusterTypes.TEMPLATE.ordinal());
                             if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
                                 System.out.println("Cluster type template: " + category + " " + clist[category]);
                             }else{
                                 System.out.println("Cluster type : " + category + " " + clist[category]);
                             }
-
+                            */
 
                             int i=0;
                             int samplect = 10;
@@ -316,7 +317,7 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                             System.out.println("\n\n");
                         }
-                        */
+
                             // Clear per cluster data structures
                         cluster.clear();
                         clustersentences.clear();
