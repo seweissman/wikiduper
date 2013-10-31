@@ -295,6 +295,7 @@ public class TemplateClusters extends Configured implements Tool {
                                 otherWriter.append(clusterid, textout);
                             }
                         }
+                        /*
                         if(DEBUG){
                             System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
                             System.out.println("score: " + score);
@@ -315,7 +316,7 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                             System.out.println("\n\n");
                         }
-                        
+                        */
                             // Clear per cluster data structures
                         cluster.clear();
                         clustersentences.clear();
