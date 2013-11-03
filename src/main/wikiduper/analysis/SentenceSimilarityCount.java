@@ -171,7 +171,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         String tmpPath = "tmppath";
-        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 6;
+        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 20;
         
 
         LOG.info("Tool: " + SentenceSimilarityCount.class.getSimpleName());
