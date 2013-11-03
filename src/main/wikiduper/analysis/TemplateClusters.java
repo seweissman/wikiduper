@@ -341,7 +341,7 @@ public class TemplateClusters extends Configured implements Tool {
                 
                 linect++;
                 clusterid = new LongWritable();
-                articlesentence = new Text();
+                articlesentence = new PairOfStrings();
 
             }
             reader.close();
