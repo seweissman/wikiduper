@@ -225,9 +225,9 @@ As we might expect, as shingle length increases, the false positive rate decreas
 
 All of our experiments were run against an XML dump of current English-language Wikipedia (enwiki) articles (as of 7/2013) obtained from dumps.wikimedia.org. The enwiki dump is approximately 42G in size and contains 10,218,778 articles (after excluding certain non-article page types). Running our application on the enwiki dump on a shared cluster of 16 nodes (20 GB RAM and 4? cores each) took $\approx$ 25 minutes.
 
-The total number of similar sentence clusters was 1,151,640, including 3,496,074 article/sentence pairs over  article titles. The total number of unique sentences over all cluster was 1,305,359.
+The total number of similar sentence clusters was 1,151,640, including 3,496,074 article/sentence pairs over 1,091,804 article titles. The total number of unique sentences over all clusters was 2,361,886.
 
-Cluster sizes ranged from 2 to 28,008. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, but the distribution of cluster sizes exhibits a long tail. As a result, while 99\% of our clusters have size below or equal to 30, about 1/3 of the output sentence/article pairs fall into clusters with size greater than 30. One explanation for this distribution of sentences is the phenomenon we call ''templatification,'' which we describe in more detail below.
+Cluster sizes ranged from 2 to 42,901. (See Figure \ref{clust} for a breakdown of counts by cluster size.) Most sentence clusters are small, about 99\% of our clusters have size below or equal to 10, but about 1/4 of the output sentence/article pairs fall into clusters with size greater than 10. One explanation for this distribution of sentences is the phenomenon we call ''templatification,'' which we describe in more detail below.
 
 \begin{figure}
 \centering
@@ -250,22 +250,24 @@ Manual inspection of cluster output reveals several different similar sentence t
 
  \emph{Templatification} occurs when one sentence is an exact duplicate of another sentence, but the main topic has been changed by only a few pieces of key information having been modified. For example, it could be said that the following two sentences follow a particular \emph{template}.
 \begin{itemize}[noitemsep,nolistsep]
-\item Bush had an approval rating of 22\% by the end of his term in 2008.
-\item Obama had an approval rating of 56\% by the end of his term in 2012.
+
+\item Of the agricultural land 40.4\% is used for growing crops and 26.6\% is pastures while 2.2\% is used for orchards or vine crops. [Gondiswil]
+\item Of the agricultural land 26.1\% is used for growing crops and 30.2\% is pastures while 3.0\% is used for orchards or vine crops. [Kleindietwil]
+\item Of the agricultural land 37.8\% is used for growing crops and 35.5\% is pastures while 2.2\% is used for orchards or vine crops. [Leimiswil]
 
 \end{itemize}
 From the perspective of editing/writing Wikipedia articles, this is a strong indicator that the author copied the original sentence and modified the relevant information to pertain to a different topic. What remains shared between both sentences though is the inherent structure.
 
 \emph{Direct Copying} occurs when the same sentence has been copied into another (or possibly the same) article. This can happen for many reasons, including articles that deal with similar subjects, or articles that are subtopics of other topics Similarly, \emph{Direct Copying with Copy Editing} occurs when the same sentence has been copied into another article and then one or both sentences has been edited for style or clarity. For example:
 \begin{itemize}[noitemsep,nolistsep]
-\item Bush had an approval rating of 22\% by the end of his term in 2008.
-\item Bush, a US President, had an approval rating of 22\% by the end of his term in 2008.
+\item In dry areas it may only emerge from its burrow for a few weeks when conditions are right and usually at night but in areas with permanent water bodies and abundant rain it may be active all day. [Great Plains toad]
+\item In dry areas it may only emerge from its burrow for a few weeks when conditions are right and only at night but in areas with permanent water bodies and abundant rain it may be active all day. [List of amphibians and reptiles of Montana]
 \end{itemize}
 
 \emph{Factual drift} most notably occurs when the same sentence has been copied and a piece of factual information about the \emph{same} topic has changed. For example, factual drift can be seen in the following two sentences.
 \begin{itemize}[noitemsep,nolistsep]
-\item Obama had an approval rating of 56\% by the end of his term in 2012.
-\item Obama had an approval rating of 46\% by the end of his term in 2012.
+\item The color of the upper rim of an astronomical object could go from green to blue to violet depending on the decrease in concentration of pollutants as they spread throughout an increasing volume of atmosphere. [Green flash]
+\item The color of the upper limb of an astronomical object could go from blue to green to violet depending on the decrease in concentration of pollutants as they spread throughout an increasing volume of atmosphere. [Mirage of astronomical objects]
 \end{itemize}
 Although factual drift is similar to copy editing and may occur along with copy editing, we distinguish the two cases since factual errors are more severe than style issues.
 
@@ -278,23 +280,38 @@ Although factual drift is similar to copy editing and may occur along with copy 
 
 \subsubsection{Break down of sentence types}
 
-By manually counting a small sample of 824 output clusters, we came up with a breakdown of sentence types in Table 1.
+By manually counting a small sample of 2094 output clusters, we came up with a breakdown of sentence types shown in Table 1.
 
 \begin{table}
 \centering
 \caption{Sentence Breakdown Counts}
-\begin{tabular}{| l | c |}
+\begin{tabular}{| l | c | c |}
 \hline
-Not Similar & 3 \\ \hline
-Factual Drift & 65 \\ \hline
-Template & 52 \\ \hline
-Reference & 23 \\ \hline
-Copy Edit & 214 \\ \hline
-Other & 12 \\ \hline
-Identical & 455 \\
+Factual Drift & 121 & 5.78\% \\ \hline
+Template & 632 & 30.18\% \\ \hline
+Reference & 7 & 0.33\% \\ \hline      
+Copy Edit & 283 & 13.51\% \\ \hline
+Identical & 948 & 45.27\% \\ \hline
+Other & 103 & 2.92\% \\ \hline
 \hline
 \end{tabular}
 \end{table}
+
+To get a rough estimate of the number of template clusters, we develop a heuristic score on low frequency words in the cluster word set to identify templates. For our purposes a low-frequency word is one that occurs in less than half of the cluster sentences. The score we use is:
+\[(\#numeric + \#proper)/(\#numeric + \#proper + \#other)\]
+Where \#numeric is the number of numeric terms in the cluster word set (all unique words occuring in the cluster), \#proper is the number of proper nouns in the cluster word set (i.e. capitalized words), and \#other is the number of other words.
+
+Applying the score to our hand-classified clusters shows us that this score does separate between template and non-template word. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.)
+
+After applying the score to the entire set of wiki clusters (with a score threshold of .6), I get 122,698 template clusters and 268,433 non-template clusters. The template clusters contain 777,940 sentences (689743 unique) and the non-template 698,628 (400,458 unique). 
+
+\begin{figure}
+\centering
+\includegraphics[width=3.5in, keepaspectratio = true]{classifyscoreswiki.pdf}
+\caption{Histogram of Hand Labeled Clusters by Template Heuristic Score.}
+\label{heuristic}
+\end{figure}
+
 
 \subsection{Sentence Similarity as a Measure of Article Similarity}
 

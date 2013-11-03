@@ -169,6 +169,7 @@ public class TemplateClusters extends Configured implements Tool {
         Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
         
         int templateCt = 0;
+        int templateSentencesCt = 0;
         int identicalCt = 0;
         int otherCt = 0;
         int speciesCt = 0;
@@ -269,6 +270,7 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                         }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                             templateCt++;
+                            templateSentencesCt += clustersentences.size();
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
@@ -385,6 +387,7 @@ public class TemplateClusters extends Configured implements Tool {
                 }
             }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                 templateCt++;
+                templateSentencesCt += clustersentences.size();
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
@@ -449,6 +452,7 @@ public class TemplateClusters extends Configured implements Tool {
         
         System.out.println("N identical clusters: " + identicalCt);
         System.out.println("N template clusters: " + templateCt);
+        System.out.println("N template sentences: " + templateSentencesCt);
         System.out.println("N other clusters: " + otherCt);
         System.out.println("N other pair clusters: " + otherCt2);
         System.out.println("N species clusters: " + speciesCt);
