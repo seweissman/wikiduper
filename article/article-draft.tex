@@ -303,11 +303,30 @@ Where \#numeric is the number of numeric terms in the cluster word set (all uniq
 
 Applying the score to our hand-classified clusters shows us that this score does separate between template and non-template word. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.)
 
-After applying the score to the entire set of wiki clusters (with a score threshold of .6), I get 122,698 template clusters and 268,433 non-template clusters. The template clusters contain 777,940 sentences (689743 unique) and the non-template 698,628 (400,458 unique). 
+N lines: 3496074
+N clusters: 1151620
+N identical clusters: 666212
+N template clusters: 55430
+N other clusters: 20745
+N other pair clusters: 407963
+N species clusters: 1270
+
+N lines: 3496074
+N clusters: 1151620
+N identical clusters: 666212
+N template clusters: 244660
+N template sentences: 1116932
+N other clusters: 20745
+N other pair clusters: 218840
+N species clusters: 1163
+^C
+
+
+After applying the score to the entire set of wiki clusters (with a score threshold of .6), there are 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932, and the non-template 
 
 \begin{figure}
 \centering
-\includegraphics[width=3.5in, keepaspectratio = true]{classifyscoreswiki.pdf}
+\includegraphics[width=3.5in, keepaspectratio = true]{classifyscoreswikinew.pdf}
 \caption{Histogram of Hand Labeled Clusters by Template Heuristic Score.}
 \label{heuristic}
 \end{figure}

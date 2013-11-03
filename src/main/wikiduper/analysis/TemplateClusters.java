@@ -170,6 +170,7 @@ public class TemplateClusters extends Configured implements Tool {
         
         int templateCt = 0;
         int templateSentencesCt = 0;
+        int nontemplateSentencesCt = 0;
         int identicalCt = 0;
         int otherCt = 0;
         int speciesCt = 0;
@@ -263,6 +264,7 @@ public class TemplateClusters extends Configured implements Tool {
                         // identical case
                         if(clustersentences.size() == 1){
                             identicalCt++;
+                            nontemplateSentencesCt += clustersentences.size();
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
@@ -278,6 +280,7 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                         }else if(isSpecies == 1){
                             speciesCt++;
+                            nontemplateSentencesCt += clustersentences.size();
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
@@ -285,6 +288,7 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                         }else if(clustersentences.size() == 2){
                             otherCt2++;
+                            nontemplateSentencesCt += clustersentences.size();
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
@@ -292,6 +296,7 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                         }else{
                             otherCt++;
+                            nontemplateSentencesCt += clustersentences.size();
                             for(String s : cluster){
                                 Text textout = new Text();
                                 textout.set(s);
@@ -380,6 +385,7 @@ public class TemplateClusters extends Configured implements Tool {
             // identical case
             if(clustersentences.size() == 1){
                 identicalCt++;
+                nontemplateSentencesCt += clustersentences.size();
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
@@ -395,6 +401,7 @@ public class TemplateClusters extends Configured implements Tool {
                 }
             }else if(isSpecies == 1){
                 speciesCt++;
+                nontemplateSentencesCt += clustersentences.size();
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
@@ -402,6 +409,7 @@ public class TemplateClusters extends Configured implements Tool {
                 }
             }else if(clustersentences.size() == 2){
                 otherCt2++;
+                nontemplateSentencesCt += clustersentences.size();
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
@@ -409,6 +417,7 @@ public class TemplateClusters extends Configured implements Tool {
                 }
             }else{
                 otherCt++;
+                nontemplateSentencesCt += clustersentences.size();
                 for(String s : cluster){
                     Text textout = new Text();
                     textout.set(s);
@@ -453,6 +462,7 @@ public class TemplateClusters extends Configured implements Tool {
         System.out.println("N identical clusters: " + identicalCt);
         System.out.println("N template clusters: " + templateCt);
         System.out.println("N template sentences: " + templateSentencesCt);
+        System.out.println("N non-template sentences: " + nontemplateSentencesCt);
         System.out.println("N other clusters: " + otherCt);
         System.out.println("N other pair clusters: " + otherCt2);
         System.out.println("N species clusters: " + speciesCt);
