@@ -78,7 +78,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
    
     private static class MyMapper extends Mapper<LongWritable, ArrayListWritable<Text>, PairOfStrings, IntWritable> {
         private static final PairOfStrings KEY = new PairOfStrings();
-        private static final IntWritable ONE = new IntWritable();
+        private static final IntWritable ONE = new IntWritable(1);
         //private static long threshold;
         @Override
         public void map(LongWritable key, ArrayListWritable<Text> doclist, Context context)
