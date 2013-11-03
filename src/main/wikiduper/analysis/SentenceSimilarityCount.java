@@ -303,7 +303,6 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         // define Mapper and Reducer
         job.setMapperClass(MyMapper.class);
-        job.setReducerClass(null);
         
         // Delete the output directory if it exists already.
         outputDir = new Path(outputPath);
