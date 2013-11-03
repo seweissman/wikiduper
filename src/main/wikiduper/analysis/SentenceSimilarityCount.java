@@ -122,8 +122,10 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             while (iter.hasNext()) {
                 sum+= iter.next().get();
             }
-            SUM.set(sum);
-            context.write(articlepair, SUM);
+            if(sum > 1){
+                SUM.set(sum);
+                context.write(articlepair, SUM);
+            }
 
         }
    }
@@ -285,7 +287,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         
         job.setJobName("SentenceSimilarityCount-3");
         job.setJarByClass(SentenceSimilarityCount.class);
-        job.setNumReduceTasks(reduceTasks);
+        job.setNumReduceTasks(1);
 
         FileInputFormat.setInputPaths(job, new Path(tmpPath2));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
