@@ -1,11 +1,8 @@
 package wikiduper.analysis;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -18,7 +15,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -27,114 +23,93 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-import org.apache.pig.parser.AliasMasker.keyvalue_return;
 
 import cern.colt.Arrays;
-import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfInts;
-import edu.umd.cloud9.io.pair.PairOfStringInt;
-import edu.umd.cloud9.util.fd.Object2IntFrequencyDistribution;
-import edu.umd.cloud9.util.fd.Object2IntFrequencyDistributionEntry;
-
+import edu.umd.cloud9.io.pair.PairOfStrings;
 
 public class SentenceSimilarityCount extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(SentenceSimilarityCount.class);
 
 
-    private static class MyMapper extends Mapper<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>, IntWritable, PairOfInts> {
-        private static final IntWritable KEY = new IntWritable();
-        private static final PairOfInts VALUE = new PairOfInts();
+    private static class ClusterReducer extends Reducer<LongWritable, PairOfStrings, LongWritable, ArrayListWritable<Text>> {
+        private static final ArrayListWritable<Text> VALUE = new ArrayListWritable<Text>();
+        private static final HashSet<String> clusterSentences = new HashSet<String>();
+        @Override
+        public void reduce(LongWritable clusterID, Iterable<PairOfStrings> docs, Context context)
+                throws IOException, InterruptedException {
+
+            // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
+            // article denoted by wikiID
+            VALUE.clear();
+            clusterSentences.clear();
+            Iterator<PairOfStrings> iter = docs.iterator();
+            PairOfStrings docsentence;
+            while (iter.hasNext()) {
+                docsentence = iter.next();
+                String doc = docsentence.getLeftElement();
+                String sentence = docsentence.getRightElement();
+                Text docout = new Text();
+                clusterSentences.add(sentence);
+                docout.set(doc);
+                VALUE.add(docout);
+
+            }
+            double score = TemplateClusters.scoreCluster(clusterSentences);
+            if(score < .6){
+                context.write(clusterID, VALUE);
+            }
+            
+        }
+    }
+   
+    private static class MyMapper extends Mapper<LongWritable, ArrayListWritable<Text>, PairOfStrings, IntWritable> {
+        private static final PairOfStrings KEY = new PairOfStrings();
+        private static final IntWritable ONE = new IntWritable();
 
         @Override
-        public void map(ArrayListOfLongsWritable key, ArrayListWritable<PairOfStringInt> sentences, Context context)
+        public void map(LongWritable key, ArrayListWritable<Text> doclist, Context context)
                 throws IOException, InterruptedException {
 
             //System.out.println(sentences.toString());
-
-            // for each sentence, emit all other sentences
-            for (PairOfStringInt sentenceID : sentences) {
-                int wikiArticleID = Integer.parseInt(sentenceID.getLeftElement());
-                //System.out.println("\tKEY: " + wikiArticleID);
-
-                KEY.set(wikiArticleID);
-                for (PairOfStringInt otherSentence : sentences) {
-                    if (otherSentence.compareTo(sentenceID) != 0) {
-                        VALUE.set(Integer.parseInt(otherSentence.getLeftElement()), otherSentence.getRightElement());
-
-                        //System.out.println("\t\tVALUE: " + VALUE.toString());
-                        context.write(KEY,  VALUE);
+            Text doc1;
+            Text doc2;
+            for (int i=0;i<doclist.size();i++){
+                doc1 = doclist.get(i);
+                for(int j=i+1;j<doclist.size();j++){
+                    doc2 = doclist.get(j);
+                    if (doc1.compareTo(doc2) != 0) {
+                        KEY.set(doc1.toString(),doc2.toString());
+                        context.write(KEY,  ONE);
                     }
                 }
             }
         }
     }
 
+    private static class MyReducer extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+        private static final IntWritable SUM = new IntWritable();
 
-    private static class MyReducer extends Reducer<IntWritable, PairOfInts, PairOfInts, IntWritable> {
-        private static final PairOfInts KEY = new PairOfInts();
-        private static final IntWritable VALUE = new IntWritable();
-
-        private static final Object2IntFrequencyDistribution<Integer> COUNTS = new Object2IntFrequencyDistributionEntry<Integer>();
-        public static final Map<PairOfInts, Integer> collection = new HashMap<PairOfInts, Integer>();
-        private static int threshold;
         
         @Override
-        public void setup(Context context) throws IOException {
-            Configuration conf = context.getConfiguration();
-            
-            threshold = conf.getInt("THRESHOLD", 30);
-        }
-        
-        @Override
-        public void reduce(IntWritable wikiID, Iterable<PairOfInts> values, Context context)
+        public void reduce(PairOfStrings articlepair, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
 
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
-            Iterator<PairOfInts> iter = values.iterator();
-
+            Iterator<IntWritable> iter = values.iterator();
+            int sum = 0;
             while (iter.hasNext()) {
-                PairOfInts sentID = iter.next();
-                // make sure we don't count the same exact sentence twice!
-                if (!collection.containsKey(sentID) && sentID.getLeftElement() != wikiID.get()) {
-                    collection.put(sentID,  1);
-
-                    // count the number of sentences from a particular article that have been hashed to the same value
-                    // as a sentence in the wiki article with id = wikiID
-                    if (COUNTS.contains(sentID.getLeftElement())) {
-                        COUNTS.increment(sentID.getLeftElement());
-                    }
-                    else {
-                        COUNTS.set(sentID.getLeftElement(), 1);
-                    }
-
-                }
+                sum++;
             }
+            SUM.set(sum);
+            context.write(articlepair, SUM);
 
-            //System.out.println("Wiki Article: " + wikiID.get());
-            for (Integer otherWikiArticle: COUNTS.keySet()) {
-
-                // only output if the article pair has more than a threshold number of "similar" sentences in common
-                if (COUNTS.get(otherWikiArticle) > threshold) {
-                    KEY.set(wikiID.get(), otherWikiArticle);
-                    VALUE.set(COUNTS.get(otherWikiArticle));
-
-                    //System.out.println("\t" + otherWikiArticle + " " + VALUE.get());
-
-                    context.write(KEY, VALUE);
-                }
-            }
-
-            collection.clear();
-            COUNTS.clear();
         }
    }
 
@@ -195,8 +170,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
+        String tmpPath = "tmppath";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 6;
-        int threshold = cmdline.hasOption(THRESHOLD) ? Integer.parseInt(cmdline.getOptionValue(THRESHOLD)) : 40;
         
 
         LOG.info("Tool: " + SentenceSimilarityCount.class.getSimpleName());
@@ -211,9 +186,41 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
-        job.getConfiguration().setInt("THRESHOLD", threshold);
+        conf.set("mapred.job.map.memory.mb", "6144");
+        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
+        conf.set("mapred.job.reduce.memory.mb", "6144");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+
         
+        //Job 1
         FileInputFormat.setInputPaths(job, new Path(inputPath));
+        FileOutputFormat.setOutputPath(job, new Path(tmpPath));
+
+        // set input/output format of the job
+        job.setInputFormatClass(SequenceFileInputFormat.class);
+        job.setOutputFormatClass(SequenceFileOutputFormat.class);
+        //job.setOutputFormatClass(TextOutputFormat.class);
+
+        // set output key/value data types
+        job.setMapOutputKeyClass(LongWritable.class);
+        job.setMapOutputValueClass(PairOfStrings.class);
+        job.setOutputKeyClass(LongWritable.class);
+        job.setOutputValueClass(ArrayListWritable.class);
+
+        // define Mapper and Reducer
+        job.setReducerClass(ClusterReducer.class);
+        
+        
+        // Delete the output directory if it exists already.
+        Path outputDir = new Path(tmpPath);
+        FileSystem.get(conf).delete(outputDir, true);
+
+        long startTime = System.currentTimeMillis();
+        job.waitForCompletion(true);
+        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        
+        // Job 2 
+        FileOutputFormat.setOutputPath(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
         // set input/output format of the job
@@ -222,25 +229,21 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         //job.setOutputFormatClass(TextOutputFormat.class);
 
         // set output key/value data types
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(PairOfInts.class);
-        job.setOutputKeyClass(PairOfInts.class);
+        job.setMapOutputKeyClass(PairOfStrings.class);
+        job.setMapOutputValueClass(IntWritable.class);
+        job.setOutputKeyClass(PairOfStrings.class);
         job.setOutputValueClass(IntWritable.class);
 
         // define Mapper and Reducer
         job.setMapperClass(MyMapper.class);
         job.setReducerClass(MyReducer.class);
         
-        conf.set("mapred.job.map.memory.mb", "6144");
-        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
-        conf.set("mapred.job.reduce.memory.mb", "6144");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         
         // Delete the output directory if it exists already.
-        Path outputDir = new Path(outputPath);
+        outputDir = new Path(outputPath);
         FileSystem.get(conf).delete(outputDir, true);
 
-        long startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
         job.waitForCompletion(true);
         LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         

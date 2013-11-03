@@ -354,18 +354,6 @@ Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see t
 \end{tabular}
 \end{table}
 
-\section{Limitations of Our Approach}
-
-In addition to the aforementioned hash issue there are other limitations in our implementation and improvements that could be made.
-
-\emph{Data cleanliness} - The Cloud9 utilities that process Wikipedia code do some preprocessing of non-text elements from Wikipedia pages. However there is still improvements that could be made. Section headings can confuse our regular expression mapping, causing pieces of extraneous text to be appended to sentences. Parsing page text with a better understanding of how Wikipedia articles are structured could improve our input data. Additionally, keeping track of the order in which sentences occur on a page could improve analysis. For example, references and external links are typically found at the bottom of a Wikipeda page. More carefully filtering text based on sentence depth could improve results.
-
-\emph{Sentence matching} - Since Wikipedia data is not chunked by sentence, we rely on regular expression matching to break up input text into sentences. Since sentences have recursive structure, our regular expression can lead to stack overflow exceptions from the underlying recursive pattern match search. Setting bounds on the sentence structure nesting could provide more reliable results. The encyclopedic style of Wikipedia may lend itself to simpler sentence structures that don't require a general purpose sentence matching algorithm.
-
-\emph{Large clusters} - Since we rely on a connected component analysis to compute the final sentence clusters, our large clusters can be a bottleneck. Unfortunately, the Wikipedia data does contain large clusters of similar sentences (see the discussion of templatification below). Since our initial experimental results suggest that more interesting clusters (for example, sentence clusters representing copied data with factual errors) are much smaller (on the order of 2 or 3 sentences per cluster), we set a limit on maximum bucket size and only consider the first $n$ sentences in any bucket up to that limit. Setting a limit on cluster size helps ensure more predictable runtime and discards large portions of relatively uninteresting clusters, making output data more manageable.
-
-\emph{Non-determinism} - Our current implementation of Minhash suffers from a yet unidentified source of non-determinism. This affects the number of output records produced from the Minhashing stage of our implementation from one run to the next and has unknown effects on output quality. 
-
 \section{Conclusion and Future Work}
 This paper presents our work on near-duplicate detection of Wikipedia articles at the sentence-granularity level using MinHash, a LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece is handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at the sentence level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.
 
