@@ -72,7 +72,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static class MyMapper extends Mapper<LongWritable, ArrayListWritable<Text>, PairOfStrings, IntWritable> {
         private static final PairOfStrings KEY = new PairOfStrings();
         private static final IntWritable ONE = new IntWritable();
-        private static long threshold;
+        //private static long threshold;
         @Override
         public void map(LongWritable key, ArrayListWritable<Text> doclist, Context context)
                 throws IOException, InterruptedException {
@@ -80,8 +80,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             //System.out.println(sentences.toString());
             Text doc1;
             Text doc2;
-            if(doclist.size() > threshold)
-                return;
+            //if(doclist.size() > threshold)
+              //  return;
             for (int i=0;i<doclist.size();i++){
                 doc1 = doclist.get(i);
                 for(int j=i+1;j<doclist.size();j++){
@@ -94,10 +94,10 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             }
         }
         
-        public void configure(JobConf job){
-            threshold = job.getLong("threshold",1000);            
+        //public void configure(JobConf job){
+          //  threshold = job.getLong("threshold",1000);            
             
-        }
+        //}
     }
 
     private static class MyReducer extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
@@ -113,7 +113,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             Iterator<IntWritable> iter = values.iterator();
             int sum = 0;
             while (iter.hasNext()) {
-                sum++;
+                sum+= iter.next().get();
             }
             SUM.set(sum);
             context.write(articlepair, SUM);
@@ -132,7 +132,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
-    private static final String THRESHOLD = "threshold";
+    //private static final String THRESHOLD = "threshold";
 
     /**
      * Runs this tool.
@@ -151,8 +151,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
         
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("threshold value").create(THRESHOLD));
+        //options.addOption(OptionBuilder.withArgName("num").hasArg()
+          //      .withDescription("threshold value").create(THRESHOLD));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -178,7 +178,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        long threshold = Long.valueOf(cmdline.getOptionValue(THRESHOLD));
+        //long threshold = Long.valueOf(cmdline.getOptionValue(THRESHOLD));
         String tmpPath = "tmppath";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 20;
         
@@ -195,7 +195,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
-        conf.setLong("threshold", threshold);
+        //conf.setLong("threshold", threshold);
         conf.set("mapred.job.map.memory.mb", "6144");
         conf.set("mapred.map.child.java.opts", "-Xmx6144m");
         conf.set("mapred.job.reduce.memory.mb", "6144");
@@ -253,7 +253,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         // define Mapper and Reducer
         job.setMapperClass(MyMapper.class);
         job.setReducerClass(MyReducer.class);
-        
+        job.setCombinerClass(MyReducer.class);
         
         // Delete the output directory if it exists already.
         outputDir = new Path(outputPath);
