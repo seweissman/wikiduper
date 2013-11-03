@@ -221,11 +221,12 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         
         // Job 2 
         job = Job.getInstance(conf);
+        
         job.setJobName("SentenceSimilarityCount");
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
 
-        FileOutputFormat.setOutputPath(job, new Path(inputPath));
+        FileInputFormat.setInputPaths(job, new Path(tmpPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
         // set input/output format of the job
