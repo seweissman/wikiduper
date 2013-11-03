@@ -98,7 +98,6 @@ public class MergeClusters extends Configured implements Tool {
         return 0;
     }
 
-    // Reads in pairs from MinhahsWikipediaPages output and performs connected component analysis
     // Creates a global cluster numbering and a map from doc numbers to sentences and their cluster numbers
     // Writes the docmap to docmapFile
     //static final Pattern sentencepattern = Pattern.compile(".*\\[(.+), (.+), (.+)\\].*");
