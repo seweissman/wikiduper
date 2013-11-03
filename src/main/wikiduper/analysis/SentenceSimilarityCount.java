@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -71,7 +72,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static class MyMapper extends Mapper<LongWritable, ArrayListWritable<Text>, PairOfStrings, IntWritable> {
         private static final PairOfStrings KEY = new PairOfStrings();
         private static final IntWritable ONE = new IntWritable();
-
+        private static long threshold;
         @Override
         public void map(LongWritable key, ArrayListWritable<Text> doclist, Context context)
                 throws IOException, InterruptedException {
@@ -79,6 +80,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             //System.out.println(sentences.toString());
             Text doc1;
             Text doc2;
+            if(doclist.size() > threshold)
+                return;
             for (int i=0;i<doclist.size();i++){
                 doc1 = doclist.get(i);
                 for(int j=i+1;j<doclist.size();j++){
@@ -89,6 +92,11 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                     }
                 }
             }
+        }
+        
+        public void configure(JobConf job){
+            threshold = job.getLong("threshold",1000);            
+            
         }
     }
 
@@ -170,6 +178,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
+        long threshold = Long.valueOf(cmdline.getOptionValue(THRESHOLD));
         String tmpPath = "tmppath";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 20;
         
@@ -186,6 +195,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
+        conf.setLong("threshold", threshold);
         conf.set("mapred.job.map.memory.mb", "6144");
         conf.set("mapred.map.child.java.opts", "-Xmx6144m");
         conf.set("mapred.job.reduce.memory.mb", "6144");
