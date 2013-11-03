@@ -220,6 +220,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         
         // Job 2 
+        job = Job.getInstance(conf);
         FileOutputFormat.setOutputPath(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
