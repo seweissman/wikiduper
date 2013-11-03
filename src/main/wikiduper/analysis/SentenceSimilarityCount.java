@@ -128,7 +128,16 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         }
    }
 
+    private static class FlipMapper extends Mapper<PairOfStrings, IntWritable, IntWritable, PairOfStrings> {
+        @Override
+        public void map(PairOfStrings docpair, IntWritable sum, Context context)
+                throws IOException, InterruptedException {
 
+            context.write(sum,  docpair);
+
+        }
+        
+    }
 
 
     /**
@@ -187,6 +196,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         String outputPath = cmdline.getOptionValue(OUTPUT);
         //long threshold = Long.valueOf(cmdline.getOptionValue(THRESHOLD));
         String tmpPath = "tmppath";
+        String tmpPath2 = "tmppath2";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 20;
         
 
@@ -239,12 +249,12 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         // Job 2 
         job = Job.getInstance(conf);
         
-        job.setJobName("SentenceSimilarityCount");
+        job.setJobName("SentenceSimilarityCount-2");
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
 
         FileInputFormat.setInputPaths(job, new Path(tmpPath));
-        FileOutputFormat.setOutputPath(job, new Path(outputPath));
+        FileOutputFormat.setOutputPath(job, new Path(tmpPath2));
 
         // set input/output format of the job
         job.setInputFormatClass(SequenceFileInputFormat.class);
@@ -263,13 +273,45 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setCombinerClass(MyReducer.class);
         
         // Delete the output directory if it exists already.
-        outputDir = new Path(outputPath);
+        outputDir = new Path(tmpPath2);
         FileSystem.get(conf).delete(outputDir, true);
 
         startTime = System.currentTimeMillis();
         job.waitForCompletion(true);
         LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         
+        // Job 3
+        job = Job.getInstance(conf);
+        
+        job.setJobName("SentenceSimilarityCount-3");
+        job.setJarByClass(SentenceSimilarityCount.class);
+        job.setNumReduceTasks(reduceTasks);
+
+        FileInputFormat.setInputPaths(job, new Path(tmpPath2));
+        FileOutputFormat.setOutputPath(job, new Path(outputPath));
+
+        // set input/output format of the job
+        job.setInputFormatClass(SequenceFileInputFormat.class);
+        job.setOutputFormatClass(SequenceFileOutputFormat.class);
+        //job.setOutputFormatClass(TextOutputFormat.class);
+
+        // set output key/value data types
+        job.setMapOutputKeyClass(PairOfStrings.class);
+        job.setMapOutputValueClass(IntWritable.class);
+        job.setOutputKeyClass(IntWritable.class);
+        job.setOutputValueClass(PairOfStrings.class);
+
+        // define Mapper and Reducer
+        job.setMapperClass(MyMapper.class);
+        job.setReducerClass(null);
+        
+        // Delete the output directory if it exists already.
+        outputDir = new Path(outputPath);
+        FileSystem.get(conf).delete(outputDir, true);
+
+        startTime = System.currentTimeMillis();
+        job.waitForCompletion(true);
+        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         
         return 0;
     }
