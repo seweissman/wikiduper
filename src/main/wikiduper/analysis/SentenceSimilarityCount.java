@@ -41,6 +41,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static class ClusterReducer extends Reducer<LongWritable, PairOfStrings, LongWritable, ArrayListWritable<Text>> {
         private static final ArrayListWritable<Text> VALUE = new ArrayListWritable<Text>();
         private static final HashSet<String> clusterSentences = new HashSet<String>();
+        private static final HashSet<String> clusterDocs = new HashSet<String>();
         @Override
         public void reduce(LongWritable clusterID, Iterable<PairOfStrings> docs, Context context)
                 throws IOException, InterruptedException {
@@ -49,22 +50,28 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             // article denoted by wikiID
             VALUE.clear();
             clusterSentences.clear();
+            clusterDocs.clear();
             Iterator<PairOfStrings> iter = docs.iterator();
             PairOfStrings docsentence;
             while (iter.hasNext()) {
                 docsentence = iter.next();
                 String doc = docsentence.getLeftElement();
                 String sentence = docsentence.getRightElement();
-                Text docout = new Text();
                 clusterSentences.add(sentence);
-                docout.set(doc);
-                VALUE.add(docout);
-
+                clusterDocs.add(doc);
             }
             double score = TemplateClusters.scoreCluster(clusterSentences);
             if(score < .6){
+                for(String doc : clusterDocs){
+                    Text docout = new Text();
+                    docout.set(doc);
+                    VALUE.add(docout);
+                }
                 context.write(clusterID, VALUE);
             }
+
+
+
             
         }
     }
@@ -80,8 +87,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             //System.out.println(sentences.toString());
             Text doc1;
             Text doc2;
-            //if(doclist.size() > threshold)
-              //  return;
+            if(doclist.size() > 10000)
+                return;
             for (int i=0;i<doclist.size();i++){
                 doc1 = doclist.get(i);
                 for(int j=i+1;j<doclist.size();j++){
