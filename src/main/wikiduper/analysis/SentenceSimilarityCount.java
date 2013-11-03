@@ -296,8 +296,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         //job.setOutputFormatClass(TextOutputFormat.class);
 
         // set output key/value data types
-        job.setMapOutputKeyClass(PairOfStrings.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputKeyClass(IntWritable.class);
+        job.setMapOutputValueClass(PairOfStrings.class);
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(PairOfStrings.class);
 
