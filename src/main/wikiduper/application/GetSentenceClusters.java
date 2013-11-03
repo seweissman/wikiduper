@@ -59,6 +59,7 @@ import wikiduper.wikipedia.WikipediaPage;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfLongString;
 import edu.umd.cloud9.io.pair.PairOfLongs;
+import edu.umd.cloud9.io.pair.PairOfStrings;
 
 public class GetSentenceClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(GetSentenceClusters.class);
@@ -74,7 +75,7 @@ public class GetSentenceClusters extends Configured implements Tool {
      *
      */
     private static class ClusterMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, LongWritable, Text> {
+    Mapper<IntWritable, WikipediaPage, LongWritable, PairOfStrings> {
     //Mapper<LongWritable, WikipediaPage, IntWritable, Text> {
         
         // Map from docid -> sentence number -> cluster number
@@ -82,7 +83,7 @@ public class GetSentenceClusters extends Configured implements Tool {
         
         // The document-sentence identifier
         static final LongWritable CLUSTER = new LongWritable();
-        static final Text TITLESENTENCE = new Text();
+        static final PairOfStrings TITLESENTENCE = new PairOfStrings();
         
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         static final Pattern sentenceregex = Pattern.compile(
@@ -102,7 +103,7 @@ public class GetSentenceClusters extends Configured implements Tool {
 
         public static WikiClean cleaner;
 
-        public void map(IntWritable key, WikipediaPage p, OutputCollector<LongWritable, Text> output,
+        public void map(IntWritable key, WikipediaPage p, OutputCollector<LongWritable, PairOfStrings> output,
                 Reporter reporter) throws IOException {
           //public void map(LongWritable key, WikipediaPage p, OutputCollector<IntWritable, Text> output,
             //        Reporter reporter) throws IOException {
@@ -135,7 +136,7 @@ public class GetSentenceClusters extends Configured implements Tool {
                 String sentence = m.group(1);
                 if(sentMap.containsKey(sentencect)){
                     long clust = sentMap.get(sentencect);
-                    TITLESENTENCE.set(p.getTitle() + "\t" + sentence);
+                    TITLESENTENCE.set(p.getTitle(),sentence);
                     CLUSTER.set(clust);
                     output.collect(CLUSTER,TITLESENTENCE);
                 }
@@ -344,11 +345,8 @@ public class GetSentenceClusters extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         
         conf.setOutputKeyClass(LongWritable.class);
-        conf.setOutputValueClass(Text.class);
+        conf.setOutputValueClass(PairOfStrings.class);
 
-        //conf.setMapOutputKeyClass(IntWritable.class);
-        //conf.setMapOutputValueClass(PairOfStringInt.class);
-        
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
         FileSystem.get(conf).delete(outputDir, true);

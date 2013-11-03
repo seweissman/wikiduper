@@ -31,6 +31,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import edu.umd.cloud9.io.pair.PairOfStrings;
+
 
 import wikiduper.application.MergeClusters;
 
@@ -125,7 +127,7 @@ public class HistogramClusters extends Configured implements Tool {
         long clustcurr = -1;
         int maxclustersize = 0;
         //Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
-        Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
+        //Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
 
         try {
         FileSystem fs = FileSystem.get(conf);
@@ -139,52 +141,51 @@ public class HistogramClusters extends Configured implements Tool {
             SequenceFile.Reader reader;
             reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
             LongWritable clusterid = new LongWritable();
-            Text articlesentence = new Text();
+            PairOfStrings articlesentence = new PairOfStrings();
             while(reader.next(clusterid, articlesentence)){
                 String linetext = articlesentence.toString().replace("\n", " ");
-                Matcher m = linepat.matcher(linetext);
+                //Matcher m = linepat.matcher(linetext);
                 String title = "";
                 String sentence = "";
-                if(m.matches()){
-                    title = m.group(1);
-                    sentence = m.group(2);
+                title = articlesentence.getLeftElement();
+                sentence = articlesentence.getRightElement();
 
-                    if(clustcurr == -1){
-                        clustcurr = clusterid.get();  
-                    }
+                if(clustcurr == -1){
+                    clustcurr = clusterid.get();  
+                }
                 
-                    if(!(clustcurr == clusterid.get())){
-                        if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
+                if(!(clustcurr == clusterid.get())){
+                    if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
 
-                        // Once we've found a new cluster Update each histogram
-                        int size = cluster.size();
-                        if(size > maxclustersize){
-                            maxclustersize = size;
-                        }
-                        if(size > thresh){
-                            bigclusterlinect+=size;
-                        }else{
-                            smallclusterlinect+=size;
-                        }
+                    // Once we've found a new cluster Update each histogram
+                    int size = cluster.size();
+                    if(size > maxclustersize){
+                        maxclustersize = size;
+                    }
+                    if(size > thresh){
+                        bigclusterlinect+=size;
+                    }else{
+                        smallclusterlinect+=size;
+                    }
                         
-                        if(!histogram.containsKey(size)){
-                            histogram.put(size, 0);    
-                        }
-                        histogram.put(size, histogram.get(size) + 1);
+                    if(!histogram.containsKey(size)){
+                        histogram.put(size, 0);    
+                    }
+                    histogram.put(size, histogram.get(size) + 1);
                         
-                        size = clustertitles.size();
-                        if(!titlehistogram.containsKey(size)){
-                            titlehistogram.put(size, 0);    
-                        }
-                        titlehistogram.put(size, titlehistogram.get(size) + 1);
+                    size = clustertitles.size();
+                    if(!titlehistogram.containsKey(size)){
+                        titlehistogram.put(size, 0);    
+                    }
+                    titlehistogram.put(size, titlehistogram.get(size) + 1);
                         
-                        size = clustersentences.size();
-                        if(!sentencehistogram.containsKey(size)){
-                            sentencehistogram.put(size, 0);    
-                        }
-                        sentencehistogram.put(size, sentencehistogram.get(size) + 1);
+                    size = clustersentences.size();
+                    if(!sentencehistogram.containsKey(size)){
+                        sentencehistogram.put(size, 0);    
+                    }
+                    sentencehistogram.put(size, sentencehistogram.get(size) + 1);
                         
-                        /*
+                    /*
                          // Code for examining cluster contents
                         if(cluster.size() > 10000){
                             int ct = 0;
@@ -201,41 +202,25 @@ public class HistogramClusters extends Configured implements Tool {
                         }
                         */
                         
-                        // Clear per cluster data structures
+                    // Clear per cluster data structures
                         
-                        cluster.clear();
-                        clustersentences.clear();
-                        clustertitles.clear();
-                        clusterct++;
-                    }
+                    cluster.clear();
+                    clustersentences.clear();
+                    clustertitles.clear();
+                    clusterct++;
+                }
                     
-                    clustcurr = clusterid.get();
-                    cluster.add(articlesentence.toString());
-                    clustersentences.add(sentence);
-                    clustertitles.add(title);
+                clustcurr = clusterid.get();
+                cluster.add(articlesentence.toString());
+                clustersentences.add(sentence);
+                clustertitles.add(title);
                     
-                    //titleset.add(title);
-                    sentenceset.add(sentence);
-                }else{
-                    //System.err.println("Bad line " + linect + " : " + articlesentence.toString());
-                    System.err.println("Bad line " + linect + " : " + linetext);
-                    System.out.println("Bad line " + linect + " : " + linetext);
-                    Pattern linepat2 = Pattern.compile(".*([^\t]+).*");
-                    Matcher m2 = linepat2.matcher(linetext);
-                    if(m2.matches()){
-                        System.out.println("Matches linepat2");
-                        System.out.println("Group count " + m2.groupCount());
-                        System.out.println(m2.group(1));
-                    }else{
-                        System.out.println("No match");
-                    }
-                    System.exit(-1);
-               }
-
-                
+                //titleset.add(title);
+                sentenceset.add(sentence);
+               
                 linect++;
                 clusterid = new LongWritable();
-                articlesentence = new Text();
+                articlesentence = new PairOfStrings();
 
             }
             reader.close();

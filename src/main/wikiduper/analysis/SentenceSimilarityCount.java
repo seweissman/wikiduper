@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,6 +37,9 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 import org.apache.pig.parser.AliasMasker.keyvalue_return;
 
+import wikiduper.utils.DocSentence;
+import wikiduper.utils.Signature;
+
 import cern.colt.Arrays;
 import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
@@ -48,13 +52,13 @@ import edu.umd.cloud9.util.fd.Object2IntFrequencyDistributionEntry;
 public class SentenceSimilarityCount extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(SentenceSimilarityCount.class);
 
-
-    private static class MyMapper extends Mapper<ArrayListOfLongsWritable, ArrayListWritable<PairOfStringInt>, IntWritable, PairOfInts> {
+    Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
+    private static class MyMapper extends Mapper<Signature, DocSentence, IntWritable, PairOfInts> {
         private static final IntWritable KEY = new IntWritable();
         private static final PairOfInts VALUE = new PairOfInts();
 
         @Override
-        public void map(ArrayListOfLongsWritable key, ArrayListWritable<PairOfStringInt> sentences, Context context)
+        public void map(Signature key, DocSentence docsentence, Context context)
                 throws IOException, InterruptedException {
 
             //System.out.println(sentences.toString());

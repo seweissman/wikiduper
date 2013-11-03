@@ -36,6 +36,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
+import edu.umd.cloud9.io.pair.PairOfStrings;
 
 
 import wikiduper.application.MergeClusters;
@@ -167,7 +168,7 @@ public class TemplateClusters extends Configured implements Tool {
         long clustcurr = -1;
         int maxclustersize = 0;
         //Pattern linepat = Pattern.compile("^([^\t]+)\t(.*)$");
-        Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
+        //Pattern linepat = Pattern.compile("^([^\t]+)\t((?>\\P{M}\\p{M}*)+)$");
         
         int templateCt = 0;
         int templateSentencesCt = 0;
@@ -210,106 +211,99 @@ public class TemplateClusters extends Configured implements Tool {
                 FSDataInputStream in = fs.open(filestatus.getPath());
                 SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
                 clusterid = new LongWritable();
-                Text articlesentence = new Text();
+                PairOfStrings articlesentence = new PairOfStrings();
             
             while(reader.next(clusterid, articlesentence)){
                 String linetext = articlesentence.toString()
                         .replace("\n", " ")
                         .replaceAll(" ?\\[?http\\S+", "");
-                Matcher m = linepat.matcher(linetext);
                 String title = "";
                 String sentence = "";
-                if(m.matches()){
-                    title = m.group(1);
-                    sentence = m.group(2);
+                title = articlesentence.getLeftElement();
+                sentence = articlesentence.getRightElement();
 
-                    if(clustcurr == -1){
-                        clustcurr = clusterid.get();  
-                    }
-                    //if(clusterct > 197000){
-                      //  System.out.println("articlesentence " + articlesentence.toString());
-                        //System.out.println("sentence = " + title + " " + sentence);
-                    //}
+                if(clustcurr == -1){
+                    clustcurr = clusterid.get();  
+                }
                     
-                    if(!(clustcurr == clusterid.get())){
-                        if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
-                        // Once we've found a new cluster Update each histogram
-                        int size = cluster.size();
-                        if(size > maxclustersize){
-                            maxclustersize = size;
-                        }
+                if(!(clustcurr == clusterid.get())){
+                    if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
+                    // Once we've found a new cluster Update each histogram
+                    int size = cluster.size();
+                    if(size > maxclustersize){
+                        maxclustersize = size;
+                    }
 
-                        //getClusterWordCounts(clustersentences,clusterwordct);
-                        ArrayList<HashSet<String>> sentencewordmap = new ArrayList<HashSet<String>>();
-                        getClusterWordCounts(clustertitlesentences,clusterwordct, sentencewordmap);
-                        int category = -1;
-                        int isTemplate = -1;
-                        int isSpecies = 0;
-                        if(speciesList(clustersentences)){
-                            isSpecies = 1;
-                        }
-                        if(clustercategorymap.containsKey(clustcurr)){
-                            category = clustercategorymap.get(clustcurr);
-                            if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
-                                isTemplate = 1;
-                            }else{
-                                isTemplate = 0;
-                            }
-                        }
-                        LongWritable clusterIdOut = new LongWritable();
-                        clusterIdOut.set(clustcurr);
-                        double score = scoreClusterWords(clusterwordct, sentencewordmap, 
-                                clustersentences.size(), clustertitlesentences.size(), clustcurr, 
-                                scoresWriter,isTemplate, isSpecies);
-                        
-                        // identical case
-                        if(clustersentences.size() == 1){
-                            identicalCt++;
-                            nontemplateSentencesCt += clustersentences.size();
-                            for(String s : cluster){
-                                Text textout = new Text();
-                                textout.set(s);
-                                identicalWriter.append(clusterIdOut, textout);
-                            }
-                        }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
-                            templateCt++;
-                            templateSentencesCt += clustersentences.size();
-                            for(String s : cluster){
-                                Text textout = new Text();
-                                textout.set(s);
-                                templateWriter.append(clusterIdOut, textout);
-                            }
-                        }else if(isSpecies == 1){
-                            speciesCt++;
-                            nontemplateSentencesCt += clustersentences.size();
-                            for(String s : cluster){
-                                Text textout = new Text();
-                                textout.set(s);
-                                speciesWriter.append(clusterIdOut, textout);
-                            }
-                        }else if(clustersentences.size() == 2){
-                            otherCt2++;
-                            nontemplateSentencesCt += clustersentences.size();
-                            for(String s : cluster){
-                                Text textout = new Text();
-                                textout.set(s);
-                                otherWriter2.append(clusterIdOut, textout);
-                            }
+                    //getClusterWordCounts(clustersentences,clusterwordct);
+                    ArrayList<HashSet<String>> sentencewordmap = new ArrayList<HashSet<String>>();
+                    getClusterWordCounts(clustertitlesentences,clusterwordct, sentencewordmap);
+                    int category = -1;
+                    int isTemplate = -1;
+                    int isSpecies = 0;
+                    if(speciesList(clustersentences)){
+                        isSpecies = 1;
+                    }
+                    if(clustercategorymap.containsKey(clustcurr)){
+                        category = clustercategorymap.get(clustcurr);
+                        if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
+                            isTemplate = 1;
                         }else{
-                            otherCt++;
-                            nontemplateSentencesCt += clustersentences.size();
-                            for(String s : cluster){
-                                Text textout = new Text();
-                                textout.set(s);
-                                otherWriter.append(clusterIdOut, textout);
-                            }
+                            isTemplate = 0;
                         }
-
-                        if(DEBUG){
-                            System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
-                            System.out.println("score: " + score);
-                            /*
-                            System.out.println("CLUSTER TYPE TEMPLTE = " + ClassifyClusters.ClusterTypes.TEMPLATE.ordinal());
+                    }
+                    LongWritable clusterIdOut = new LongWritable();
+                    clusterIdOut.set(clustcurr);
+                    double score = scoreClusterWords(clusterwordct, sentencewordmap, 
+                            clustersentences.size(), clustertitlesentences.size(), clustcurr, 
+                            scoresWriter,isTemplate, isSpecies);
+                        
+                    // identical case
+                    if(clustersentences.size() == 1){
+                        identicalCt++;
+                        nontemplateSentencesCt += clustersentences.size();
+                        for(String s : cluster){
+                            Text textout = new Text();
+                            textout.set(s);
+                            identicalWriter.append(clusterIdOut, textout);
+                        }
+                    }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
+                        templateCt++;
+                        templateSentencesCt += clustersentences.size();
+                        for(String s : cluster){
+                            Text textout = new Text();
+                            textout.set(s);
+                            templateWriter.append(clusterIdOut, textout);
+                        }
+                    }else if(isSpecies == 1){
+                        speciesCt++;
+                        nontemplateSentencesCt += clustersentences.size();
+                        for(String s : cluster){
+                            Text textout = new Text();
+                            textout.set(s);
+                            speciesWriter.append(clusterIdOut, textout);
+                        }
+                    }else if(clustersentences.size() == 2){
+                        otherCt2++;
+                        nontemplateSentencesCt += clustersentences.size();
+                        for(String s : cluster){
+                            Text textout = new Text();
+                            textout.set(s);
+                            otherWriter2.append(clusterIdOut, textout);
+                        }
+                    }else{
+                        otherCt++;
+                        nontemplateSentencesCt += clustersentences.size();
+                        for(String s : cluster){
+                            Text textout = new Text();
+                            textout.set(s);
+                            otherWriter.append(clusterIdOut, textout);
+                        }
+                    }
+                    if(DEBUG){
+                       System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
+                       System.out.println("score: " + score);
+                        /*
+                         System.out.println("CLUSTER TYPE TEMPLTE = " + ClassifyClusters.ClusterTypes.TEMPLATE.ordinal());
                             if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
                                 System.out.println("Cluster type template: " + category + " " + clist[category]);
                             }else{
@@ -317,38 +311,33 @@ public class TemplateClusters extends Configured implements Tool {
                             }
                             */
 
-                            int i=0;
-                            int samplect = 10;
-                            for(String s : clustertitlesentences){
-                                if(i > samplect) break;
-                                System.out.println("sentence = " + s);
-                                i++;
-                            }
-                            System.out.println("\n\n");
+                        int i=0;
+                        int samplect = 10;
+                        for(String s : clustertitlesentences){
+                            if(i > samplect) break;
+                            System.out.println("sentence = " + s);
+                            i++;
                         }
+                        System.out.println("\n\n");
+                    }
 
                             // Clear per cluster data structures
-                        cluster.clear();
-                        clustersentences.clear();
-                        clustertitlesentences.clear();
-                        clustertitles.clear();
-                        clusterwordct.clear();
-                        clusterct++;
-                    }
+                    cluster.clear();
+                    clustersentences.clear();
+                    clustertitlesentences.clear();
+                    clustertitles.clear();
+                    clusterwordct.clear();
+                    clusterct++;
+                }
                     
-                    clustcurr = clusterid.get();
-                    cluster.add(articlesentence.toString());
-                    clustersentences.add(sentence);
-                    clustertitlesentences.add(title + " " + sentence);
-                    clustertitles.add(title);
+                clustcurr = clusterid.get();
+                cluster.add(articlesentence.toString());
+                clustersentences.add(sentence);
+                clustertitlesentences.add(title + " " + sentence);
+                clustertitles.add(title);
                     
-                    //titleset.add(title);
-                    //sentenceset.add(sentence);
-                }else{
-                    System.err.println("Bad line " + linect + " : " + articlesentence.toString());
-                    System.exit(-1);
-               }
-
+                //titleset.add(title);
+                //sentenceset.add(sentence);
                 
                 linect++;
                 clusterid = new LongWritable();
