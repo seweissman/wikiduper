@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -516,7 +517,7 @@ public class TemplateClusters extends Configured implements Tool {
         return true;
     }
 
-    private void getClusterWordCounts(TreeSet<String> clustersentences,
+    private static void getClusterWordCounts(Set<String> clustersentences,
             HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap) {
         
         Iterator<String> clusterit = clustersentences.iterator();
@@ -543,10 +544,20 @@ public class TemplateClusters extends Configured implements Tool {
             sentencewordmap.add(sentencewordset);
         }
         
+        
     }
 
+    public static double scoreCluster(Set<String> clustersentences){
+        double score = 0;
+        HashMap<String,Integer> clusterwordct = new HashMap<String,Integer>();
+        ArrayList<HashSet<String>> sentencewordmap = new ArrayList<HashSet<String>>();
+        getClusterWordCounts(clustersentences, clusterwordct, sentencewordmap);
+        score = scoreClusterWords(clusterwordct,sentencewordmap,clustersentences.size());
+        return score;
+    }
+    
     // Some Java 6 -> 7 incompatibility issues here
-    Pattern propernoun = Pattern.compile("\\p{Lu}(\\w|\\p{Lu}|-|—)+('s)?"); //, Pattern.UNICODE_CHARACTER_CLASS);
+    static Pattern propernoun = Pattern.compile("\\p{Lu}(\\w|\\p{Lu}|-|—)+('s)?"); //, Pattern.UNICODE_CHARACTER_CLASS);
     private double scoreClusterWordsAlt(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
             int clusterid, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
         // TODO Auto-generated method stub
@@ -630,7 +641,7 @@ public class TemplateClusters extends Configured implements Tool {
     }
 
     
-    private double scoreClusterWords(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
+    private static double scoreClusterWords(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
             long clustcurr, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
         // TODO Auto-generated method stub
         
@@ -691,6 +702,51 @@ public class TemplateClusters extends Configured implements Tool {
         return score;
     }
 
+    private static double scoreClusterWords(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique){ 
+        int numberct = 0;
+        int properct = 0;
+        int otherct = 0;
+        //if(clusterwordct.get(w) <= nTitleSentenceUnique/2){
+        for(String w : clusterwordct.keySet()){
+            if(clusterwordct.get(w) <= nSentenceUnique/2){
+
+                w = w.replaceAll("\\.|,|\\?|!|%|\\$|°|#|;","");
+                //w = w.replace("-"," ");
+                //w = w.replace("—"," ");
+                if(w.equals("")) continue;
+                if(w.matches("(\\d|½|¼|⅛|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fifteen|twenty|thirty|forty|fifty)+s?")
+                        || w.matches("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)+")
+                        || w.matches("[0-9]+(th|st|rd|nd|d)")){
+                    numberct++;
+                    if(DEBUG) System.out.println("\tNumeric:\t" +  w);    
+                //}else if(w.matches("^[A-Z](\\w|-)+")){
+                }else if(propernoun.matcher(w).matches()){
+                    properct++;
+                    if(DEBUG) System.out.println("\tProper noun:\t" +  w);    
+                }else{
+                    otherct++;
+                    if(DEBUG) System.out.println("\tOther:\t" +  w);    
+                }
+            }
+        }
+        
+        if(DEBUG){
+            System.out.println("numberct: " + numberct);
+            System.out.println("properct: " + properct);
+            System.out.println("otehrct: " + otherct);
+        }
+
+        int totalct = numberct + properct + otherct;
+
+        double score;
+        if(totalct > 0){
+            score = (numberct + properct)*1.0/(numberct + properct + otherct);
+        }else{
+            score = -1;
+        }
+
+        return score;
+    }
     
     public TemplateClusters() {}
 

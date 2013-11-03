@@ -280,7 +280,7 @@ Although factual drift is similar to copy editing and may occur along with copy 
 
 \subsubsection{Break down of sentence types}
 
-By manually counting a small sample of 2094 output clusters, we came up with a breakdown of sentence types shown in Table 1.
+By manually counting a small sample of 2094 output clusters, we came up with a breakdown of sentence types shown in Table \ref{counts}.
 
 \begin{table}
 \centering
@@ -295,34 +295,16 @@ Identical & 948 & 45.27\% \\ \hline
 Other & 103 & 2.92\% \\ \hline
 \hline
 \end{tabular}
+\label{counts}
 \end{table}
 
 To get a rough estimate of the number of template clusters, we develop a heuristic score on low frequency words in the cluster word set to identify templates. For our purposes a low-frequency word is one that occurs in less than half of the cluster sentences. The score we use is:
 \[(\#numeric + \#proper)/(\#numeric + \#proper + \#other)\]
 Where \#numeric is the number of numeric terms in the cluster word set (all unique words occuring in the cluster), \#proper is the number of proper nouns in the cluster word set (i.e. capitalized words), and \#other is the number of other words.
 
-Applying the score to our hand-classified clusters shows us that this score does separate between template and non-template word. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.)
+Applying the score to our hand-classified clusters shows us that this score does separate between template and non-template clusters. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.) See Figure \ref{heuristic}.
 
-N lines: 3496074
-N clusters: 1151620
-N identical clusters: 666212
-N template clusters: 55430
-N other clusters: 20745
-N other pair clusters: 407963
-N species clusters: 1270
-
-N lines: 3496074
-N clusters: 1151620
-N identical clusters: 666212
-N template clusters: 244660
-N template sentences: 1116932
-N other clusters: 20745
-N other pair clusters: 218840
-N species clusters: 1163
-^C
-
-
-After applying the score to the entire set of wiki clusters (with a score threshold of .6), there are 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932, and the non-template 
+After applying the score to the entire set of wiki clusters (with a score threshold of .6), there are 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932 sentences, and the non-template clusters contain 1,244,196.
 
 \begin{figure}
 \centering
