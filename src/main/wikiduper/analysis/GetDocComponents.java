@@ -187,10 +187,10 @@ public class GetDocComponents extends Configured implements Tool {
                 if(count.get() < thresh) continue;
                 String doc1 = docpair.getLeftElement();
                 String doc2 = docpair.getRightElement();
-                if(doc2docmap.containsKey(doc1)){
+                if(!doc2docmap.containsKey(doc1)){
                     doc2docmap.put(doc1, new HashSet<String>());
                 }
-                if(doc2docmap.containsKey(doc2)){
+                if(!doc2docmap.containsKey(doc2)){
                     doc2docmap.put(doc2, new HashSet<String>());
                 }
                 doc2docmap.get(doc1).add(doc2);
