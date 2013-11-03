@@ -122,10 +122,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             while (iter.hasNext()) {
                 sum+= iter.next().get();
             }
-            if(sum > 1){
-                SUM.set(sum);
-                context.write(articlepair, SUM);
-            }
+            
+            SUM.set(sum);
+            context.write(articlepair, SUM);
 
         }
    }
@@ -134,8 +133,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         @Override
         public void map(PairOfStrings docpair, IntWritable sum, Context context)
                 throws IOException, InterruptedException {
-
-            context.write(sum,  docpair);
+            if(sum.get() > 1){
+                context.write(sum,  docpair);
+            }
 
         }
         
