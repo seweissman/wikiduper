@@ -60,9 +60,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 clusterSentences.add(sentence);
                 clusterDocs.add(doc);
             }
-            if(clusterSentences.size() == 1){
-                return;
-            }
+            //if(clusterSentences.size() == 1){
+              //  return;
+            //}
             double score = TemplateClusters.scoreCluster(clusterSentences);
             if(score < .6){
                 for(String doc : clusterDocs){
