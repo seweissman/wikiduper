@@ -8,13 +8,11 @@ fin=$1
 flang=$2
 fmapping=${fin}.mapping
 fpack=${fin}.pack
-fsent=${fin}.docsentence
 
 ein=$3
 elang=$4
 emapping=${ein}.mapping
 epack=${ein}.pack
-esent=${ein}.docsentence
 
 #../Ivory/data
 ivoryDataDir=$5
@@ -42,8 +40,6 @@ mhoutput=${output}.mh
 mergeoutput=${output}.clusters
 sentenceoutput=${output}.${samples}-${bits}-${k}-${n}-${nhash}.sentences
 
-echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.eval.WikiSentence2Doc -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack} -eout ${esent} -fout ${fsent}"
-etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.eval.WikiSentence2Doc -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack} -eout ${esent} -fout ${fsent}
 #etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.PreprocessWikiInput -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack} -output ${preprocout}
 #echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${k} -M ${samples} -n ${n} -nHash ${nhash} -numReducers 20 -output ${output} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens} -input ${preprocout}"
 #etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${k} -M ${samples} -n ${n} -nHash ${nhash} -numReducers 20 -output ${mhoutput} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens} -input ${preprocout}
