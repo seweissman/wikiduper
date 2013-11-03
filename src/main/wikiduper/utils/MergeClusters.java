@@ -1,4 +1,4 @@
-package wikiduper.application;
+package wikiduper.utils;
 
 /*
  * Cloud9: A MapReduce Library for Hadoop
