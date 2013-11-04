@@ -40,7 +40,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
     private static class ClusterReducer extends Reducer<LongWritable, PairOfStrings, LongWritable, ArrayListWritable<Text>> {
         private static final ArrayListWritable<Text> VALUE = new ArrayListWritable<Text>();
-        private static final HashSet<String> clusterSentences = new HashSet<String>();
+        private static final HashSet<String> clusterTitleSentences = new HashSet<String>();
         private static final HashSet<String> clusterDocs = new HashSet<String>();
         @Override
         public void reduce(LongWritable clusterID, Iterable<PairOfStrings> docs, Context context)
@@ -49,7 +49,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
             // article denoted by wikiID
             VALUE.clear();
-            clusterSentences.clear();
+            clusterTitleSentences.clear();
             clusterDocs.clear();
             Iterator<PairOfStrings> iter = docs.iterator();
             PairOfStrings docsentence;
@@ -57,15 +57,15 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 docsentence = iter.next();
                 String doc = docsentence.getLeftElement();
                 String sentence = docsentence.getRightElement();
-                clusterSentences.add(sentence);
+                clusterTitleSentences.add(doc + "\t" + sentence);
                 clusterDocs.add(doc);
             }
             //if(clusterSentences.size() == 1){
               //  return;
             //}
-            double score = TemplateClusters.scoreCluster(clusterSentences);
+            double score = TemplateClusters.scoreCluster(clusterTitleSentences);
             if(clusterID.get() == 22040){
-                System.out.println(score + "\t" + clusterSentences);
+                System.out.println(score + "\t" + clusterTitleSentences);
             }
             //if(score < .6){
                 for(String doc : clusterDocs){
