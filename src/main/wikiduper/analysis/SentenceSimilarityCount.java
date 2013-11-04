@@ -64,17 +64,15 @@ public class SentenceSimilarityCount extends Configured implements Tool {
               //  return;
             //}
             double score = TemplateClusters.scoreCluster(clusterTitleSentences);
-            if(clusterID.get() == 22040){
-                System.out.println(score + "\t" + clusterTitleSentences);
-            }
-            //if(score < .6){
+
+            if(score < .6){
                 for(String doc : clusterDocs){
                     Text docout = new Text();
                     docout.set(doc);
                     VALUE.add(docout);
                 }
                 context.write(clusterID, VALUE);
-            //}
+            }
 
 
 
