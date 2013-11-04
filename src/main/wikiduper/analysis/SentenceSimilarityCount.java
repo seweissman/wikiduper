@@ -41,6 +41,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static class ClusterReducer extends Reducer<LongWritable, PairOfStrings, LongWritable, ArrayListWritable<Text>> {
         private static final ArrayListWritable<Text> VALUE = new ArrayListWritable<Text>();
         private static final HashSet<String> clusterTitleSentences = new HashSet<String>();
+        private static final HashSet<String> clusterSentences = new HashSet<String>();
         private static final HashSet<String> clusterDocs = new HashSet<String>();
         @Override
         public void reduce(LongWritable clusterID, Iterable<PairOfStrings> docs, Context context)
@@ -50,6 +51,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             // article denoted by wikiID
             VALUE.clear();
             clusterTitleSentences.clear();
+            clusterSentences.clear();
             clusterDocs.clear();
             Iterator<PairOfStrings> iter = docs.iterator();
             PairOfStrings docsentence;
@@ -57,12 +59,13 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 docsentence = iter.next();
                 String doc = docsentence.getLeftElement();
                 String sentence = docsentence.getRightElement();
+                clusterSentences.add(sentence);
                 clusterTitleSentences.add(doc + "\t" + sentence);
                 clusterDocs.add(doc);
             }
-            //if(clusterSentences.size() == 1){
-              //  return;
-            //}
+            if(clusterSentences.size() == 1){
+                return;
+            }
             double score = TemplateClusters.scoreCluster(clusterTitleSentences);
 
             if(score < .6){
