@@ -9,7 +9,7 @@
 \usepackage{algorithmicx}
 \usepackage{algorithm}
 \usepackage{natbib}
-
+\usepackage[utf8]{inputenc}
 \begin{document}
 
 \title{Similar Sentence Detection Using Locality Sensitive Hashing Technique on Wikipedia}
@@ -324,78 +324,70 @@ After applying the score to the entire set of wiki clusters (with a score thresh
 \label{toparticles}
 \end{figure}
 
-Based on our preliminary analysis, templatification tends to occur most often between articles that maintain large lists of information related to the same general sub-theme of different topics. For example, of the top 10 pairs of articles with the highest similarity count, one article pair was the articles titled ''List of birds of Zambia'' and ''List of birds of Tanzania''. With both countries sharing the same geographic region, it is not unexpected that their respective wikipedia articles on the countrys' bird species would be highly comparable. For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences. Overall, we found $\approx 6500$ wikipedia article pairs that had a similarity count greater than $50$.
+Based on our preliminary analysis, templatification tends to occur most often between articles that maintain large lists of information related to the same general sub-theme of different topics. For example, the articles ''List of birds of Zambia'' and ''List of birds of Tanzania'' share a large number of templated sentences. With both countries sharing the same geographic region, it is not unexpected that their respective Wikipedia articles on the countrys' bird species would be highly comparable. For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences. Overall, we found $\approx 29580$ wikipedia article pairs that had a similarity count greater than $50$.
 
 Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see the expected behavior of decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. Based on the fact that we found $\approx 6500$ article pairs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in Figure \ref{toparticles}).
 
 \begin{table}
 \centering
 \caption{Top 10 Article Pair Titles}
-\begin{tabular}{| l | c |}
+{\small
+\begin{tabular}{| l |}
     \hline
-    \textbf{Article ID} & \textbf{Title} \\ \hline
-[Early life and career of Marcus Aurelius, Marcus Aurelius]
-[Private equity in the 2000s, History of private equity and venture capital]
-[List of ethnic cleansings, Ethnic cleansing]
-[Route of the Oregon Trail, Oregon Trail]
-[English literature, British literature]
-[Culture of the United States, Society of the United States]
-[18th-century history of Germany, History of Germany]
-[Insect morphology, Insect wing]
-[Nutritional neuroscience, Nutrition and cognition]
-[Philippine general election, 2004, Philippine presidential election, 2004]
-[History of the Dallas Mavericks, Dallas Mavericks]
-[May Bukas Pa, List of May Bukas Pa episodes]
-[Individualist anarchism in the United States, Anarchism in the United States]
-[Native Americans in the United States, Native American cultures in the United States]
-[Hockey stick controversy, Hockey stick graph]
-[Filioque, History of the Filioque controversy]
-[Vancouver Canucks, History of the Vancouver Canucks]
-[Silvio Berlusconi, Controversies surrounding Silvio Berlusconi]
-[2007 suicide bombings in Iraq, List of terrorist incidents in Iraq in 2007]
-[List of Canadian tornadoes and tornado outbreaks, List of 21st-century Canadian tornadoes and tornado outbreaks]
-[Scotland in the modern era, History of Scotland]
-[Reliability of Wikipedia, Criticism of Wikipedia]
-[Imperial Roman army, Auxiliaries (Roman military)]
-[Libertarian socialism, Libertarian Marxism]
-[Arts in Australia, Culture of Australia]
-[Canti (Leopardi), Giacomo Leopardi]
-[Culture of England, Religion in England]
-[Government of Mahmoud Ahmadinejad (2005–present), Foreign policy of Mahmoud Ahmadinejad]
-[Economy of England in the Middle Ages, Economics of English towns and trade in the Middle Ages]
-[Go Nagai bibliography, Go Nagai]
-[Galvatron, Megatron]
-[Wakfu (TV series), Wakfu]
-[Isabela, Basilan, History of Basilan]
-[List of Prison Break recurring characters, List of Prison Break minor characters]
-[Interracial marriage, Miscegenation]
-[List of Shakespearean characters (L–Z), List of Shakespearean characters (A–K)]
-[Fascism and ideology, Fascism]
-[Anarchism, History of anarchism]
-[Ethnic groups in Ecuador, Ecuadorian people]
-[History of painting, Western painting, 20th-century Western painting]
-[Precipitation, Rain]
-[Megaupload legal case, Megaupload]
-[Anti-spam techniques, Anti-spam techniques (users)]
-[History of the Detroit Tigers, Detroit Tigers]
-[Yuko Kavaguti, Alexander Smirnov (figure skater)]
-[San Francisco Giants, History of the San Francisco Giants]
-[List of Deadliest Warrior episodes, Deadliest Warrior (season 1), Deadliest Warrior (season 3), Deadliest Warrior (season 2)]
-[List of Reaper characters, Reaper (TV series)]
-[Port of Tianjin operations and logistics, Port of Tianjin]
-[Management of androgenic alopecia, Management of baldness]
-[Legion of Super-Heroes, Legion of Super-Heroes (1958 team)]
-[American rock, Rock music]
-[One-Day Internationals in England in 2005, Test matches in England in 2005, Australian cricket team in England in 2005]
-[Swedes, Sweden]
-[Controversies surrounding the European sovereign-debt crisis, Policy reactions to the European sovereign-debt crisis, European sovereign-debt crisis, Economic reforms and recovery proposals regarding the European sovereign-debt crisis]
-[List of Irish Americans, List of Americans of Irish descent]
-[CIA leak scandal criminal investigation, Plame affair grand jury investigation]
-[Medway watermills (lower tributaries), River Len]
-[2000 New Year Honours, 1999 New Year Honours]
-[Kingdom of Greece, History of modern Greece]
-[List of Russian people, List of Russian scientists]
-
+\{Private equity in the 2000s, History of private equity and venture capital, Private equity in the 1980s\} \\
+\{List of ethnic cleansings, Ethnic cleansing\} \\
+\{Route of the Oregon Trail, Oregon Trail\} \\
+\{English literature, British literature\} \\
+\{Portia schultzi, Portia labiata, Portia fimbriata\} \\
+\{Lesbian American history, List of lesbian, gay, bisexual, or transgender firsts by year\} \\
+\{Lists of British inventions, List of English inventions and discoveries\} \\
+\{1981 in baseball, 1981 Major League Baseball season\} \\
+\{Minority Report (film), Themes in Minority Report\} \\
+\{What Is History?, E. H. Carr\} \\
+\{Individualist anarchism in Europe, Individualist anarchism in the United States, Individualist anarchism, Anarchism in the United States\} \\
+\{Kingdom of Scotland, Scotland in the Early Modern Era\} \\
+\{Decline of Greco-Roman polytheism, Christian persecution of paganism after Theodosius I until the fall of the Roman Empire\} \\
+\{Anarchist schools of thought, Libertarian socialism, Anarchist communism, Anarchism, History of anarchism, Libertarian Marxism\} \\
+\{Brill Tramway, Quainton Road railway station\} \\
+\{History of the Roman Empire, Byzantine Empire, History of the Byzantine Empire\} \\
+\{List of American state and local politicians convicted of crimes, List of state and local political scandals in the United States\} \\
+\{Filioque, History of the Filioque controversy\} \\
+\{1960 Major League Baseball season, 1960 in baseball\} \\
+\{Domitian, Flavian dynasty\} \\
+\{Military history of Australia during World War II, Australian Army during World War II\} \\
+\{Kuomintang, History of the Kuomintang\} \\
+\{Interracial marriage, Miscegenation, Eurasian (mixed ancestry)\} \\
+\{Scotland in the modern era, History of Scotland\} \\
+\{History of California, Maritime history of California\} \\
+\{Outline of project management, Glossary of project management\} \\
+\{Wigan Warriors, History of Wigan Warriors\} \\
+\{List of American federal politicians convicted of crimes, List of federal political scandals in the United States\} \\
+\{Economy of England in the Middle Ages, Economics of English towns and trade in the Middle Ages\} \\
+\{Galvatron, Megatron\} \\
+\{Metropolitan Police role in the news media phone hacking scandal, News media phone hacking scandal\} \\
+\{List of Shakespearean characters (L-Z), List of Shakespearean characters (A-K), List of historical figures dramatised by Shakespeare\} \\
+\{Fetal alcohol spectrum disorder, Fetal alcohol syndrome\} \\
+\{List of marine bony fishes of South Africa, List of marine animals of the Cape Peninsula and False Bay\} \\
+\{History of painting, Western painting, 20th-century Western painting\} \\
+\{Timeline of the 2007 Burmese anti-government protests, 2007 Burmese anti-government protests\} \\
+\{Precipitation, Rain\} \\
+\{List of Puerto Ricans, List of Puerto Rican military personnel\} \\
+\{Glossary of basketball terms, Outline of basketball\} \\
+\{Hannibal, Conquests of Hannibal\} \\
+\{Bogotá, History of Bogotá\} \\
+\{Pseudotsuga menziesii var. menziesii, Douglas fir\} \\
+\{History of the East-West Schism, East-West Schism\} \\
+\{List of attacks in Lebanon, Lebanon bombings and assassinations (2004-present)\} \\
+\{Zen, Chinese Chán\} \\
+\{List of Deadliest Warrior episodes, Deadliest Warrior (season 1), Deadliest Warrior (season 3), Deadliest Warrior (season 2)\} \\
+\{1991 Major League Baseball season, 1991 in baseball\} \\
+\{American rock, Rock music\} \\
+\{Test matches in England in 2005, Australian cricket team in England in 2005\} \\
+\{Swedes, Sweden\} \\
+\{Glossary of robotics, Outline of robotics\} \\
+\{CIA leak scandal criminal investigation, Plame affair grand jury investigation\} \\
+\{History of Australia since 1945, History of Australia\} \\
+\{List of Russian people, List of Russian scientists\} \\
     %% 21986867 & 2000 New Year Honours \\ \hline
     %% 21986897 & 1999 New Year Honours \\ \hline
     %% 3951586 & Instruments of the United Kingdom, 1994 \\ \hline
@@ -414,7 +406,9 @@ Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see t
     %% 31518964 & History of the Oregon Trail \\
     \hline
 \end{tabular}
+}
 \end{table}
+
 
 \section{Conclusion and Future Work}
 This paper presents our work on near-duplicate detection of Wikipedia articles at the sentence-granularity level using MinHash, a LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece is handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at the sentence level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.

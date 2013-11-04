@@ -94,8 +94,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             //System.out.println(sentences.toString());
             Text doc1;
             Text doc2;
-            if(doclist.size() > 10000)
-                return;
+            //if(doclist.size() > 10000)
+              //  return;
             for (int i=0;i<doclist.size();i++){
                 doc1 = doclist.get(i);
                 for(int j=i+1;j<doclist.size();j++){
