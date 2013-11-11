@@ -304,7 +304,7 @@ Where \#numeric is the number of numeric terms in the cluster word set (all uniq
 
 Applying the score to our hand-classified clusters shows us that this score does separate between template and non-template clusters. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.) See Figure \ref{heuristic}.
 
-After applying the score to the entire set of wiki clusters (with a score threshold of .6), there are 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932 sentences, and the non-template clusters contain 1,244,196.
+After applying the score to the entire set of wiki clusters (with a score threshold of .6), there are 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932 sentences, and the non-template clusters contain 1,244,196 sentences.
 
 \begin{figure}
 \centering
@@ -324,7 +324,7 @@ After applying the score to the entire set of wiki clusters (with a score thresh
 \label{toparticles}
 \end{figure}
 
-Based on our preliminary analysis, templatification tends to occur most often between articles that maintain large lists of information related to the same general sub-theme of different topics. For example, the articles ''List of birds of Zambia'' and ''List of birds of Tanzania'' share a large number of templated sentences. With both countries sharing the same geographic region, it is not unexpected that their respective Wikipedia articles on the countrys' bird species would be highly comparable. For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences. Overall, we found $\approx 29580$ wikipedia article pairs that had a similarity count greater than $50$.
+ For clarity purposes, we define \emph{similarity count} as simply the total number of sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences. Overall, we found $\approx 29580$ wikipedia article pairs that had a similarity count greater than $50$.
 
 Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see the expected behavior of decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. Based on the fact that we found $\approx 6500$ article pairs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in Figure \ref{toparticles}).
 
