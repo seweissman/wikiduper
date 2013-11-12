@@ -53,7 +53,6 @@ public class GetDocComponents extends Configured implements Tool {
 
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
-    private static final String THRESHOLD = "threshold";
 
     @SuppressWarnings("static-access")
     @Override
@@ -63,8 +62,6 @@ public class GetDocComponents extends Configured implements Tool {
                 .hasArg().withDescription("output path").create(OUTPUT));
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("minhash output buckets").create(INPUT));
-        options.addOption(OptionBuilder.withArgName("num")
-                .hasArg().withDescription("similarity threshold").create(THRESHOLD));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -75,7 +72,7 @@ public class GetDocComponents extends Configured implements Tool {
             return -1;
         }
 
-        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT) || !cmdline.hasOption(THRESHOLD)){
+        if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT)){
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -85,7 +82,6 @@ public class GetDocComponents extends Configured implements Tool {
 
         String outputPath = cmdline.getOptionValue(OUTPUT);
         String inputPath = cmdline.getOptionValue(INPUT);
-        int threshold = Integer.parseInt(cmdline.getOptionValue(THRESHOLD));
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - output file: " + outputPath);
         
@@ -93,7 +89,7 @@ public class GetDocComponents extends Configured implements Tool {
 
         /* Get Clusters from MinhashWikipediaPages pair output */
         
-        getClusters(inputPath,conf,outputPath,threshold);
+        getClusters(inputPath,conf,outputPath);
 
         return 0;
     }
@@ -120,11 +116,11 @@ public class GetDocComponents extends Configured implements Tool {
     // Creates a global cluster numbering and a map from doc numbers to sentences and their cluster numbers
     // Writes the docmap to docmapFile
     //static final Pattern sentencepattern = Pattern.compile(".*\\[(.+), (.+), (.+)\\].*");
-    public static void getClusters(String filein, JobConf conf, String docmapFile, int thresh){
+    public static void getClusters(String filein, JobConf conf, String docmapFile){
         ArrayList<HashSet<String>> compList = new ArrayList<HashSet<String>>();
         try {
             TreeMap<String, HashSet<String>> doc2docmap = new TreeMap<String,HashSet<String>>();
-            readPairs(filein,conf,doc2docmap,thresh);
+            readPairs(filein,conf,doc2docmap);
 
             HashSet<String> entities = new HashSet<String>();
             entities.addAll(doc2docmap.keySet());
@@ -167,7 +163,7 @@ public class GetDocComponents extends Configured implements Tool {
         }
     }
 
-    public static void readPairs(String filein, JobConf conf, TreeMap<String, HashSet<String>> doc2docmap, int thresh){
+    public static void readPairs(String filein, JobConf conf, TreeMap<String, HashSet<String>> doc2docmap){
         try {
         FileSystem fs = FileSystem.get(conf);
         System.out.println("filein = " + filein);
@@ -184,7 +180,6 @@ public class GetDocComponents extends Configured implements Tool {
             PairOfStrings docpair = new PairOfStrings();
 
             while(reader.next(count,docpair)){
-                if(count.get() < thresh) continue;
                 String doc1 = docpair.getLeftElement();
                 String doc2 = docpair.getRightElement();
                 if(!doc2docmap.containsKey(doc1)){
