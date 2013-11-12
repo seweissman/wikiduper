@@ -116,7 +116,7 @@ public class RemoveKeyLessThan extends Configured implements Tool {
         Job job = Job.getInstance(conf);
         job.setJobName("SentenceSimilarityCount");
         job.setJarByClass(RemoveKeyLessThan.class);
-        job.setNumReduceTasks(0);
+        job.setNumReduceTasks(1);
         
         //Job 1
         FileInputFormat.setInputPaths(job, new Path(inputPath));
