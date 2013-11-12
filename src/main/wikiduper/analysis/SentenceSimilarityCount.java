@@ -233,8 +233,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
 
+        String jobargs = String.format("[%s: %s, %s: %s, %s: %d, %s: %b]", INPUT, inputPath, OUTPUT, outputPath, MINSIM, minsim, FILTER, filter);
         Job job = Job.getInstance(conf);
-        job.setJobName("SentenceSimilarityCount");
+        job.setJobName("SentenceSimilarityCount-2 " + jobargs);
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
@@ -267,8 +268,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         
         // Job 2 
         job = Job.getInstance(conf);
-        
-        job.setJobName("SentenceSimilarityCount-2");
+        job.setJobName("SentenceSimilarityCount-2 " + jobargs);
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
 
@@ -302,7 +302,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         // Job 3
         job = Job.getInstance(conf);
         
-        job.setJobName("SentenceSimilarityCount-3");
+        job.setJobName("SentenceSimilarityCount-3 " + jobargs);
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(1);
 
