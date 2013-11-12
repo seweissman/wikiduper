@@ -106,10 +106,6 @@ public class RemoveKeyLessThan extends Configured implements Tool {
 
         // set job configurations
         Configuration conf = getConf();
-        Job job = Job.getInstance(conf);
-        job.setJobName("SentenceSimilarityCount");
-        job.setJarByClass(RemoveKeyLessThan.class);
-        job.setNumReduceTasks(0);
         
         conf.setInt("minsim", minsim);
         conf.set("mapred.job.map.memory.mb", "6144");
@@ -117,6 +113,10 @@ public class RemoveKeyLessThan extends Configured implements Tool {
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
 
+        Job job = Job.getInstance(conf);
+        job.setJobName("SentenceSimilarityCount");
+        job.setJarByClass(RemoveKeyLessThan.class);
+        job.setNumReduceTasks(0);
         
         //Job 1
         FileInputFormat.setInputPaths(job, new Path(inputPath));
