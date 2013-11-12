@@ -66,7 +66,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
             //if(clusterSentences.size() == 1) return;
 
-            if(filter){
+            if(filter && clusterSentences.size() != 1){
                 double score = TemplateClusters.scoreCluster(clusterTitleSentences);
                 if(score >= .6) return;
             }
