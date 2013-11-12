@@ -64,8 +64,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 clusterDocs.add(doc);
             }
 
+            //if(clusterSentences.size() == 1) return;
+
             if(filter){
-                if(clusterSentences.size() == 1) return;
                 double score = TemplateClusters.scoreCluster(clusterTitleSentences);
                 if(score >= .6) return;
             }
@@ -235,7 +236,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         String jobargs = String.format("[%s: %s, %s: %s, %s: %d, %s: %b]", INPUT, inputPath, OUTPUT, outputPath, MINSIM, minsim, FILTER, filter);
         Job job = Job.getInstance(conf);
-        job.setJobName("SentenceSimilarityCount-2 " + jobargs);
+        job.setJobName("SentenceSimilarityCount-1 " + jobargs);
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
