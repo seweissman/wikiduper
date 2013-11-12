@@ -109,6 +109,28 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
     }
 
+    private static class MyCombiner extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+        private static final IntWritable SUM = new IntWritable();
+
+        @Override
+        public void reduce(PairOfStrings articlepair, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+
+            // iterate through all sentences from other wiki articles that have hashed to the same value as one of the sentences in the wiki
+            // article denoted by wikiID
+            Iterator<IntWritable> iter = values.iterator();
+            int sum = 0;
+            while (iter.hasNext()) {
+                sum+= iter.next().get();
+            }
+
+            SUM.set(sum);
+            context.write(articlepair, SUM);
+
+        }
+
+   }
+
     private static class MyReducer extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
         private static final IntWritable SUM = new IntWritable();
 
@@ -140,6 +162,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         
    }
 
+    
     private static class FlipMapper extends Mapper<PairOfStrings, IntWritable, IntWritable, PairOfStrings> {
         @Override
         public void map(PairOfStrings docpair, IntWritable sum, Context context)
@@ -290,7 +313,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         // define Mapper and Reducer
         job.setMapperClass(MyMapper.class);
         job.setReducerClass(MyReducer.class);
-        job.setCombinerClass(MyReducer.class);
+        job.setCombinerClass(MyCombiner.class);
         
         // Delete the output directory if it exists already.
         outputDir = new Path(tmpPath2);
