@@ -18,7 +18,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -30,7 +29,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import cern.colt.Arrays;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
@@ -43,6 +41,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         private static final HashSet<String> clusterTitleSentences = new HashSet<String>();
         private static final HashSet<String> clusterSentences = new HashSet<String>();
         private static final HashSet<String> clusterDocs = new HashSet<String>();
+        private static boolean filter = false;
+        
         @Override
         public void reduce(LongWritable clusterID, Iterable<PairOfStrings> docs, Context context)
                 throws IOException, InterruptedException {
@@ -64,20 +64,23 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 clusterDocs.add(doc);
             }
 
-            //if(clusterSentences.size() == 1){
-              //  return;
-            //}
-    //        double score = TemplateClusters.scoreCluster(clusterTitleSentences);
+            if(filter){
+                if(clusterSentences.size() == 1) return;
+                double score = TemplateClusters.scoreCluster(clusterTitleSentences);
+                if(score >= .6) return;
+            }
+            for(String doc : clusterDocs){
+                Text docout = new Text();
+                docout.set(doc);
+                VALUE.add(docout);
+            }
+            context.write(clusterID, VALUE);
 
-//            if(score < .6){
-                for(String doc : clusterDocs){
-                    Text docout = new Text();
-                    docout.set(doc);
-                    VALUE.add(docout);
-                }
-                context.write(clusterID, VALUE);
-  //          }
-
+        }
+        
+        @Override
+        public void setup(Context context){
+            filter = context.getConfiguration().getBoolean("filter", false);
         }
 
     }
@@ -85,16 +88,12 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static class MyMapper extends Mapper<LongWritable, ArrayListWritable<Text>, PairOfStrings, IntWritable> {
         private static final PairOfStrings KEY = new PairOfStrings();
         private static final IntWritable ONE = new IntWritable(1);
-        //private static long threshold;
         @Override
         public void map(LongWritable key, ArrayListWritable<Text> doclist, Context context)
                 throws IOException, InterruptedException {
 
-            //System.out.println(sentences.toString());
             Text doc1;
             Text doc2;
-            //if(doclist.size() > 10000)
-              //  return;
             for (int i=0;i<doclist.size();i++){
                 doc1 = doclist.get(i);
                 for(int j=i+1;j<doclist.size();j++){
@@ -106,17 +105,13 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 }
             }
         }
-        
-        //public void configure(JobConf job){
-          //  threshold = job.getLong("threshold",1000);            
-            
-        //}
+
     }
 
     private static class MyReducer extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
         private static final IntWritable SUM = new IntWritable();
 
-        public static long minsim = 2;
+        public static int minsim = 2;
 
         @Override
         public void reduce(PairOfStrings articlepair, Iterable<IntWritable> values, Context context)
@@ -139,8 +134,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         @Override
         public void setup(Context context){
-            minsim = context.getConfiguration().getLong("minsim", 2);
-            
+            minsim = context.getConfiguration().getInt("minsim", 2);
         }
         
    }
@@ -167,7 +161,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
     private static final String MINSIM = "minsim";
-    //private static final String THRESHOLD = "threshold";
+    private static final String FILTER = "filter";
+    
 
     /**
      * Runs this tool.
@@ -189,6 +184,9 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                .withDescription("minimum similarity to report").create(MINSIM));
 
+        options.addOption(OptionBuilder.withArgName("toggle").hasArg(false)
+                .withDescription("toggle for filtering").create(FILTER));
+        
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
 
@@ -201,7 +199,6 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         // check for command line arguments
         if (!cmdline.hasOption(INPUT) || !cmdline.hasOption(OUTPUT)) {
-            System.out.println("args: " + Arrays.toString(args));
             HelpFormatter formatter = new HelpFormatter();
             formatter.setWidth(120);
             formatter.printHelp(this.getClass().getName(), options);
@@ -217,9 +214,10 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         String tmpPath2 = "tmppath2";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 20;
 
-        long minsim = cmdline.hasOption(MINSIM) ? Long.valueOf(cmdline.getOptionValue(MINSIM)):2;
+        int minsim = cmdline.hasOption(MINSIM) ? Integer.valueOf(cmdline.getOptionValue(MINSIM)):2;
 
-
+        boolean filter = cmdline.hasOption(FILTER);
+        
         LOG.info("Tool: " + SentenceSimilarityCount.class.getSimpleName());
         LOG.info(" - input path: " + inputPath);
         LOG.info(" - output path: " + outputPath);
@@ -227,17 +225,18 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         // set job configurations
         Configuration conf = getConf();
-        Job job = Job.getInstance(conf);
-        job.setJobName("SentenceSimilarityCount");
-        job.setJarByClass(SentenceSimilarityCount.class);
-        job.setNumReduceTasks(reduceTasks);
         
-        conf.setLong("minsim", minsim);
+        conf.setInt("minsim", minsim);
+        conf.setBoolean("filter", filter);
         conf.set("mapred.job.map.memory.mb", "6144");
         conf.set("mapred.map.child.java.opts", "-Xmx6144m");
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
 
+        Job job = Job.getInstance(conf);
+        job.setJobName("SentenceSimilarityCount");
+        job.setJarByClass(SentenceSimilarityCount.class);
+        job.setNumReduceTasks(reduceTasks);
         
         //Job 1
         FileInputFormat.setInputPaths(job, new Path(inputPath));
