@@ -33,15 +33,15 @@ public class RemoveKeyLessThan extends Configured implements Tool {
         @Override
         public void map(IntWritable key, PairOfStrings value, Context context)
                 throws IOException, InterruptedException {
-            if(key.get() < minsim){
-                return;
+            if(key.get() >= minsim){
+                context.write(key, value);
             }
-            context.write(key, value);
+            
         }
         
         @Override
         public void setup(Context context){
-            minsim = context.getConfiguration().getInt("minsim", 2);
+            minsim = context.getConfiguration().getInt("minsim", 20);
         }
     }
 
