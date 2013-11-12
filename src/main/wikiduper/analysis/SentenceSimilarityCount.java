@@ -63,6 +63,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 clusterTitleSentences.add(doc + "\t" + sentence);
                 clusterDocs.add(doc);
             }
+
             //if(clusterSentences.size() == 1){
               //  return;
             //}
@@ -77,10 +78,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
                 context.write(clusterID, VALUE);
   //          }
 
-
-
-            
         }
+
     }
    
     private static class MyMapper extends Mapper<LongWritable, ArrayListWritable<Text>, PairOfStrings, IntWritable> {
@@ -117,7 +116,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static class MyReducer extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
         private static final IntWritable SUM = new IntWritable();
 
-        
+        public static long minsim = 2;
+
         @Override
         public void reduce(PairOfStrings articlepair, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
@@ -129,11 +129,20 @@ public class SentenceSimilarityCount extends Configured implements Tool {
             while (iter.hasNext()) {
                 sum+= iter.next().get();
             }
-            
+            if(sum < minsim){
+                return;
+            }                    
             SUM.set(sum);
             context.write(articlepair, SUM);
 
         }
+
+        @Override
+        public void setup(Context context){
+            minsim = context.getConfiguration().getLong("minsim", 2);
+            
+        }
+        
    }
 
     private static class FlipMapper extends Mapper<PairOfStrings, IntWritable, IntWritable, PairOfStrings> {
@@ -157,6 +166,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
+    private static final String MINSIM = "minsim";
     //private static final String THRESHOLD = "threshold";
 
     /**
@@ -176,8 +186,8 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of reducers").create(NUM_REDUCERS));
         
-        //options.addOption(OptionBuilder.withArgName("num").hasArg()
-          //      .withDescription("threshold value").create(THRESHOLD));
+        options.addOption(OptionBuilder.withArgName("num").hasArg()
+               .withDescription("minimum similarity to report").create(MINSIM));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -203,11 +213,12 @@ public class SentenceSimilarityCount extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        //long threshold = Long.valueOf(cmdline.getOptionValue(THRESHOLD));
         String tmpPath = "tmppath";
         String tmpPath2 = "tmppath2";
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 20;
-        
+
+        long minsim = cmdline.hasOption(MINSIM) ? Long.valueOf(cmdline.getOptionValue(MINSIM)):2;
+
 
         LOG.info("Tool: " + SentenceSimilarityCount.class.getSimpleName());
         LOG.info(" - input path: " + inputPath);
@@ -221,7 +232,7 @@ public class SentenceSimilarityCount extends Configured implements Tool {
         job.setJarByClass(SentenceSimilarityCount.class);
         job.setNumReduceTasks(reduceTasks);
         
-        //conf.setLong("threshold", threshold);
+        conf.setLong("minsim", minsim);
         conf.set("mapred.job.map.memory.mb", "6144");
         conf.set("mapred.map.child.java.opts", "-Xmx6144m");
         conf.set("mapred.job.reduce.memory.mb", "6144");

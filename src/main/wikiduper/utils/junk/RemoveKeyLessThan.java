@@ -111,7 +111,7 @@ public class RemoveKeyLessThan extends Configured implements Tool {
         job.setJarByClass(RemoveKeyLessThan.class);
         job.setNumReduceTasks(0);
         
-        conf.setLong("minsim", minsim);
+        conf.setInt("minsim", minsim);
         conf.set("mapred.job.map.memory.mb", "6144");
         conf.set("mapred.map.child.java.opts", "-Xmx6144m");
         conf.set("mapred.job.reduce.memory.mb", "6144");
