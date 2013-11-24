@@ -1,0 +1,123 @@
+\documentclass{acm_proc_article-sp}
+\usepackage{url}
+\usepackage{algpseudocode}
+\usepackage{verbatim}
+\usepackage{microtype}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{epsfig}
+\usepackage{algorithmicx}
+\usepackage{algorithm}
+\usepackage{natbib}
+\usepackage[utf8]{inputenc}
+\begin{document}
+
+\title{Cross Language Similar Sentence Detection}
+
+\numberofauthors{3}
+
+\author{
+\alignauthor Sarah E. Weissman\\
+       \affaddr{University of Maryland}\\
+       \affaddr{College of Information Studies}\\
+       \email{sew@umd.edu}
+}
+
+\date{November 24, 2013}
+
+\maketitle
+\begin{abstract}
+\end{abstract}
+
+% A category with the (minimum) three required fields
+\category{H.3.3}{Information Storage and Retrieval}[Information Search and Retrieval]
+
+\terms{Minhash, MapReduce}
+
+\section{Introduction}
+
+\section{Related Work}
+
+\section{Locality \\ Sensitive Hashing}
+
+In order to measure document similarity we use a common LSH technique known as MinHash (\cite{broder:resemblance}). A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. (In our case, input ''documents'' are individual sentences found within the content of Wikipedia articles.) Each document is broken up into n-gram ``shingles'' and for each shingle set $S$ a set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family is produced. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
+
+%% \subsection{Design}
+%% Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
+
+%% Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
+
+%% \begin{table}
+%% \begin{algorithm}[H]
+%% \caption{Minhash MapReduce Pseudocode}
+%% \begin{algorithmic}
+%% \Function{initialize}{}
+%% %\Comment{configure and set up algorithm parameters}
+%%  \State $F \gets $ hash family;
+%%  \State $L \gets $ shingle length;
+%%  \State $K \gets $ vector length;
+%%  \State $N \gets $ number of signatures to emit;
+%% \EndFunction
+
+%% \Function{map}{docid $d$, wikipage $p$}
+%%  \State sentencect $\gets 0$
+%%  %\Comment {Break up article text into sentence}
+%%  \While{$s \gets$ nextSentence($p$)}
+%%   %\Comment{Break up sentence into shingles}
+%%   \State shingles $\gets$ shingleSet($s$,$L$);
+%%   \State minhashes = new List(|F|);
+%%    \For{$i \gets 1 \ldots |F|$}
+%%     \State minhashes[$i$] $\gets \infty$;
+%%    \EndFor
+%%    %\Comment{Calculate set of minhash signature for each sentence}
+%%    \For{$g \in$ shingles}
+%%     \For{$i \gets 1 \ldots |F|$}
+%%      \State minhashes[$i$] $\gets$ min($F_i(g)$,minhashes[$i$]);
+%%     \EndFor
+%%    \EndFor
+%%    %\Comment{Emit $N$ $K$-length signatures}
+%%   \For{$i \gets 1 \ldots N$}
+%%    \State sig = select($K$, minhahses);
+%%    \State emit(sig,(docid,sentencect));
+%%   \EndFor
+%%   \State  sentencect++;
+%%  \EndWhile
+%% \EndFunction
+
+%% \Function{reduce}{signature sig, sentenceids $S$}
+%% \If{$|S| > 1$}
+%% \State emit(sig, $S$);
+%% \EndIf
+%% \EndFunction
+%% \end{algorithmic}
+%% \end{algorithm}
+%% \end{table}
+
+\subsection{Implementation Details}
+
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 (\url{https://github.com/lintool/Cloud9}) and WikiClean (\url{https://github.com/lintool/wikiclean/}) libraries for parsing Wikipedia page text from the Wikipedia XML dump format. An open source implementationis available on Github (\url{https://github.com/seweissman/wikiduper}).
+
+%Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift'' (\url{http://en.wikipedia.org/wiki/Universal_hashing}) hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
+
+\section{Parameter Tuning}
+
+The minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
+
+
+\section{Experiments and Discussion}
+
+\begin{figure}
+\centering
+\includegraphics[width=3.5in, keepaspectratio = true]{classifyscoreswikinew.pdf}
+\caption{Histogram of Hand Labeled Clusters by Template Heuristic Score.}
+\label{heuristic}
+\end{figure}
+
+
+\section{Conclusions and Future Work}
+
+\bibliographystyle{abbrv}
+\bibliography{article-draft}  % sigproc.bib is the name of the Bibliography in this case
+
+\balancecolumns
+\end{document}

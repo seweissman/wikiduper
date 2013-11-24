@@ -35,9 +35,9 @@
 
 \maketitle
 \begin{abstract}
-The growth of the Internet has enabled collaboration and cooperation on a large scale, resulting in an abundant number of near-duplicate web documents. Information is propagated on a large scale, which means that finding (and correcting) factual errors is made more difficult, since such errors may be duplicated many times over in different locations. Wikipedia articles, which are written and edited by an open community of mostly anonymous users are a prime candidate for copying of information. With few exceptions, the reader of any article can edit the text by copying from another article or an outside source without prior approval or confirmation of correctness. Although Wikipedia has its own policies and procedures for maintaining articles and improving quality, questions of the quality and accuracy of information on the website remain. Although we do not directy attempt to measure the quality of Wikipedia articles, we are interested in finding near-duplicate occurrences at various granularity levels. Such near duplicate sentences may reflect factual information that has been updated in one article and not another, or merely inconsistencies that should be flagged and addressed.
+On collaboratively authored sites like Wikipedia (\url{http://www.wikipedia.org}), where information is propagated on a large scale by a large number of authors, finding (and correcting) factual errors is difficult. Wikipedia articles, which are written and edited by an open community of mostly anonymous users are a prime candidate for copying of information. With few exceptions, the reader of any article can edit the text by copying from another article or an outside source without prior approval or confirmation of correctness and such errors may be duplicated many times over in different locations. Although Wikipedia has its own policies and procedures for maintaining articles and monitoring article quality, questions of the accuracy of information on the website remain. Although we do not directy attempt to measure the quality of Wikipedia articles, we are interested in finding near-duplicate occurrences at various granularity levels. Such near duplicate sentences may reflect factual information that has been updated in one article and not another, redundant content that should be merged, or merely inconsistencies that should be flagged and addressed.
 
-In this paper, we describe a similarity detection algorithm for Wikipedia articles that utilizes a locality sensitive hashing (LSH) technique on the MapReduce framework. The algorithm has been designed and implemented to detect similar content at the sentence level using large Wikipedia dumps. We also describe a heuristic method for classifying types of duplications on Wikipedia, which could be used for selecting and prioritizing editing efforts.
+In this paper, we describe a similarity detection algorithm for Wikipedia articles that uses a locality sensitive hashing (LSH) technique implemened on the Hadoop MapReduce framework. The algorithm has been designed and implemented to detect similar content at the sentence level using large Wikipedia dumps. We also describe a heuristic method for classifying types of duplications on Wikipedia, which could be used for selecting and prioritizing editing efforts.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -46,21 +46,19 @@ In this paper, we describe a similarity detection algorithm for Wikipedia articl
 \terms{Algorithms, Design, MapReduce}
 
 \section{Introduction}
-The online encyclopedia Wikipedia is a collaboratively edited, multilingual, free resource. As of xxx date, it contains 26 million articles, over 4.2 million in English alone. These articles are written and edited by volunteer contributors around the world. Most articles can be edited by anyone with internet access, and there are currently approximately 100,000 active contributors.
+The online encyclopedia Wikipedia is a collaboratively edited, multilingual, free resource. As of November 2013, there are over 31 million wiki pages with over 4 million articles in English and over 20,086,301 registered user accounts on the system \cite{wiki:weblink}. Most articles can be edited by anyone with internet access and an account is not required to edit.
 
 Because of its open nature, Wikipedia has a history of generating controversy over editorial quality and factual correctness. Although some studies have found Wikipedia's accuracy to rival that of traditional encyclopedias, other studies have found numerous factual errors.[References??] Since Wikipedia may be edited anonymously, information may freely copied between web sources and even between Wikipedia articles without verification. Additionally, many articles in Wikipedia lack citations. Although there are active communities of editors who contribute to the upkeep of various articles, often focusing on a partiular subject area and expanding and improving the related content, still much of Wikipedia content is created in an unsupervised manner. Wilkinson found the distribution of article edits on Wikipedia to have a long tail, meaning that a small number of articles have many edits while most articles have few, and that the number of edits is directly related to article quality. Articles with low edits and low editorial attention, are less likely to be updated when new information is available \cite{wilkinson:wiki}.
 
-Under such conditions, this type of large-scale collaborative effort may result in duplicate or near duplicate articles at various granular levels, such as sentence-level or multi-gram granularity \cite{wiki:weblink} [??]. For our purposes, we focus primarily on the sentence level. Near duplicate sentences may reflect factual information that has been updated in one article and not another (for example, information that varies over time, like populations or a country's GDP), or merely inconsistencies that should be flagged and addressed. 
+Under such conditions, this type of large-scale collaborative effort may result in duplicate or near duplicate articles at various granular levels, such as sentence-level or multi-gram granularity. For our purposes, we focus primarily on the sentence level. Near duplicate sentences may reflect factual information that has been updated in one article and not another (for example, information that varies over time, like populations or a country's GDP), or merely inconsistencies that should be flagged and addressed. 
 
-Our approach applies minhashin, a well known, scalable, locality sensitive hashing (LSH) technique for near duplicate document detection. Since we are assuming the content we are looking for is not just similar, but has diverged due to an editorial process, as part of this work we investigate how well minhash approximates edit distance.  
+Our approach applies minhashing, a well known, scalable, locality sensitive hashing (LSH) technique for near duplicate document detection. Since we are assuming the content we are looking for is not just similar, but has diverged due to an editorial process, as part of this work we investigate how well minhash approximates edit distance.  
 We investigate the following questions:
 \begin{itemize}[noitemsep,nolistsep]
 \item How effectively does minhashing approximate edit distance? Edit distance seems like a reasonable metric for near duplicate sentences, however LSH does not map naturally to the edit distance metric.
 \item How well do techniques for detecting near duplicate documents work when applied at the sentence level?
 \item Do near duplicate sentences correspond to factual errors?
 \end{itemize}
-
-Along with these questions, we also considered the scalability and efficiency issues due to the large size of Wikipedia. To address these issues, we implemented our algorithm on the MapReduce computing framework.
 
 The rest of this paper is organized as follows: In Section 2, we present related work, in Section 3, we explain the algorithm utilizing locality sensitive hashing, in Section 4, we discuss parameter tuning for Minhash. In Section 5, we present the working application within the MapReduce framework. In Section 6, we discuss our experiments with various Wikipedia datasets. The final section contains concluding remarks and future work.
 
@@ -92,56 +90,56 @@ In order to handle large Wikipedia dumps with the order of tens or hundreds of g
 
 In order to measure document similarity we use a common LSH technique known as MinHash (\cite{broder:resemblance}). A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. (In our case, input ''documents'' are individual sentences found within the content of Wikipedia articles.) Each document is broken up into n-gram ``shingles'' and for each shingle set $S$ a set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family is produced. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
 
-\subsection{Design}
-Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
+%% \subsection{Design}
+%% Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
 
-Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
+%% Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
 
-\begin{table}
-\begin{algorithm}[H]
-\caption{Minhash MapReduce Pseudocode}
-\begin{algorithmic}
-\Function{initialize}{}
-%\Comment{configure and set up algorithm parameters}
- \State $F \gets $ hash family;
- \State $L \gets $ shingle length;
- \State $K \gets $ vector length;
- \State $N \gets $ number of signatures to emit;
-\EndFunction
+%% \begin{table}
+%% \begin{algorithm}[H]
+%% \caption{Minhash MapReduce Pseudocode}
+%% \begin{algorithmic}
+%% \Function{initialize}{}
+%% %\Comment{configure and set up algorithm parameters}
+%%  \State $F \gets $ hash family;
+%%  \State $L \gets $ shingle length;
+%%  \State $K \gets $ vector length;
+%%  \State $N \gets $ number of signatures to emit;
+%% \EndFunction
 
-\Function{map}{docid $d$, wikipage $p$}
- \State sentencect $\gets 0$
- %\Comment {Break up article text into sentence}
- \While{$s \gets$ nextSentence($p$)}
-  %\Comment{Break up sentence into shingles}
-  \State shingles $\gets$ shingleSet($s$,$L$);
-  \State minhashes = new List(|F|);
-   \For{$i \gets 1 \ldots |F|$}
-    \State minhashes[$i$] $\gets \infty$;
-   \EndFor
-   %\Comment{Calculate set of minhash signature for each sentence}
-   \For{$g \in$ shingles}
-    \For{$i \gets 1 \ldots |F|$}
-     \State minhashes[$i$] $\gets$ min($F_i(g)$,minhashes[$i$]);
-    \EndFor
-   \EndFor
-   %\Comment{Emit $N$ $K$-length signatures}
-  \For{$i \gets 1 \ldots N$}
-   \State sig = select($K$, minhahses);
-   \State emit(sig,(docid,sentencect));
-  \EndFor
-  \State  sentencect++;
- \EndWhile
-\EndFunction
+%% \Function{map}{docid $d$, wikipage $p$}
+%%  \State sentencect $\gets 0$
+%%  %\Comment {Break up article text into sentence}
+%%  \While{$s \gets$ nextSentence($p$)}
+%%   %\Comment{Break up sentence into shingles}
+%%   \State shingles $\gets$ shingleSet($s$,$L$);
+%%   \State minhashes = new List(|F|);
+%%    \For{$i \gets 1 \ldots |F|$}
+%%     \State minhashes[$i$] $\gets \infty$;
+%%    \EndFor
+%%    %\Comment{Calculate set of minhash signature for each sentence}
+%%    \For{$g \in$ shingles}
+%%     \For{$i \gets 1 \ldots |F|$}
+%%      \State minhashes[$i$] $\gets$ min($F_i(g)$,minhashes[$i$]);
+%%     \EndFor
+%%    \EndFor
+%%    %\Comment{Emit $N$ $K$-length signatures}
+%%   \For{$i \gets 1 \ldots N$}
+%%    \State sig = select($K$, minhahses);
+%%    \State emit(sig,(docid,sentencect));
+%%   \EndFor
+%%   \State  sentencect++;
+%%  \EndWhile
+%% \EndFunction
 
-\Function{reduce}{signature sig, sentenceids $S$}
-\If{$|S| > 1$}
-\State emit(sig, $S$);
-\EndIf
-\EndFunction
-\end{algorithmic}
-\end{algorithm}
-\end{table}
+%% \Function{reduce}{signature sig, sentenceids $S$}
+%% \If{$|S| > 1$}
+%% \State emit(sig, $S$);
+%% \EndIf
+%% \EndFunction
+%% \end{algorithmic}
+%% \end{algorithm}
+%% \end{table}
 
 \subsection{Implementation Details}
 
@@ -151,7 +149,7 @@ Our implementation is built on top of the Apache Hadoop MapReduce framework, usi
 
 \section{Parameter Tuning}
 
-As mentioned above the minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
+The minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
 
 \subsection{Jaccard Similarity and Edit Distance}
 
@@ -278,9 +276,9 @@ Although factual drift is similar to copy editing and may occur along with copy 
 \item Neotropical Ichthyology 10 (2): 245-253.
 \end{itemize}
 
-\subsubsection{Break down of sentence types}
+\subsubsection{Breakdown of Sentence Types and Filtering}
 
-By manually counting a small sample of 2094 output clusters, we came up with a breakdown of sentence types shown in Table \ref{counts}.
+By manually counting a small sample of 2094 output clusters, we came up with a breakdown of sentence types shown in Table \ref{counts}. The manual analysis reveals that $\approx 75\%$ of the clusters identified are either in the \emph{identical} or the \emph{template} classes. We argue that these classes are less interesting, since they represent either large collections of identically formatted and very specific facts, or content that is exactly the same, and such content is at least internally consistent, if redundant, and less likely to contain errors. Thus they are candidates for filtering out of the result set.
 
 \begin{table}
 \centering
@@ -298,13 +296,13 @@ Other & 103 & 2.92\% \\ \hline
 \label{counts}
 \end{table}
 
-To get a rough estimate of the number of template clusters, we develop a heuristic score on low frequency words in the cluster word set to identify templates. For our purposes a low-frequency word is one that occurs in less than half of the cluster sentences. The score we use is:
+Identical clusters are easy to identify through exact hashing. In order to get a rough filter for template clusters, we develop a heuristic score on low frequency words in the cluster word set. For our purposes a low-frequency word is one that occurs in less than half of the cluster sentences. The score we use is:
 \[(\#numeric + \#proper)/(\#numeric + \#proper + \#other)\]
-Where \#numeric is the number of numeric terms in the cluster word set (all unique words occuring in the cluster), \#proper is the number of proper nouns in the cluster word set (i.e. capitalized words), and \#other is the number of other words.
+Where \#numeric is the number of numeric terms in the cluster word set (all unique low frequency words occuring in the cluster), \#proper is the number of proper nouns in the cluster word set (i.e. capitalized words), and \#other is the number of other words.
 
-Applying the score to our hand-classified clusters shows us that this score does separate between template and non-template clusters. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.) See Figure \ref{heuristic}.
+Applying the score to our hand-classified clusters we see (Figure \ref{heuristic}) that this score does separate between template and non-template clusters. (Everything that isn't in the Template class is considered a non-Template for the binary classification exercise.)
 
-After applying the score to the entire set of wiki clusters (with a score threshold of .6), there are 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932 sentences, and the non-template clusters contain 1,244,196 sentences.
+After applying the score to the entire set of wiki clusters (with a score threshold of .6), we identify 244,660 template clusters and 906,960 non-template clusters, including 666,212 identical clusters. The template clusters contain 1,116,932 sentences, and the non-template clusters contain 1,244,196 sentences.
 
 \begin{figure}
 \centering
@@ -313,113 +311,99 @@ After applying the score to the entire set of wiki clusters (with a score thresh
 \label{heuristic}
 \end{figure}
 
-
 \subsection{Sentence Similarity as a Measure of Article Similarity}
 
-\begin{figure}
-\begin{center}
-\includegraphics[scale=0.43, keepaspectratio = true]{Top10ArticlePairs.jpg}
-\end{center}
-\caption{Top 10 Similarity Counts}
-\label{toparticles}
-\end{figure}
+ For clarity purposes, we define \emph{similarity count} as simply the total number of unique sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences to identify the articles that are most similar by this measure. Overall, we found $91,591$ wikipedia article paris that had a similarity count greater than or equal to $25$ and $29,582$ wikipedia article pairs that had a similarity count greater than or equal to $50$, and $\approx 6331$ Wikipedia articles with similarity count greater than or equal to $75$. If we perform the same similarity analysis, but filter clusters using the template heuristic described above, we find $5950$ article pairs with similarity count greater than or equal to $25$, $472$ article pairs with similarity greater than or equal to $50$ and $159$ article pairs with similarity greater than or equal to $75$. Table \ref{toparticlegroups}) shows the top similar article groups with similarity count greater than 100 (where pairs sharing an element have been merged).
 
- For clarity purposes, we define \emph{similarity count} as simply the total number of unique sentences between two articles that were found to share the same hash signature. Using the output of the minhashing routine, we performed a pairwise similarity count across all articles that shared similar sentences to identify the articles that are most similar by this measure. Overall, we found $\approx 121,000$ wikipedia article paris that had a similarity count greater than or equal to $20$ and $\approx 29,580$ wikipedia article pairs that had a similarity count greater than or equal to $50$. If we performt the same similarity analysis, but filter clusters using the template heuristic described above, 
-
-Looking at the distribution of cluster sizes in Figure \ref{clust}, we can see the expected behavior of decreasing number of clusters of size $k$ as $k$ grows large. What is unusual though is the number of relatively large clusters in the size range of $[25, 65]$. 2,361,886 unique sentences. Based on the number of airs with a similarity count greater than $50$, this would indicate that there are collections of articles that have a large number of near-duplicate sentences in common. As can be seen in the Top 10 similarity counts, there can even be chains of articles that share large portions of their content with each other (a chain of 3 is demonstrated in Figure \ref{toparticles}).
-
-\begin{table}
+\begin{figure*}[hp!]
 \centering
-\caption{Top 10 Article Pair Titles}
+\caption{Top Similar Article Groupings, Similarity Count $\ge$ 100}
 {\small
 \begin{tabular}{| l |}
     \hline
-\{Private equity in the 2000s, History of private equity and venture capital, Private equity in the 1980s\} \\
+\{Hindi Cinema, Bollywood\} \\
+\{Telecommunications in the People's Republic of China, Telecommunications in China\} \\
+\{Private equity in the 2000s, History of private equity and venture capital\} \\
 \{List of ethnic cleansings, Ethnic cleansing\} \\
 \{Route of the Oregon Trail, Oregon Trail\} \\
 \{English literature, British literature\} \\
-\{Portia schultzi, Portia labiata, Portia fimbriata\} \\
-\{Lesbian American history, List of lesbian, gay, bisexual, or transgender firsts by year\} \\
-\{Lists of British inventions, List of English inventions and discoveries\} \\
-\{1981 in baseball, 1981 Major League Baseball season\} \\
-\{Minority Report (film), Themes in Minority Report\} \\
-\{What Is History?, E. H. Carr\} \\
-\{Individualist anarchism in Europe, Individualist anarchism in the United States, Individualist anarchism, Anarchism in the United States\} \\
-\{Kingdom of Scotland, Scotland in the Early Modern Era\} \\
-\{Decline of Greco-Roman polytheism, Christian persecution of paganism after Theodosius I until the fall of the Roman Empire\} \\
-\{Anarchist schools of thought, Libertarian socialism, Anarchist communism, Anarchism, History of anarchism, Libertarian Marxism\} \\
-\{Brill Tramway, Quainton Road railway station\} \\
+\{Maritime history of the United States (1900–99), History of the United States Merchant Marine\} \\
+\{Culture of the United States, Society of the United States\} \\
+\{Halifax (former city), History of the Halifax Regional Municipality\} \\
+\{List of SNK characters, List of The King of Fighters characters\} \\
+\{Toronto Blue Jays, History of the Toronto Blue Jays\} \\
+\{History of Christianity in the United States, History of Protestantism in the United States\} \\
+\{Sri Ranganathaswamy Temple, Srirangam, Šri Ranganata Svami hram\} \\
+\{Individualist anarchism in Europe, Individualist anarchism\} \\
+\{Nutritional neuroscience, Nutrition and cognition\} \\
+\{Jesse Hubbard and Angie Baxter, The Hubbard Family\} \\
+\{History of the Dallas Mavericks, Dallas Mavericks\} \\
+\{Imperial Crypt Vaults, Imperial Crypt\} \\
 \{History of the Roman Empire, Byzantine Empire, History of the Byzantine Empire\} \\
-\{List of American state and local politicians convicted of crimes, List of state and local political scandals in the United States\} \\
-\{Filioque, History of the Filioque controversy\} \\
-\{1960 Major League Baseball season, 1960 in baseball\} \\
-\{Domitian, Flavian dynasty\} \\
-\{Military history of Australia during World War II, Australian Army during World War II\} \\
-\{Kuomintang, History of the Kuomintang\} \\
-\{Interracial marriage, Miscegenation, Eurasian (mixed ancestry)\} \\
+\{May Bukas Pa, List of May Bukas Pa episodes\} \\
+\{Myth: The Fallen Lords, Myth (series)\} \\
+\{Individualist anarchism in the United States, Anarchism in the United States\} \\
+\{Native Americans in the United States, Native American cultures in the United States\} \\
+\{Hockey stick controversy, Hockey stick graph\} \\
+\{Vancouver Canucks, History of the Vancouver Canucks\} \\
+\{Silvio Berlusconi, Controversies surrounding Silvio Berlusconi\} \\
+\{Los Angeles Angels of Anaheim, History of the Los Angeles Angels of Anaheim\} \\
+\{2007 suicide bombings in Iraq, List of terrorist incidents in Iraq in 2007\} \\
+\{List of Canadian tornadoes and tornado outbreaks, List of 21st-century Canadian tornadoes and tornado outbreaks\} \\
 \{Scotland in the modern era, History of Scotland\} \\
-\{History of California, Maritime history of California\} \\
-\{Outline of project management, Glossary of project management\} \\
-\{Wigan Warriors, History of Wigan Warriors\} \\
-\{List of American federal politicians convicted of crimes, List of federal political scandals in the United States\} \\
+\{Libertarian socialism, Libertarian Marxism\} \\
+\{Canti (Leopardi), Giacomo Leopardi\} \\
+\{Jayne Torvill, Christopher Dean, Torvill and Dean\} \\
+\{Government of Mahmoud Ahmadinejad (2005–present), Foreign policy of Mahmoud Ahmadinejad, Mahmoud Ahmadinejad\} \\
 \{Economy of England in the Middle Ages, Economics of English towns and trade in the Middle Ages\} \\
+\{Go Nagai bibliography, Go Nagai\} \\
 \{Galvatron, Megatron\} \\
-\{Metropolitan Police role in the news media phone hacking scandal, News media phone hacking scandal\} \\
-\{List of Shakespearean characters (L-Z), List of Shakespearean characters (A-K), List of historical figures dramatised by Shakespeare\} \\
-\{Fetal alcohol spectrum disorder, Fetal alcohol syndrome\} \\
-\{List of marine bony fishes of South Africa, List of marine animals of the Cape Peninsula and False Bay\} \\
+\{History of Australia (1901–45), History of Australia\} \\
+\{Interracial marriage, Miscegenation\} \\
+\{List of Prison Break recurring characters, List of Prison Break minor characters\} \\
+\{History of Eastern Orthodox Christian theology, History of the Orthodox Church\} \\
+\{69th Infantry Regiment (United States), 69th Infantry Regiment (New York)\} \\
+\{The Anarchy, Stephen, King of England\} \\
 \{History of painting, Western painting, 20th-century Western painting\} \\
-\{Timeline of the 2007 Burmese anti-government protests, 2007 Burmese anti-government protests\} \\
-\{Precipitation, Rain\} \\
-\{List of Puerto Ricans, List of Puerto Rican military personnel\} \\
-\{Glossary of basketball terms, Outline of basketball\} \\
-\{Hannibal, Conquests of Hannibal\} \\
-\{Bogotá, History of Bogotá\} \\
-\{Pseudotsuga menziesii var. menziesii, Douglas fir\} \\
-\{History of the East-West Schism, East-West Schism\} \\
-\{List of attacks in Lebanon, Lebanon bombings and assassinations (2004-present)\} \\
-\{Zen, Chinese Chán\} \\
+\{Sino-Pacific relations, Foreign relations of China\} \\
+\{History of the East–West Schism, East–West Schism\} \\
+\{History of the Detroit Tigers, Detroit Tigers\} \\
+\{San Francisco Giants, History of the San Francisco Giants\} \\
+\{Hernán Cortés, Oconahua, Jalisco\} \\
 \{List of Deadliest Warrior episodes, Deadliest Warrior (season 1), Deadliest Warrior (season 3), Deadliest Warrior (season 2)\} \\
-\{1991 Major League Baseball season, 1991 in baseball\} \\
+\{Port of Tianjin operations and logistics, Port of Tianjin\} \\
 \{American rock, Rock music\} \\
-\{Test matches in England in 2005, Australian cricket team in England in 2005\} \\
-\{Swedes, Sweden\} \\
-\{Glossary of robotics, Outline of robotics\} \\
+\{One-Day Internationals in England in 2005, Test matches in England in 2005, Australian cricket team in England in 2005\} \\
+\{History of Christianity, History of Christianity of the Middle Ages\} \\
+\{History of the Texas Rangers (baseball), Texas Rangers (baseball)\} \\
+\{List of Irish Americans, List of Americans of Irish descent\} \\
+\{Radeon HD 3000 Series, R600 (ASIC)\} \\
+\{Robert Edmund Strahorn, Battle of Slim Buttes\} \\
+\{Cleveland Indians, History of the Cleveland Indians\} \\
 \{CIA leak scandal criminal investigation, Plame affair grand jury investigation\} \\
-\{History of Australia since 1945, History of Australia\} \\
+\{History of Western civilization, History of Western civilization before AD 500\} \\
+\{Benigno Aquino III, Presidency of Benigno Aquino III\} \\
+\{Kingdom of Greece, History of modern Greece\} \\
 \{List of Russian people, List of Russian scientists\} \\
-    %% 21986867 & 2000 New Year Honours \\ \hline
-    %% 21986897 & 1999 New Year Honours \\ \hline
-    %% 3951586 & Instruments of the United Kingdom, 1994 \\ \hline
-    %% 3951664 & Instruments of the United Kingdom, 1995 \\ \hline
-    %% 1903966 & Management of baldness \\ \hline
-    %% 38088660 & Management of androgenic alopecia \\ \hline
-    %% 1503105 & Jayne Torvill \\ \hline
-    %% 1503115 & Christopher Dean \\ \hline
-    %% 184843 & Henry VI, Part 1 \\ \hline
-    %% 184846 & Henry VI, Part 2 \\ \hline
-    %% 184847 & Henry VI, Part 3 \\ \hline
-    %% 10701462 & List of birds of Zambia \\ \hline
-    %% 10930255 & List of birds of Zimbabwe \\ \hline
-    %% 10930111 & List of birds of Mozambique \\ \hline
-    %% 48711 & Oregon Trail \\ \hline
-    %% 31518964 & History of the Oregon Trail \\
-    \hline
+\hline
 \end{tabular}
 }
-\end{table}
+\label{toparticlegroups}
+\end{figure*}
 
+\section{Conclusions and Future Work}
 
-\section{Conclusion and Future Work}
-This paper presents our work on near-duplicate detection of Wikipedia articles at the sentence-granularity level using MinHash, a LSH technique. Our novel MapReduce algorithm tackles the problem by transforming it into more manageable pieces where each piece is handled in parallel. Our unique contribution includes empirical analysis of signatures belonging to Wikipedia articles at the sentence level. Experimental results verify that the proposed method is able to effectively and efficiently detect similar articles.
+Although the LSH technique of minhashing does not perfectly approximate edit distance, we have demonstrated that, when implemented in the Hadoop framework, it is an efficient method for identifying large numbers of Wikipedia sentences that are near duplicates. Additionally, we demonstrated that it is possible to apply a simple heuristic and to filter sentences that result from templatification, which make up about half (by our heuristic scoring) of the sentences identified in the similar sentence analysis. Because templatification appears quite often as almanac-like lists of facts, quite possibly generated with automated ``bots'' given the large scale of some templatified clusters, it is a worthwhile exercise to identify and quantify such content as distinct from other content found on the Wikipedia site.
 
-In the future, we would like to investigate revision histories of these articles, correlate them with their timestamps, and better relate similarities based on temporal dimensions. 
+Although sentences can be used as a measure of article similarity, identifying similarity at the sentence level allows greater flexibility for finding similar content across documents than a whole document analysis. These techniques could be used to automatically suggest corrections to Wikipedia, or to improve plagiarism detection across web content in general.
+
+Future work could investigate revision histories of articles and correlate similar sentence with article edit timestamps to better relate similarities on a temporal dimension. An analysis on a multi-sentence level could identify more similarities where user edits change sentence boundaries by merging or breaking up content which our present analysis would not detect. Additionally, a more sophisticated template detection heuristic could be developed, as the one used here is a very rough measure that makes assumptions specific to English language text.
 
 \section{Acknowledgments}
 We would especially like to thank Dr. Jimmy Lin for his advise and directions.
 
 \bibliographystyle{abbrv}
-\bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
+\bibliography{article-draft}  % sigproc.bib is the name of the Bibliography in this case
 
 \balancecolumns
 \end{document}
