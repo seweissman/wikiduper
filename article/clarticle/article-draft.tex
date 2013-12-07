@@ -38,73 +38,23 @@
 
 \section{Related Work}
 
+\section{Cross-lingual Similarity at the Sentence Level}
+
+We assume a model where a document is represented by a set of features. In the single language case the set of features is typically taken directly from the text of a document, either breaking up text on non-word boundaries (a ``bag of words'') or by apply a sliding window technique to create a set of equal-length document ``shingles'' (ref?). In cross-language similarity matching, the set of features for a document can no longer be extracted directly from the text, since there is no reason to assume that documents across languages share text features. One approach to the problem would be to pick a larget language $E$ and use machine translation to convert all documents into $E$ then proceed as in the single language case. The problem with this approach is that most language models are probabilistic, resulting in many possible translations for each document. Also, there is evidence that translation approaches do not significantly out perform CLIR techniques, which are generally less computationally expensive than machine translation techniques (REF). Finally, in order to build a machine translation model, it is often necessary to produce sets of parallel text, for which one would need a similarity measure, so it does not always make sense for document similarity matching techniques to depend on accurate translation models already existing.
+
+For the purposes of this work, our input documents are sentence, which allows us finer granularity in information retrieval than at the article level. Although the sentence level is somewhat arbitrary, it is generally a reliable way to break up documents, since most documents are composed in sentences, and sentences can be reliably extracted from text using regular expression matching for many languages. We use the signature based minhashing technique. In order to achieve cross language comparison we map each document word set into our target language by using a word-based language model for which we know $p(e|f)$, the conditional probability of a target language word $e$ being the translation of a foreign language word $e$. For each foreign word sentence we map the sentence into a set of words $S_F$. For each $f \in S_F$ we sample from the set of possible translations according to the distribution $p(f|e)$. We repeat this process $N$ times to get $N$ possible word sets (for some fixed $N$). These ``translated'' word sets are then each used as input into the minhash signature generation process. Although this approach is simplistic, it requires only a single pass over the input document set to process \emph{document} $\rightarrow$ \emph{sentence} $\rightarrow$ \emph{word set} $\rightarrow$ \emph{set of translated word sets}.
+
 \section{Locality \\ Sensitive Hashing}
 
-In order to measure document similarity we use a common LSH technique known as MinHash (\cite{broder:resemblance}). A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. (In our case, input ''documents'' are individual sentences found within the content of Wikipedia articles.) Each document is broken up into n-gram ``shingles'' and for each shingle set $S$ a set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family is produced. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
-
-%% \subsection{Design}
-%% Many signature techniques such as LSH are embarrassingly parallel. In our project, we designed our algorithm around the MapReduce framework.
-
-%% Because the minhash technique is parametrized by several variables, including shingle length, signature size, and number of signatures to be calculated per document, these values can also be considered as inputs for the MapReduce algorithm.
-
-%% \begin{table}
-%% \begin{algorithm}[H]
-%% \caption{Minhash MapReduce Pseudocode}
-%% \begin{algorithmic}
-%% \Function{initialize}{}
-%% %\Comment{configure and set up algorithm parameters}
-%%  \State $F \gets $ hash family;
-%%  \State $L \gets $ shingle length;
-%%  \State $K \gets $ vector length;
-%%  \State $N \gets $ number of signatures to emit;
-%% \EndFunction
-
-%% \Function{map}{docid $d$, wikipage $p$}
-%%  \State sentencect $\gets 0$
-%%  %\Comment {Break up article text into sentence}
-%%  \While{$s \gets$ nextSentence($p$)}
-%%   %\Comment{Break up sentence into shingles}
-%%   \State shingles $\gets$ shingleSet($s$,$L$);
-%%   \State minhashes = new List(|F|);
-%%    \For{$i \gets 1 \ldots |F|$}
-%%     \State minhashes[$i$] $\gets \infty$;
-%%    \EndFor
-%%    %\Comment{Calculate set of minhash signature for each sentence}
-%%    \For{$g \in$ shingles}
-%%     \For{$i \gets 1 \ldots |F|$}
-%%      \State minhashes[$i$] $\gets$ min($F_i(g)$,minhashes[$i$]);
-%%     \EndFor
-%%    \EndFor
-%%    %\Comment{Emit $N$ $K$-length signatures}
-%%   \For{$i \gets 1 \ldots N$}
-%%    \State sig = select($K$, minhahses);
-%%    \State emit(sig,(docid,sentencect));
-%%   \EndFor
-%%   \State  sentencect++;
-%%  \EndWhile
-%% \EndFunction
-
-%% \Function{reduce}{signature sig, sentenceids $S$}
-%% \If{$|S| > 1$}
-%% \State emit(sig, $S$);
-%% \EndIf
-%% \EndFunction
-%% \end{algorithmic}
-%% \end{algorithm}
-%% \end{table}
+In order to measure document similarity we use a common LSH technique known as MinHash (\cite{broder:resemblance}). A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. For each input feature set $S$ (in our case a set of words or translated words) a vector $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family is produced. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
 
 \subsection{Implementation Details}
 
-Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 (\url{https://github.com/lintool/Cloud9}) and WikiClean (\url{https://github.com/lintool/wikiclean/}) libraries for parsing Wikipedia page text from the Wikipedia XML dump format. An open source implementationis available on Github (\url{https://github.com/seweissman/wikiduper}).
-
-%Sentences are parsed out over each document using a regular expression. Sentences that are too large or too small are discarded. The family of hash functions is implemented using a ``Multiply Shift'' (\url{http://en.wikipedia.org/wiki/Universal_hashing}) hashing scheme and is generated from a random seed using the Java Random class. The hash family is also parametrized by hash output key size and this value can be configured to affect the size of the output signatures.
-
-\section{Parameter Tuning}
-
-The minhash algorithm is parametrized by several values, including shingle length, length of hash vectors, number of hash bands, and hash output size. Each of these parameters has an impact on the error rates in the minhash output. 
-
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 (\url{https://github.com/lintool/Cloud9}), Ivory  and WikiClean (\url{https://github.com/lintool/wikiclean/}) libraries for parsing Wikipedia page text from the Wikipedia XML dump format. An open source implementation is available on Github (\url{https://github.com/seweissman/wikiduper}).
 
 \section{Experiments and Discussion}
+
+
 
 \begin{figure}
 \centering

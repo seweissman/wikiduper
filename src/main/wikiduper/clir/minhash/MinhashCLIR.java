@@ -135,17 +135,17 @@ public class MinhashCLIR extends Configured implements Tool {
                     for(int i=0; i<K; i++){
                         outsig.add(i, 0);
                     }
-                    System.out.print("tokens : ");        
+                    //System.out.print("tokens : ");        
                     for(int i=0; i<K; i++){
                         int x = r.nextInt(nHash);
                         outsig.set(i, minhash[x]);
-                        System.out.print(hashval[x] + " " );
+                        //System.out.print(hashval[x] + " " );
                     }
-                    System.out.println();
+                    //System.out.println();
                     //System.out.println("fsig " + outsig);
                     output.collect(outsig, key);
-                    System.out.println("outsig: " + outsig);
-                    System.out.println("outid: " + key);
+                    //System.out.println("outsig: " + outsig);
+                    //System.out.println("outid: " + key);
                 }
             //}
 

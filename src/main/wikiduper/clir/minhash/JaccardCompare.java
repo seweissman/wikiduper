@@ -166,12 +166,12 @@ public class JaccardCompare extends Configured implements Tool {
             IntWritable eLineId = new IntWritable();
             ArrayListWritable<Text> eSentence = new ArrayListWritable<Text>();
             for(int i=0;i<nSentences;i++){
-                System.out.println("eLine " + i);
+                if(i%100 == 0) System.out.println("eLine " + i);
                 //eLineNum.set(2*i);
-              ArrayListOfIntsWritable transIdList = sentence2translation.get(2*i);
-              //ArrayListOfIntsWritable transIdList = new ArrayListOfIntsWritable();
+                ArrayListOfIntsWritable transIdList = sentence2translation.get(2*i);
+                //ArrayListOfIntsWritable transIdList = new ArrayListOfIntsWritable();
                 //sentence2translationReader.get(eLineNum, transIdList);
-               // System.out.println("transIdList " + transIdList);
+                // System.out.println("transIdList " + transIdList);
                 for(int j=0;j<nSentences;j++){
                   // System.out.println("fLine " + j);
                   ArrayListWritable<Text> fSentence = id2sentence.get((2*j+1)*nSamples);
