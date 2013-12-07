@@ -113,6 +113,8 @@ public class MinhashCLIR extends Configured implements Tool {
         static int s = 0;
         static float samples[]; 
         int m;
+
+        static String mode;
         
         // The minhash signature
         
@@ -153,7 +155,7 @@ public class MinhashCLIR extends Configured implements Tool {
             //System.out.println("nSamples = " + nSamples);
 
             // the "english" case
-            if(lang.equals(eLang)){
+            if(mode.equals("single") || lang.equals(eLang)){
                 
                 tokens = eTokenizer.processContent(line);
                 if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
@@ -289,6 +291,7 @@ public class MinhashCLIR extends Configured implements Tool {
 
         
         public void configure(JobConf job) {
+            mode = job.get("mode", "full");
             rseed = job.getLong("rseed", 112345);
             Random r = new Random(rseed);            
             configureMinhash(job, r);
@@ -453,6 +456,8 @@ public class MinhashCLIR extends Configured implements Tool {
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
     
+    private static final String SINGLELANG = "single";
+    
     //Minhash options
     private static final String NHASH_IN = "nHash";
     private static final String K_IN = "k";
@@ -526,6 +531,8 @@ public class MinhashCLIR extends Configured implements Tool {
                 .hasArg().withDescription("output path").create(OUTPUT));
         options.addOption(OptionBuilder.withArgName("integer")
                 .hasArg().withDescription("n samples").create(nSamplesOption));
+        
+        options.addOption(OptionBuilder.hasArg(false).withDescription("mode").create(SINGLELANG));
         
         
         
@@ -617,7 +624,9 @@ public class MinhashCLIR extends Configured implements Tool {
         conf.set("probTablef2eFile", f2eProbsPath);
         conf.set("probTablee2fFile", e2fProbsPath);
 
-
+        if(cmdline.hasOption(SINGLELANG)){
+            conf.set("mode", "single");
+        }
         
         conf.setNumMapTasks(20);
         conf.setNumReduceTasks(reduceTasks);
