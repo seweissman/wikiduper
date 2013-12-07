@@ -31,7 +31,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -53,11 +52,7 @@ import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.wikipedia.WikipediaPage;
-import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
-import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfInts;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
-import edu.umd.cloud9.io.pair.PairOfStringInt;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
 public class PreprocessWikiInput extends Configured implements Tool {
@@ -207,6 +202,7 @@ public class PreprocessWikiInput extends Configured implements Tool {
     private static final String eINPUT = "ewiki";
     private static final String fINPUT = "fwiki";
     private static final String OUTPUT = "output";
+    private static final String SINGLELANG = "single";
     private static final String eLANGUAGE_OPTION = "elang";
     private static final String fLANGUAGE_OPTION = "flang";
     
@@ -224,7 +220,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
                 .withDescription("two-letter language code").create(eLANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
                 .withDescription("two-letter language code").create(fLANGUAGE_OPTION));
-        
+        options.addOption(OptionBuilder.hasArg(false).withDescription("mode").create(SINGLELANG));
+
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
         try {
@@ -249,7 +246,8 @@ public class PreprocessWikiInput extends Configured implements Tool {
         String outputPath = cmdline.getOptionValue(OUTPUT);
         String eLanguage = cmdline.getOptionValue(eLANGUAGE_OPTION);
         String fLanguage = cmdline.getOptionValue(fLANGUAGE_OPTION);
-        
+        boolean isFullMode = true;
+        if(cmdline.hasOption(SINGLELANG)) isFullMode = false;   
 
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - e input file: " + eInputPath);
@@ -298,19 +296,19 @@ public class PreprocessWikiInput extends Configured implements Tool {
 
         JobClient.runJob(conf);
 
-        
         // Job 2
+        if(isFullMode){
 
-        FileInputFormat.setInputPaths(conf, new Path(fInputPath));
-        FileOutputFormat.setOutputPath(conf, fTmpPath);
+            FileInputFormat.setInputPaths(conf, new Path(fInputPath));
+            FileOutputFormat.setOutputPath(conf, fTmpPath);
         
-        conf.set("wiki.language", fLanguage);
+            conf.set("wiki.language", fLanguage);
 
-        // Delete the output directory if it exists already.
-        fs.delete(fTmpPath, true);
+            // Delete the output directory if it exists already.
+            fs.delete(fTmpPath, true);
         
-        JobClient.runJob(conf);
-
+            JobClient.runJob(conf);
+        }
         
         // Job 3
         conf = new JobConf(getConf(), PreprocessWikiInput.class);
@@ -322,7 +320,12 @@ public class PreprocessWikiInput extends Configured implements Tool {
         conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
         
-        FileInputFormat.setInputPaths(conf, fTmpPath, eTmpPath);
+        if(isFullMode){
+            FileInputFormat.setInputPaths(conf, fTmpPath, eTmpPath);
+        }else{
+            FileInputFormat.setInputPaths(conf, eTmpPath);
+        }
+        
         FileOutputFormat.setOutputPath(conf, outPath);
         conf.setPartitionerClass(RandomPartitioner.class);
 
