@@ -68,7 +68,7 @@ for $line (<FILEIN>){
 	    }
 	}
 	print MATCHOUT "$maxsim\n";
-	print "$cluster\t$maxsim\n";
+	print "OUTPUT MAX!!!! $cluster\t$maxsim\n";
 	@clustersentences = ();
     }
     $lastcluster = $cluster;
