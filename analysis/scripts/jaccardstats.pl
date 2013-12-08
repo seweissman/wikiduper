@@ -46,7 +46,7 @@ for $line (<FILEIN>){
 		$id2 = $clustersentences[$j];
 		$sim = $scores{"$id1,$id2"};
 		$simalt = $scores{"$id2,$id1"};
-		if($sim ne $simalt){
+		if($sim && $simalt){
 		    die "Non symmetric scores found!\n";
 		}
 		$matchset{$id1,$id2} = 1;
