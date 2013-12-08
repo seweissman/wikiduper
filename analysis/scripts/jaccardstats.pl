@@ -27,10 +27,12 @@ for $line (<FILEIN>){
     chomp $line;
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
     $cluster = $1;
-    $sentence = $2;
+    $id = $2;
     $count = $3;
     $language = $4;
     $sentence = $5;
+    print "CLUSTER $cluster\n";
+    print "CLUSTER $cluster\n";
     if(!$lastcluster){
 	$lastcluster = $cluster;
     }
@@ -46,7 +48,7 @@ for $line (<FILEIN>){
 	@clustersentences = ();
     }
     $lastcluster = $cluster;
-    push(@clustersentences,$sentence);
+    push(@clustersentences,$id);
 
 }
 close(FILEIN);
