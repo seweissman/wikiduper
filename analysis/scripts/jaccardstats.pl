@@ -55,5 +55,5 @@ for $line (<SENTIN>){
 close(SENTIN);
 
 for $sim (keys %simhist){
-    print $sim, $simhist{$sim},"\n";
+    print $sim,",",$simhist{$sim},"\n";
 }
