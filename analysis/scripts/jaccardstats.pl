@@ -73,7 +73,17 @@ for($i=1;$i<=1000;$i++){
     for($j=1;$j<=1000;$j++){
 	if(!$matchset{"$i,$j"} && !$matchset{"$j,$i"}){
 	    $sim = $scores{"$i,$j"};
-	    print NONMATCHOUT "$sim\n";
+	    $simalt = $scores{"$j,$i"};
+	    if($sim && $simalt){
+		die "Non symmetric scores found!\n";
+	    }
+	    if($sim){
+		print NONMATCHOUT "$sim\n";
+	    }
+	    if($simalt){
+		print NONMATCHOUT "$simalt\n";
+	    }
+	    
 	}
     }
 }
