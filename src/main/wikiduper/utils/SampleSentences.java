@@ -91,7 +91,7 @@ public class SampleSentences extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("lang")
                 .hasArg().withDescription("language to sample from").create(SAMPLE_LANG));
         options.addOption(OptionBuilder.withArgName("int")
-                .hasArg().withDescription("language to sample from").create(SAMPLES));
+                .hasArg().withDescription("number of samples").create(SAMPLES));
         
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -156,7 +156,7 @@ public class SampleSentences extends Configured implements Tool {
         JobClient.runJob(conf);
         String jobID = args[0];
         JobClient jobClient = new JobClient(new JobConf(getConf())); 
-        RunningJob job = jobClient.getJob(JobID.forName(jobID));
+        RunningJob job = jobClient.getJob(JobID.forName(conf.getJobName()));
         Counters counters = job.getCounters();
         long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS);
         
