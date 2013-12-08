@@ -4,7 +4,7 @@ if($#ARGV < 1){
 }
 
 $scores = $ARGV[0];
-$europarlenall = $ARGV[0];
+$europarlenall = $ARGV[1];
 
 my %scores;
 open(FILEIN,"<$scores");
@@ -52,7 +52,7 @@ for $line (<SENTIN>){
     push(@clustersentences,$id);
 
 }
-close(FILEIN);
+close(SENTIN);
 
 for $sim (keys %simhist){
     print $sim, $simhist{$keys},"\n";
