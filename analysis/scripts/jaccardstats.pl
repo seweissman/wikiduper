@@ -5,6 +5,8 @@ if($#ARGV < 1){
 
 $scores = $ARGV[0];
 $europarlenall = $ARGV[1];
+$matchout = "$europarlenall.matches";
+$nonmatchout = "$europarlenall.nonmatches";
 
 my %scores;
 open(FILEIN,"<$scores");
@@ -18,10 +20,12 @@ for $line (<FILEIN>){
 }
 close(FILEIN);
 
-open(SENTIN,"<$europarlenall");
+open(MATCHOUT,">$matchout");
+open(FILEIN,"<$europarlenall");
 my $lastcluster;
 my @clustersentences;
-for $line (<SENTIN>){
+my %matchset;
+for $line (<FILEIN>){
     chomp $line;
     #print $line,"\n";
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
@@ -40,11 +44,13 @@ for $line (<SENTIN>){
     }
     if($lastcluster != $cluster){
 	for($i=0;$i<$#clustersentences;$i++){
-	    $sentence1 = $clustersentences[$i];
+	    $id1 = $clustersentences[$i];
 	    for($j=0;$j<$#clustersentences;$j++){
-		$sentence2 = $clustersentences[$j];
-		$sim = $scores{"$sentence1,$sentence2"};
-		print "$sim\n";
+		$id2 = $clustersentences[$j];
+		$sim = $scores{"$id1,$id2"};
+		$matchset{$id1,$id2} = 1;
+		$matchset{$id2,$id1} = 1;
+		print MATCHOUT "$sim\n";
 	    }
 	}
 	@clustersentences = ();
@@ -53,6 +59,17 @@ for $line (<SENTIN>){
     push(@clustersentences,$id);
 
 }
-close(SENTIN);
+close(MATCHOUT);
+close(FILEIN);
 
+open(NONMATCHOUT,">$nonmatchout");
+for($i=1;$i<=1000;$i++){
+    for($j=1;$j<=1000;$j++){
+	if(!$matchset{"$i,$j"} && !$matchset{"$j,$i"}){
+	    $sim = $scores{"$i,$j"};
+	    print NONMATCHOUT "$sim\n";
+	}
+    }
+}
+close(NONMATCHOUT);
 
