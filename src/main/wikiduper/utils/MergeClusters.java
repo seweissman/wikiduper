@@ -189,8 +189,8 @@ public class MergeClusters extends Configured implements Tool {
             long linect = 0;
             long newnodect = 0;
             while(reader.next(bucket, ds)){
-                //System.out.println("bucket = " + bucket);
-                //System.out.println("lastbucket = " + lastbucket);
+                System.out.println("bucket = " + bucket);
+                System.out.println("lastbucket = " + lastbucket);
                 linect++;
                 if(ct % 1000 == 0) System.out.println("Count:"+ct);
                 if(linect % 100000 == 0) System.out.println(linect+"\t"+ct+"\t"+newnodect);
