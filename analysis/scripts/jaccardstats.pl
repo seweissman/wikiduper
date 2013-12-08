@@ -27,13 +27,14 @@ my @clustersentences;
 my %matchset;
 for $line (<FILEIN>){
     chomp $line;
-    #print $line,"\n";
+    print $line,"\n";
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
     $cluster = $1;
     $id = $2;
     $count = $3;
     $language = $4;
     $sentence = $5;
+    print "cluster=$cluster, lastcluster=$lastcluster\n";
     if(!$lastcluster){
 	$lastcluster = $cluster;
     }
