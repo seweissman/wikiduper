@@ -40,7 +40,7 @@ for $line (<FILEIN>){
 	$lastcluster = $cluster;
     }
     if($lastcluster != $cluster){
-	$maxsim = -1;
+	$maxsim = 0.0;
 	for($i=0;$i<$#clustersentences;$i++){
 	    $id1 = $clustersentences[$i];
 	    for($j=0;$j<$#clustersentences;$j++){
@@ -56,12 +56,15 @@ for $line (<FILEIN>){
 		}
 		$matchset{$id1,$id2} = 1;
 		$matchset{$id2,$id1} = 1;
-		if($sim && $sim > $maxsim){
-		    $maxsim = $sim;
-
+		if($sim){
+		    if($sim > $maxsim){
+			$maxsim = $sim;
+		    }
 		}
-		if($simalt && $simalt > $maxsim){
-		    $maxsim = $sim;
+		if($simalt){
+		    if($simalt > $maxsim){
+			$maxsim = $sim;
+		    }
 		}
 	    }
 	}
