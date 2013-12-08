@@ -73,13 +73,11 @@ close(FILEIN);
 @allids = keys(%idset);
 open(NONMATCHOUT,">$nonmatchout");
 
-for($i=1;$i<=$#allids;$i++){
-    $id1 = $allids[$i];
-    for($j=1;$j<=$#allids;$j++){
-	$id2 = $allids[$j];
-	if(!$matchset{"$id1,$id2"} && !$matchset{"$id1,$id2"}){
-	    $sim = $scores{"$id1,$id2"};
-	    $simalt = $scores{"$id1,$id2"};
+for($i=1;$i<=1000;$i++){
+    for($j=1000;$j<=2000;$j++){
+	if(!$matchset{"$i,$j"} && !$matchset{"$j,$i"}){
+	    $sim = $scores{"$i,$j"};
+	    $simalt = $scores{"$j,$i"};
 	    if($sim && $simalt){
 		die "Non symmetric scores found!\n";
 	    }
