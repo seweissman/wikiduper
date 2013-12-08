@@ -87,6 +87,7 @@ public class MergeClusters extends Configured implements Tool {
         String inputPath = cmdline.getOptionValue(INPUT);
         
         LOG.info("Tool name: " + this.getClass().getName());
+        LOG.info(" - input file: " + inputPath);
         LOG.info(" - output file: " + outputPath);
         
         JobConf conf = new JobConf(getConf(), MergeClusters.class);
