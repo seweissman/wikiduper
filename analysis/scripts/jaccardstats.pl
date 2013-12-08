@@ -25,7 +25,6 @@ open(FILEIN,"<$europarlenall");
 my $lastcluster;
 my @clustersentences;
 my %matchset;
-my %idset;
 for $line (<FILEIN>){
     chomp $line;
     #print $line,"\n";
@@ -41,12 +40,11 @@ for $line (<FILEIN>){
 	$lastcluster = $cluster;
     }
     if($lastcluster != $cluster){
+	$maxsim = -1;
 	for($i=0;$i<$#clustersentences;$i++){
 	    $id1 = $clustersentences[$i];
-	    $idset{$id1} = 1;
 	    for($j=0;$j<$#clustersentences;$j++){
 		$id2 = $clustersentences[$j];
-		$idset{$id2} = 1;
 		$sim = $scores{"$id1,$id2"};
 		$simalt = $scores{"$id2,$id1"};
 		if($sim && $simalt){
@@ -54,14 +52,16 @@ for $line (<FILEIN>){
 		}
 		$matchset{$id1,$id2} = 1;
 		$matchset{$id2,$id1} = 1;
-		if($sim){
-		    print MATCHOUT "$sim\n";
+		if($sim && $sim > $maxsim){
+		    $maxsim = $sim;
+
 		}
-		if($simalt){
-		    print MATCHOUT "$simalt\n";
+		if($simalt && $simalt > $maxsim){
+		    $maxsim = $sim;
 		}
 	    }
 	}
+	print MATCHOUT "$maxsim\n";
 	@clustersentences = ();
     }
     $lastcluster = $cluster;
@@ -70,7 +70,6 @@ for $line (<FILEIN>){
 }
 close(MATCHOUT);
 close(FILEIN);
-@allids = keys(%idset);
 open(NONMATCHOUT,">$nonmatchout");
 
 for($i=1;$i<=1000;$i++){
