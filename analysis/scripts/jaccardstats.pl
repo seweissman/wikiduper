@@ -27,7 +27,6 @@ my @clustersentences;
 my %matchset;
 for $line (<FILEIN>){
     chomp $line;
-    print $line,"\n";
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
     $cluster = $1;
     $id = $2;
@@ -71,6 +70,7 @@ for $line (<FILEIN>){
 	print "OUTPUT MAX!!!! $cluster\t$maxsim\n";
 	@clustersentences = ();
     }
+    print $line,"\n";
     $lastcluster = $cluster;
     push(@clustersentences,$id);
 
