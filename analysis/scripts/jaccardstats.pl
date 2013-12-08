@@ -20,10 +20,10 @@ close(FILEIN);
 
 %simhist;
 
-open(FILEIN,"<$europarlenall");
+open(SENTIN,"<$europarlenall");
 my $lastcluster;
 my @clustersentences;
-for $line (<FILEIN>){
+for $line (<SENTIN>){
     chomp $line;
     print $line,"\n";
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
