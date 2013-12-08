@@ -31,9 +31,6 @@ for $line (<FILEIN>){
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
     $cluster = $1;
     $id = $2;
-    if($id > 1000){
-	$id = $id - 1000;
-    }
     $count = $3;
     $language = $4;
     $sentence = $5;

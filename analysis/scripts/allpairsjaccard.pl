@@ -1,25 +1,30 @@
 
-if($#ARGV < 0){
-    die "Usage: allpairsjaccard.pl <europarl>\n";
+if($#ARGV < 1){
+    die "Usage: allpairsjaccard.pl <europarle> <europarlf>\n";
 }
 
-$europarl = $ARGV[0];
+$europarle = $ARGV[0];
+$europarlf = $ARGV[1];
 
-open(FILEIN,"<$europarl");
+open(FILEIN,"<$europarle");
+@elines = <FILEIN>;
+close(FILEIN);
 
-$ct = 0;
-@lines = <FILEIN>;
+open(FILEIN,"<$europarlf");
+@flines = <FILEIN>;
+close(FILEIN);
+
 my $line1;
 my $line2;
 my $sim;
-for($i=0;$i<=$#lines;$i++){
-    $line1 = $lines[$i];
+for($i=0;$i<=$#elines;$i++){
+    $line1 = $elines[$i];
     chomp $line1;
-    for($j=0;$j<=$#lines;$j++){
-	$line2 = $lines[$j];
+    for($j=0;$j<=$#flines;$j++){
+	$line2 = $flines[$j];
 	chomp $line2;
 	$sim = jaccard($line1,$line2);
-	printf "%d,%d,%.3f\n",$i+1,$j+1,$sim;
+	printf "%d,%d,%.3f\n",$i+1,$j+1001,$sim;
     }
 }
 
