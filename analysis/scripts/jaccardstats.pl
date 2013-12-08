@@ -1,11 +1,10 @@
 
-if($#ARGV < 2){
+if($#ARGV < 1){
     die "Usage: jaccardstats.pl <pairwise jaccard scores> <mh results> \n";
 }
 
 $scores = $ARGV[0];
 $europarlenall = $ARGV[0];
-$europarlende = $ARGV[0];
 
 my %scores;
 open(FILEIN,"<$scores");
@@ -46,6 +45,7 @@ for $line (<FILEIN>){
 	}
 	@clustersentences = ();
     }
+    $lastcluster = $cluster;
     push(@clustersentences,$sentence);
 
 }
