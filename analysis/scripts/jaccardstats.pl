@@ -55,7 +55,7 @@ for $line (<FILEIN>){
 		    print MATCHOUT "$sim\n";
 		}
 		if($simalt){
-		    print MATCHOUT "$sim\n";
+		    print MATCHOUT "$simalt\n";
 		}
 	    }
 	}
