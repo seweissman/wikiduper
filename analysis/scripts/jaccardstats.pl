@@ -52,7 +52,7 @@ for $line (<FILEIN>){
 		}
 
 		if(!$sim && !$simalt){
-		    die "No score for pair $id1 $id2\n";
+		    print "No score for pair $id1 $id2\n";
 		}
 		$matchset{$id1,$id2} = 1;
 		$matchset{$id2,$id1} = 1;
