@@ -14,7 +14,7 @@
 
 \title{Cross Language Similar Sentence Detection}
 
-\numberofauthors{3}
+\numberofauthors{1}
 
 \author{
 \alignauthor Sarah E. Weissman\\
@@ -44,13 +44,28 @@ We assume a model where a document is represented by a set of features. In the s
 
 For the purposes of this work, our input documents are sentence, which allows us finer granularity in information retrieval than at the article level. Although the sentence level is somewhat arbitrary, it is generally a reliable way to break up documents, since most documents are composed in sentences, and sentences can be reliably extracted from text using regular expression matching for many languages. We use the signature based minhashing technique. In order to achieve cross language comparison we map each document word set into our target language by using a word-based language model for which we know $p(e|f)$, the conditional probability of a target language word $e$ being the translation of a foreign language word $e$. For each foreign word sentence we map the sentence into a set of words $S_F$. For each $f \in S_F$ we sample from the set of possible translations according to the distribution $p(f|e)$. We repeat this process $N$ times to get $N$ possible word sets (for some fixed $N$). These ``translated'' word sets are then each used as input into the minhash signature generation process. Although this approach is simplistic, it requires only a single pass over the input document set to process \emph{document} $\rightarrow$ \emph{sentence} $\rightarrow$ \emph{word set} $\rightarrow$ \emph{set of translated word sets}.
 
-\section{Locality \\ Sensitive Hashing}
+Following Ture, et. al 2011 [ref], we use parallel German and English texts from the Europarl corpus, which contains proceedings from the European Parliament (1996— 2009), to compare empirically the performance of cross-language minhashing to signature matching on a machine translated text. (Here our machine translation tool is the Google Translate web tool.)  In the first case we translat each German sentence into English and then process the resulting sentences using a straightforward minhash signature algorithm. In the second case, we use our sampling approach to create a number of possible documents, each which gets input into the minhash algorithm. We then calculated Jaccard similarity for the translated document pairs. Figure \ref{mtclircompare} shows the two distributions of Jaccard similarity scores for each document set, comparing matches and non-matches. We can see that the sampling approach performs similarity to the translation approach, finding documents that are similar under machine translation nearly as well as if we had compared the translated texts.
 
-In order to measure document similarity we use a common LSH technique known as MinHash (\cite{broder:resemblance}). A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. For each input feature set $S$ (in our case a set of words or translated words) a vector $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family is produced. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
+\begin{figure}
+\centering
+\includegraphics[width=3.5in, keepaspectratio = true]{clirhist.pdf}
+\includegraphics[width=3.5in, keepaspectratio = true]{transhist.pdf}
+\caption{Histograms of Europarl Matches by Jaccard Similarity for both CLIR and translation technique.}
+\label{mtclircompare}
+\end{figure}
+
+
+\section{Signature Techniques}
+
+In order to measure document similarity we use a common signature technique known as minhash (\cite{broder:resemblance}). A minhash signature on a text document is calculated using a parametrized family of hash functions $F_i$, $1 \le i \le N$. For each input feature set $S$ (in our case a set of words or translated words) a vector $\{min_{s \in S}(F_i(s)\}$ of minimum hashes over the hash family is produced. The signature on a document $d$ is represented as a vector of $K$ minhashes, chosen from the set $\{min_{s \in S}(F_i(s)\}$ of minimum hashes. In order to minimize false negatives we apply a technique sometimes known as ``banding'' \cite{ullman:massive} where multiple signatures are produced for each input document.
+
+In order to compare the effectiveness of our cross-language minhashing approach we compare the technique to a second signature technique, random projections as described in Ture, et. al 2011 [ref].  
 
 \subsection{Implementation Details}
 
-Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 (\url{https://github.com/lintool/Cloud9}), Ivory  and WikiClean (\url{https://github.com/lintool/wikiclean/}) libraries for parsing Wikipedia page text from the Wikipedia XML dump format. An open source implementation is available on Github (\url{https://github.com/seweissman/wikiduper}).
+Our implementation is built on top of the Apache Hadoop MapReduce framework, using utilities from the Cloud9 (\url{https://github.com/lintool/Cloud9}), Ivory and WikiClean (\url{https://github.com/lintool/wikiclean/}) libraries for parsing Wikipedia page text from the Wikipedia XML dump format. An open source implementation is available on Github (\url{https://github.com/seweissman/wikiduper}).
+
+In order to run our tests we use the Random Projections code made available as part of the Ivory library (link).
 
 \section{Experiments and Discussion}
 
