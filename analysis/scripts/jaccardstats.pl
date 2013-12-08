@@ -51,7 +51,12 @@ for $line (<FILEIN>){
 		}
 		$matchset{$id1,$id2} = 1;
 		$matchset{$id2,$id1} = 1;
-		print MATCHOUT "$sim\n";
+		if($sim){
+		    print MATCHOUT "$sim\n";
+		}
+		if($simalt){
+		    print MATCHOUT "$sim\n";
+		}
 	    }
 	}
 	@clustersentences = ();
