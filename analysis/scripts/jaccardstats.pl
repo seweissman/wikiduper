@@ -25,15 +25,15 @@ my $lastcluster;
 my @clustersentences;
 for $line (<SENTIN>){
     chomp $line;
-    print $line,"\n";
+    #print $line,"\n";
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
     $cluster = $1;
     $id = $2;
     $count = $3;
     $language = $4;
     $sentence = $5;
-    print "CLUSTER $cluster\n";
-    print "CLUSTER $cluster\n";
+    #print "CLUSTER $cluster\n";
+    #print "ID $id\n";
     if(!$lastcluster){
 	$lastcluster = $cluster;
     }
