@@ -18,8 +18,6 @@ for $line (<FILEIN>){
 }
 close(FILEIN);
 
-%simhist;
-
 open(SENTIN,"<$europarlenall");
 my $lastcluster;
 my @clustersentences;
@@ -46,7 +44,7 @@ for $line (<SENTIN>){
 	    for($j=0;$j<$#clustersentences;$j++){
 		$sentence2 = $clustersentences[$j];
 		$sim = $scores{"$sentence1,$sentence2"};
-		$simhist{$sim} += 1;
+		print "$sim\n";
 	    }
 	}
 	@clustersentences = ();
@@ -57,6 +55,4 @@ for $line (<SENTIN>){
 }
 close(SENTIN);
 
-for $sim (keys %simhist){
-    print $sim,",",$simhist{$sim},"\n";
-}
+
