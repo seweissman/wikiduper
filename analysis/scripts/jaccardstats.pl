@@ -25,6 +25,7 @@ open(FILEIN,"<$europarlenall");
 my $lastcluster;
 my @clustersentences;
 my %matchset;
+my %idset;
 for $line (<FILEIN>){
     chomp $line;
     #print $line,"\n";
@@ -42,8 +43,10 @@ for $line (<FILEIN>){
     if($lastcluster != $cluster){
 	for($i=0;$i<$#clustersentences;$i++){
 	    $id1 = $clustersentences[$i];
+	    $idset{$id1} = 1;
 	    for($j=0;$j<$#clustersentences;$j++){
 		$id2 = $clustersentences[$j];
+		$idset{$id2} = 1;
 		$sim = $scores{"$id1,$id2"};
 		$simalt = $scores{"$id2,$id1"};
 		if($sim && $simalt){
@@ -67,13 +70,16 @@ for $line (<FILEIN>){
 }
 close(MATCHOUT);
 close(FILEIN);
-
+@allids = keys(%idset);
 open(NONMATCHOUT,">$nonmatchout");
-for($i=1;$i<=1000;$i++){
-    for($j=1;$j<=1000;$j++){
-	if(!$matchset{"$i,$j"} && !$matchset{"$j,$i"}){
-	    $sim = $scores{"$i,$j"};
-	    $simalt = $scores{"$j,$i"};
+
+for($i=1;$i<=$#allids;$i++){
+    $id1 = $allids[$i];
+    for($j=1;$j<=$#allids;$j++){
+	$id2 = $allids[$j];
+	if(!$matchset{"$id1,$id2"} && !$matchset{"$id1,$id2"}){
+	    $sim = $scores{"$id1,$id2"};
+	    $simalt = $scores{"$id1,$id2"};
 	    if($sim && $simalt){
 		die "Non symmetric scores found!\n";
 	    }
