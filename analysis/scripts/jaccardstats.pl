@@ -22,7 +22,7 @@ close(FILEIN);
 
 open(MATCHOUT,">$matchout");
 open(FILEIN,"<$europarlenall");
-my $lastcluster;
+my $lastcluster = -1;
 my @clustersentences;
 my %matchset;
 for $line (<FILEIN>){
@@ -35,7 +35,7 @@ for $line (<FILEIN>){
     $language = $4;
     $sentence = $5;
     print "cluster=$cluster, lastcluster=$lastcluster\n";
-    if(!$lastcluster){
+    if(!$lastcluster == -1){
 	$lastcluster = $cluster;
     }
     if($lastcluster != $cluster){
