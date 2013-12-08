@@ -34,8 +34,6 @@ for $line (<FILEIN>){
     $count = $3;
     $language = $4;
     $sentence = $5;
-    #print "CLUSTER $cluster\n";
-    #print "ID $id\n";
     if(!$lastcluster){
 	$lastcluster = $cluster;
     }
@@ -69,6 +67,7 @@ for $line (<FILEIN>){
 	    }
 	}
 	print MATCHOUT "$maxsim\n";
+	print "$cluster\t$maxsim\n";
 	@clustersentences = ();
     }
     $lastcluster = $cluster;
