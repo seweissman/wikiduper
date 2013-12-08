@@ -49,9 +49,9 @@ for $line (<FILEIN>){
 		    die "Non symmetric scores found!\n";
 		}
 
-		if(!$sim && !$simalt){
-		    print "No score for pair $id1 $id2\n";
-		}
+		#if(!$sim && !$simalt){
+		#print "No score for pair $id1 $id2\n";
+	        #}
 		$matchset{$id1,$id2} = 1;
 		$matchset{$id2,$id1} = 1;
 		if($sim){
