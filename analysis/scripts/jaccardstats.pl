@@ -35,7 +35,7 @@ for $line (<FILEIN>){
     $language = $4;
     $sentence = $5;
     print "cluster=$cluster, lastcluster=$lastcluster\n";
-    if(!$lastcluster == -1){
+    if($lastcluster == -1){
 	$lastcluster = $cluster;
     }
     if($lastcluster != $cluster){
