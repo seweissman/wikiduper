@@ -57,18 +57,18 @@ for $line (<FILEIN>){
 		if($sim){
 		    if($sim > $maxsim){
 			$maxsim = $sim;
-			print MATCHOUT "$sim\n";
+			#print MATCHOUT "$sim\n";
 		    }
 		}
 		if($simalt){
 		    if($simalt > $maxsim){
 			$maxsim = $sim;
-			print MATCHOUT "$simalt\n";
+			#print MATCHOUT "$simalt\n";
 		    }
 		}
 	    }
 	}
-	#print MATCHOUT "$maxsim\n";
+	print MATCHOUT "$maxsim\n";
 	#print "OUTPUT MAX!!!! $cluster\t$maxsim\n";
 	@clustersentences = ();
     }
