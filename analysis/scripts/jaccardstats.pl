@@ -39,9 +39,9 @@ for $line (<FILEIN>){
     }
     if($lastcluster != $cluster){
 	$maxsim = 0.0;
-	for($i=0;$i<$#clustersentences;$i++){
+	for($i=0;$i<=$#clustersentences;$i++){
 	    $id1 = $clustersentences[$i];
-	    for($j=0;$j<$#clustersentences;$j++){
+	    for($j=0;$j<=$#clustersentences;$j++){
 		$id2 = $clustersentences[$j];
 		$sim = $scores{"$id1,$id2"};
 		$simalt = $scores{"$id2,$id1"};
