@@ -25,6 +25,7 @@ my $lastcluster;
 my @clustersentences;
 for $line (<FILEIN>){
     chomp $line;
+    print $line,"\n";
     $line =~ /^(.*)\t(.*)\t(.*)\t(.*)\t(.*)$/;
     $cluster = $1;
     $id = $2;
