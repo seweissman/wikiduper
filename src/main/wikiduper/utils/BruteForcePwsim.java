@@ -22,6 +22,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
@@ -164,53 +165,62 @@ public class BruteForcePwsim extends Configured implements Tool {
         }
 
         public void readSampleDocs(JobConf job) {
-            String docSampleFile = job.get("sampleDocs") + "/part*";
+            String docSampleFile = job.get("sampleDocs");
             System.out.println("Reading from " + docSampleFile);
             HashSet<String> tokenSet;
             int scount = 0;
-            try{
-                FileSystem fs = FileSystem.get(job);
-                FSDataInputStream in = fs.open(new Path(docSampleFile));
-                SequenceFile.Reader reader;
-                reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
+            FileSystem fs;
+            try {
+                fs = FileSystem.get(job);
+            FileStatus[] infiles = fs.globStatus(new Path(docSampleFile + "/part-*"));
+            for(FileStatus filestatus : infiles){
+                try{
+                    FSDataInputStream in = fs.open(filestatus.getPath());
+                    SequenceFile.Reader reader;
+                    reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
                 
-                PairOfStrings sentence = new PairOfStrings();
-                PairOfLongInt docIdSentenceCt = new PairOfLongInt();
-                while(reader.next(docIdSentenceCt, sentence)){
-                    String s = sentence.getRightElement();
-                    System.out.println("READ SENTENCE: " + sentence);
-                    String[] tokens = fTokenizer.processContent(s);
-                    ArrayList<HashSet<String>> sampleTranslationSet = new ArrayList<HashSet<String>>();
-                    for(int l=0;l<nSamples;l++){
-                        tokenSet = new HashSet<String>(); 
-                        for (String ftoken : tokens) {
-                            if (!tokenSet.contains(ftoken)) { // if this is first time we saw token in this sentence
-                                int f = fVocabSrc.get(ftoken);
-                                if(f != -1){
-                                    List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
-                                    float pr = samples[scount%MAXSamples];
-                                    scount++;    
-                                    String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
-                                    wordset.add(eWord);
-                                 }else{
-                                     wordset.add(ftoken);
-                                 }
-                             }
-                         }
-                         sampleTranslationSet.add(wordset);
-                     }
-                    sampleTranslationSets.put(docIdSentenceCt,sampleTranslationSet);
-                    sentence = new PairOfStrings();
-                    docIdSentenceCt = new PairOfLongInt();
-
-                }
-                reader.close();
-            }catch (EOFException e) {
+                    PairOfStrings sentence = new PairOfStrings();
+                    PairOfLongInt docIdSentenceCt = new PairOfLongInt();
+                    while(reader.next(docIdSentenceCt, sentence)){
+                        String s = sentence.getRightElement();
+                        System.out.println("READ SENTENCE: " + sentence);
+                        String[] tokens = fTokenizer.processContent(s);
+                        ArrayList<HashSet<String>> sampleTranslationSet = new ArrayList<HashSet<String>>();
+                        for(int l=0;l<nSamples;l++){
+                            tokenSet = new HashSet<String>(); 
+                            for (String ftoken : tokens) {
+                                if (!tokenSet.contains(ftoken)) { // if this is first time we saw token in this sentence
+                                    int f = fVocabSrc.get(ftoken);
+                                    if(f != -1){
+                                        List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
+                                        float pr = samples[scount%MAXSamples];
+                                        scount++;    
+                                        String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
+                                        wordset.add(eWord);
+                                    }else{
+                                        wordset.add(ftoken);
+                                    }
+                                }
+                            }
+                            sampleTranslationSet.add(wordset);
+                        }
+                        sampleTranslationSets.put(docIdSentenceCt,sampleTranslationSet);
+                        sentence = new PairOfStrings();
+                        docIdSentenceCt = new PairOfLongInt();
+                    }
+                    reader.close();
+                    }catch (EOFException e) {
                 // For some reason it doesn't know when the input stream is done??
-            }catch (IOException e) {
+                    }catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                        e.printStackTrace();
+                    }
             }
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+
             System.out.println("Done reading");
             
         }
