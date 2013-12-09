@@ -439,8 +439,8 @@ public class BruteForcePwsim extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx8000m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
-        conf.setMapOutputKeyClass(PairOfLongInt.class);
-        conf.setMapOutputValueClass(ArrayListOfDoubles.class);
+        conf.setOutputKeyClass(PairOfLongInt.class);
+        conf.setOutputValueClass(ArrayListOfDoubles.class);
         
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
