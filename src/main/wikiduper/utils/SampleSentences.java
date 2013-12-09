@@ -36,6 +36,30 @@ import edu.umd.cloud9.io.pair.PairOfStrings;
 public class SampleSentences extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(SampleSentences.class);
 
+    private static class LangFilterMapper extends MapReduceBase implements
+    Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, PairOfStrings> {
+
+        static String sampleLang;
+
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, PairOfStrings> output,
+                    Reporter reporter) throws IOException {
+            
+            String lang = p.getLeftElement();
+            if(lang.equals(sampleLang)){
+                    output.collect(key, p);
+                
+            }
+        }
+        
+
+        public void configure(JobConf job) {
+            sampleLang = job.get("sampleLang","de");
+        }
+
+        
+    }
+
+    
     private static class SampleMapper extends MapReduceBase implements
     Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, PairOfStrings> {
 
@@ -64,10 +88,11 @@ public class SampleSentences extends Configured implements Tool {
             count = job.getLong("count", 1000000);
             sampleLang = job.get("sampleLang","de");
             int nSamples = job.getInt("nSamples", 1000000);
+            long nMaps = job.getLong("nMaps", 300);
             if(nSamples > count){
                 limit = 1;
             }
-            limit = count/nSamples;
+            limit = count/(nMaps*nSamples);
         }
 
         
@@ -113,7 +138,8 @@ public class SampleSentences extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-
+        String tmpPath = "tmppath";
+        
         String sampleLang = cmdline.getOptionValue(SAMPLE_LANG);
         int nSamples = Integer.parseInt(cmdline.getOptionValue(SAMPLES));
                 
@@ -137,19 +163,21 @@ public class SampleSentences extends Configured implements Tool {
         
         conf.setOutputKeyClass(PairOfLongInt.class);
         conf.setOutputValueClass(PairOfStrings.class);
+        conf.set("sampleLang", sampleLang);
 
         // Job 1
         conf.setJobName(String.format("SampleSentences-1[%s: %s]", OUTPUT, outputPath));
 
+        conf.setMapperClass(LangFilterMapper.class);
         conf.setNumMapTasks(20);
         conf.setNumReduceTasks(0);
         
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
-        FileOutputFormat.setOutputPath(conf, new Path("tmppath"));
+        FileOutputFormat.setOutputPath(conf, new Path(tmpPath));
 
 
         // Delete the output directory if it exists already.
-        Path outputDir = new Path("tmppath");
+        Path outputDir = new Path(tmpPath);
         FileSystem.get(conf).delete(outputDir, true);
         
         RunningJob job = JobClient.runJob(conf);
@@ -164,7 +192,7 @@ public class SampleSentences extends Configured implements Tool {
         conf.setLong("rseed", 1123456);
         conf.setLong("count", count);
         conf.setInt("nSamples", nSamples);
-        conf.set("sampleLang", sampleLang);
+        conf.setLong("nMaps", maps);
         
         conf.setNumMapTasks(1);
         conf.setNumReduceTasks(0);
