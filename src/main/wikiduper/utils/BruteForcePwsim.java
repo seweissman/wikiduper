@@ -41,6 +41,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import edu.umd.cloud9.io.array.ArrayListOfDoublesWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
@@ -54,7 +55,7 @@ public class BruteForcePwsim extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(BruteForcePwsim.class);
 
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, ArrayListOfDoubles> {
+    Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, ArrayListOfDoublesWritable> {
         
         static long rseed;
 
@@ -88,7 +89,7 @@ public class BruteForcePwsim extends Configured implements Tool {
         
         static HashSet<String> wordset = new HashSet<String>();
         
-        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, ArrayListOfDoubles> output,
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, ArrayListOfDoublesWritable> output,
                     Reporter reporter) throws IOException {
             
             String lang = p.getLeftElement();
@@ -109,7 +110,7 @@ public class BruteForcePwsim extends Configured implements Tool {
                     tokencts.increment(token);
                 }
                 
-                ArrayListOfDoubles outScores = new ArrayListOfDoubles();
+                ArrayListOfDoublesWritable outScores = new ArrayListOfDoublesWritable();
                 for(PairOfLongInt docIdSentenceCt : sampleTranslationSets.keySet()){
                     ArrayList<HashSet<String>> transList = sampleTranslationSets.get(docIdSentenceCt);
                     //System.out.println("translist size " + transList.size());
@@ -440,7 +441,7 @@ public class BruteForcePwsim extends Configured implements Tool {
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setOutputKeyClass(PairOfLongInt.class);
-        conf.setOutputValueClass(ArrayListOfDoubles.class);
+        conf.setOutputValueClass(ArrayListOfDoublesWritable.class);
         
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
