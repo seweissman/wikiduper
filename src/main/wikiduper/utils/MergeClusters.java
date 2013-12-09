@@ -135,25 +135,6 @@ public class MergeClusters extends Configured implements Tool {
 
             }
 
-            FileSystem fs = FileSystem.get(conf);
-            Path clustersOut = new Path(docmapFile);
-            FileSystem.get(conf).delete(clustersOut, true);
-            SequenceFile.Writer writer = SequenceFile.createWriter(conf, 
-                    SequenceFile.Writer.file(clustersOut), 
-                    SequenceFile.Writer.keyClass(PairOfLongString.class), 
-                    SequenceFile.Writer.valueClass(ArrayListWritable.class));
-            ArrayListWritable<PairOfLongs> sentlist;
-            PairOfLongString doc;
-            for(PairOfLongString doclang : docmap.navigableKeySet()){
-                doc = new PairOfLongString();
-                sentlist = new ArrayListWritable<PairOfLongs>();
-                doc.set(doclang.getLeftElement(),doclang.getRightElement());
-                for(PairOfLongs sentcomp : docmap.get(doclang)){
-                    sentlist.add(sentcomp);
-                }
-                writer.append(doc,sentlist);
-            }
-            
             writer.close();
             fs.close();
             System.out.println("N components: " + componentct);
