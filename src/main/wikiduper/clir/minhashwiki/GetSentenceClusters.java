@@ -20,8 +20,6 @@ package wikiduper.clir.minhashwiki;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -55,6 +53,7 @@ import org.wikiclean.WikiClean;
 import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
+import wikiduper.utils.DocSentence;
 import wikiduper.wikipedia.WikipediaPage;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
@@ -90,7 +89,6 @@ public class GetSentenceClusters extends Configured implements Tool {
         
         static String elang;
         static String flang;
-        //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
 
         public void map(PairOfLongInt docIdSentenceId, PairOfStrings langsentence, OutputCollector<LongWritable, Text> output,
                 Reporter reporter) throws IOException {
@@ -126,34 +124,42 @@ public class GetSentenceClusters extends Configured implements Tool {
             elang = job.get("wiki.language.e","en");
             flang = job.get("wiki.language.f","de");
             
-
             try{
                 FileSystem fs = FileSystem.get(job);
                 FSDataInputStream in = fs.open(new Path(docMapFile));
                 SequenceFile.Reader reader;
                 reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
+                IntWritable cluster = new IntWritable();
+                ArrayListWritable<DocSentence> sentlist = new ArrayListWritable<DocSentence>();
                 PairOfLongString docidlang = new PairOfLongString();
-                ArrayListWritable<PairOfLongs> sentlist = new ArrayListWritable<PairOfLongs>();
-                while(reader.next(docidlang, sentlist)){
-                    long docid = docidlang.getLeftElement();
-                    String inlang = docidlang.getRightElement();
-                    if(inlang.equals(elang)){
-                        edocmap.put(docid, new TreeMap<Long, Long>());
-                        for(PairOfLongs p : sentlist){
-                            if(edocmap.get(docid).containsKey(p.getLeftElement())){
-                                System.out.println("Sentence in more than one cluster: " + p);
+                //ArrayListWritable<PairOfLongs> sentlist = new ArrayListWritable<PairOfLongs>();
+                while(reader.next(cluster, sentlist)){
+                    for(DocSentence p : sentlist){
+                        long docid = p.getId();
+                        long sentencenum = p.getSentence();
+                        String inlang = p.getLanguage();
+                        PairOfLongString doclang = new PairOfLongString();
+                        doclang.set(docid, inlang);
+                        if(inlang.equals(elang)){
+                            
+                            if(!edocmap.containsKey(docid)){
+                                edocmap.put(docid, new TreeMap<Long, Long>());
                             }
-                            edocmap.get(docid).put(p.getLeftElement(), p.getRightElement());
+                            edocmap.get(docid).put(sentencenum, (long) cluster.get());
+                            if(edocmap.get(docid).containsKey(sentencenum)){
+                                    System.out.println("Sentence in more than one cluster: " + p);
+                             }
                         }
-                    }
-                    if(inlang.equals(flang)){
-                        fdocmap.put(docid, new TreeMap<Long, Long>());
-                        for(PairOfLongs p : sentlist){
-                            if(fdocmap.get(docid).containsKey(p.getLeftElement())){
-                                System.out.println("Sentence in more than one cluster: " + p);
+                        if(inlang.equals(flang)){
+                            if(!fdocmap.containsKey(docid)){
+                                fdocmap.put(docid, new TreeMap<Long, Long>());
                             }
-                            fdocmap.get(docid).put(p.getLeftElement(), p.getRightElement());
+                            fdocmap.get(docid).put(sentencenum, (long) cluster.get());
+                            if(fdocmap.get(docid).containsKey(sentencenum)){
+                                    System.out.println("Sentence in more than one cluster: " + p);
+                             }
                         }
+                        
                     }
 
                 }

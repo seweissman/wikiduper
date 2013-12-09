@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Tool;
@@ -113,29 +114,23 @@ public class MergeClusters extends Configured implements Tool {
             HashSet<String> langSet = new HashSet<String>();
             // Renumber components
             int componentct = 0;
+            FileSystem fs = FileSystem.get(conf);
+            Path clustersOut = new Path(docmapFile);
+            FileSystem.get(conf).delete(clustersOut, true);
+            SequenceFile.Writer writer = SequenceFile.createWriter(conf, 
+                    SequenceFile.Writer.file(clustersOut), 
+                    SequenceFile.Writer.keyClass(IntWritable.class), //cluster number 
+                    SequenceFile.Writer.valueClass(ArrayListWritable.class)); // List of sentences
+            ArrayListWritable<DocSentence> sentlist = new ArrayListWritable<DocSentence>();
+            IntWritable cluster = new IntWritable();
             for(Integer cnum : clustermap.keySet()){
                 HashSet<DocSentence> comp = clustermap.get(cnum);
-                //System.out.println("cnum="+cnum + "," + comp.size()+"\n");
-
+                cluster.set(componentct);
+                sentlist.clear();
                 for(DocSentence p : comp){
-                //for(ArrayListOfLongsWritable p : comp){
-                    //Matcher m = sentencepattern.matcher(p);
-                    //;System.out.println(">>>>"+p+"<<<<< " + m.matches() + " " + m.groupCount());
-                    //if(m.matches()){
-                       // System.out.println(">>>>"+p+"<<<<< " + m.groupCount());
-                       // System.out.println(m.group(1));// + " " + m.group(2) + " " + m.group(3));
-                    long docid = p.getId();
-                    long sentencenum = p.getSentence();
-                    String lang = p.getLanguage();
-
-                    PairOfLongString doclang = new PairOfLongString();
-                    doclang.set(docid, lang);
-                    if(!docmap.containsKey(doclang)){
-                         docmap.put(doclang, new TreeSet<PairOfLongs>());
-                    }
-                    docmap.get(doclang).add(new PairOfLongs(sentencenum, componentct));
-                    //}
+                    sentlist.add(p);
                 }
+                writer.append(cluster,sentlist);
                 componentct++;
 
             }
