@@ -25,7 +25,6 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -65,7 +64,7 @@ public class SampleSentences extends Configured implements Tool {
         static long rseed;
         static Random r;
         static String sampleLang;
-        static long limit;
+        static long nSamples;
         static long count;
 
         public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, PairOfStrings> output,
@@ -73,7 +72,7 @@ public class SampleSentences extends Configured implements Tool {
             
             String lang = p.getLeftElement();
             if(lang.equals(sampleLang)){
-                if(Math.abs(r.nextLong())%count <= limit){
+                if(Math.abs(r.nextLong())%count <= nSamples){
                     output.collect(key, p);
                 }
                 
@@ -86,14 +85,8 @@ public class SampleSentences extends Configured implements Tool {
             r = new Random(rseed);    
             count = job.getLong("count", 1000000);
             sampleLang = job.get("sampleLang","de");
-            int nSamples = job.getInt("nSamples", 1000000);
-            long nMaps = job.getLong("nMaps", 300);
-            if(nSamples > count){
-                limit = 1;
-            }
-            limit = count/(nMaps*nSamples);
+            nSamples = job.getInt("nSamples", 1000);
         }
-
         
     }
 
@@ -183,15 +176,12 @@ public class SampleSentences extends Configured implements Tool {
 
         Counters counters = job.getCounters();
         long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_OUTPUT_RECORDS);
-        long maps = counters.getCounter(JobCounter.TOTAL_LAUNCHED_MAPS);
         LOG.info(" Count from job 1 = " + count);
-        LOG.info(" Maps = " + maps);
         // Job 2
 
         conf.setLong("rseed", 1123456);
         conf.setLong("count", count);
         conf.setInt("nSamples", nSamples);
-        conf.setLong("nMaps", maps);
         
         conf.setNumMapTasks(1);
         conf.setNumReduceTasks(0);
