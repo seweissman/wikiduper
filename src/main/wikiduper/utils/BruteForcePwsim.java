@@ -41,11 +41,11 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import edu.umd.cloud9.io.array.ArrayListOfDoublesWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
 import edu.umd.cloud9.io.pair.PairOfStrings;
+import edu.umd.cloud9.util.array.ArrayListOfDoubles;
 import edu.umd.hooka.Vocab;
 import edu.umd.hooka.alignment.HadoopAlign;
 import edu.umd.hooka.ttables.TTable_monolithic_IFAs;
@@ -54,7 +54,7 @@ public class BruteForcePwsim extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(BruteForcePwsim.class);
 
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, ArrayListOfDoublesWritable> {
+    Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, ArrayListOfDoubles> {
         
         static long rseed;
 
@@ -79,11 +79,6 @@ public class BruteForcePwsim extends Configured implements Tool {
         // The minhash signature
         
         
-        // Minhash variables
-        static long seeds[];
-        
-        static int sigorder[]; 
-
         static int MINLEN;
         static int MAXLEN;
         //static int NSENTENCE = 3; // Number of sentences to match at a time
@@ -93,7 +88,7 @@ public class BruteForcePwsim extends Configured implements Tool {
         
         static HashSet<String> wordset = new HashSet<String>();
         
-        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, ArrayListOfDoublesWritable> output,
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, ArrayListOfDoubles> output,
                     Reporter reporter) throws IOException {
             
             String lang = p.getLeftElement();
@@ -114,7 +109,7 @@ public class BruteForcePwsim extends Configured implements Tool {
                     tokencts.increment(token);
                 }
                 
-                ArrayListOfDoublesWritable outScores = new ArrayListOfDoublesWritable();
+                ArrayListOfDoubles outScores = new ArrayListOfDoubles();
                 for(PairOfLongInt docIdSentenceCt : sampleTranslationSets.keySet()){
                     ArrayList<HashSet<String>> transList = sampleTranslationSets.get(docIdSentenceCt);
                     double maxsim = 0.0;
@@ -127,6 +122,7 @@ public class BruteForcePwsim extends Configured implements Tool {
                     outScores.add(maxsim);
                     
                 }
+                System.out.println("outScores " + outScores);
                 output.collect(key, outScores);
             }
         }
@@ -439,7 +435,7 @@ public class BruteForcePwsim extends Configured implements Tool {
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
         conf.setMapOutputKeyClass(PairOfLongInt.class);
-        conf.setMapOutputValueClass(ArrayListOfDoublesWritable.class);
+        conf.setMapOutputValueClass(ArrayListOfDoubles.class);
         
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
