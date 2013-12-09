@@ -166,7 +166,6 @@ public class BruteForcePwsim extends Configured implements Tool {
 
         public void readSampleDocs(JobConf job) {
             String docSampleFile = job.get("sampleDocs");
-            System.out.println("Reading from " + docSampleFile);
             HashSet<String> tokenSet;
             int scount = 0;
             FileSystem fs;
@@ -183,7 +182,6 @@ public class BruteForcePwsim extends Configured implements Tool {
                     PairOfLongInt docIdSentenceCt = new PairOfLongInt();
                     while(reader.next(docIdSentenceCt, sentence)){
                         String s = sentence.getRightElement();
-                        System.out.println("READ SENTENCE: " + sentence);
                         String[] tokens = fTokenizer.processContent(s);
                         ArrayList<HashSet<String>> sampleTranslationSet = new ArrayList<HashSet<String>>();
                         for(int l=0;l<nSamples;l++){
@@ -221,8 +219,6 @@ public class BruteForcePwsim extends Configured implements Tool {
                 e1.printStackTrace();
             }
 
-            System.out.println("Done reading");
-            
         }
         
         public void configureSampling(JobConf job, Random r){
