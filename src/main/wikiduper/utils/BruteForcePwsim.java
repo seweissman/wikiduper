@@ -100,9 +100,7 @@ public class BruteForcePwsim extends Configured implements Tool {
             tokencts.clear();
 
             // the "english" case
-            System.out.println("Lang " + lang + " Line " + line);
             if(lang.equals(eLang)){
-                
                 tokens = eTokenizer.processContent(line);
                 if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
 
@@ -113,6 +111,7 @@ public class BruteForcePwsim extends Configured implements Tool {
                 ArrayListOfDoubles outScores = new ArrayListOfDoubles();
                 for(PairOfLongInt docIdSentenceCt : sampleTranslationSets.keySet()){
                     ArrayList<HashSet<String>> transList = sampleTranslationSets.get(docIdSentenceCt);
+                    System.out.println("translist size " + transList.size());
                     double maxsim = 0.0;
                     for(HashSet<String> trans : transList){
                         double sim = jaccardSim(tokencts.keySet(),trans);
@@ -120,6 +119,7 @@ public class BruteForcePwsim extends Configured implements Tool {
                             maxsim = sim;
                         }
                     }
+                    System.out.println("Maxsim " + maxsim);
                     outScores.add(maxsim);
                     
                 }
@@ -240,6 +240,7 @@ public class BruteForcePwsim extends Configured implements Tool {
             }
             
             eLang = job.get("eLang");
+            System.out.println("Elang " + eLang);
             fLang = job.get("fLang");
             
             String eVocabSrcFile = job.get("eVocabSrcFile");
