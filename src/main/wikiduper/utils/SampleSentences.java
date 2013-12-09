@@ -157,6 +157,7 @@ public class SampleSentences extends Configured implements Tool {
 
         Counters counters = job.getCounters();
         long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS);
+        LOG.info(" Count from job 1 = " + count);
         
         // Job 2
 
