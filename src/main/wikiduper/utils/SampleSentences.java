@@ -1,7 +1,6 @@
 package wikiduper.utils;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Random;
 
 import org.apache.commons.cli.CommandLine;
@@ -14,13 +13,11 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.tools.GetConf;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -64,12 +61,12 @@ public class SampleSentences extends Configured implements Tool {
             rseed = job.getLong("rseed", 112345);
             r = new Random(rseed);    
             count = job.getLong("count", 1000000);
+            sampleLang = job.get("sampleLang","de");
             int nSamples = job.getInt("nSamples", 1000000);
             if(nSamples > count){
                 limit = 1;
             }
             limit = count/nSamples;
-            System.out.println("COUNTER CONFIG " + limit + " " + count + " " + nSamples);
 
         }
 
@@ -142,7 +139,7 @@ public class SampleSentences extends Configured implements Tool {
         conf.setOutputValueClass(PairOfStrings.class);
 
         // Job 1
-        conf.setJobName(String.format("SampleSentences-2[%s: %s]", OUTPUT, outputPath));
+        conf.setJobName(String.format("SampleSentences-1[%s: %s]", OUTPUT, outputPath));
 
         conf.setNumMapTasks(20);
         conf.setNumReduceTasks(0);
