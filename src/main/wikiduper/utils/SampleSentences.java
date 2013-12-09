@@ -71,12 +71,12 @@ public class SampleSentences extends Configured implements Tool {
                     Reporter reporter) throws IOException {
             
             String lang = p.getLeftElement();
-            if(lang.equals(sampleLang)){
+            //if(lang.equals(sampleLang)){
                 if(Math.abs(r.nextLong())%count <= nSamples){
                     output.collect(key, p);
                 }
                 
-            }
+            //}
         }
         
 
@@ -191,7 +191,7 @@ public class SampleSentences extends Configured implements Tool {
 
         conf.setJobName(String.format("SampleSentences-2[%s: %s]", OUTPUT, outputPath));
 
-        FileInputFormat.setInputPaths(conf, new Path(inputPath));
+        FileInputFormat.setInputPaths(conf, new Path(tmpPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
         // Delete the output directory if it exists already.
