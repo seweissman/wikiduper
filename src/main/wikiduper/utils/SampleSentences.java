@@ -69,6 +69,8 @@ public class SampleSentences extends Configured implements Tool {
                 limit = 1;
             }
             limit = count/nSamples;
+            System.out.println("COUNTER CONFIG " + limit + " " + count + " " + nSamples);
+
         }
 
         
