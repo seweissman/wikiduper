@@ -40,10 +40,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.utils.DocSentence;
-import wikiduper.utils.Signature;
 import edu.umd.cloud9.io.array.ArrayListOfDoublesWritable;
-import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
@@ -271,7 +268,7 @@ public class BruteForcePwsim extends Configured implements Tool {
 
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
-    private static final String NUM_REDUCERS = "numReducers";
+    //private static final String NUM_REDUCERS = "numReducers";
     
     //Sampling Options
     private static final String eVocabSrcOption = "eVocabSrc";
@@ -297,8 +294,8 @@ public class BruteForcePwsim extends Configured implements Tool {
         Options options = new Options();
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("output path").create(OUTPUT));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("number of reducers").create(NUM_REDUCERS));
+        //options.addOption(OptionBuilder.withArgName("num").hasArg()
+          //      .withDescription("number of reducers").create(NUM_REDUCERS));
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("input").create(INPUT));
         
@@ -367,7 +364,7 @@ public class BruteForcePwsim extends Configured implements Tool {
 
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
-        int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
+        //int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
 
         String eLang = cmdline.getOptionValue(eLangOption);
         String fLang = cmdline.getOptionValue(fLangOption);
