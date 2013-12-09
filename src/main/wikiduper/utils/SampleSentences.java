@@ -25,6 +25,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -155,12 +156,9 @@ public class SampleSentences extends Configured implements Tool {
 
         Counters counters = job.getCounters();
         long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS);
-        long splitbytes = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.SPLIT_RAW_BYTES);
-        long bytes = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_BYTES);
-        long maps = bytes/splitbytes;
+        long maps = counters.getCounter(JobCounter.TOTAL_LAUNCHED_MAPS);
         LOG.info(" Count from job 1 = " + count);
-        LOG.info(" Number of maps from job 1 = " + count);
-        LOG.info(" Split guess = " + maps);
+        LOG.info(" Maps = " + maps);
         // Job 2
 
         conf.setLong("rseed", 1123456);
