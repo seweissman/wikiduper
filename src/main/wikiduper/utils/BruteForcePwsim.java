@@ -6,12 +6,12 @@ import ivory.core.tokenize.TokenizerFactory;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -41,15 +40,13 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.hash.MultiplyShiftHash;
 import wikiduper.utils.DocSentence;
 import wikiduper.utils.Signature;
+import edu.umd.cloud9.io.array.ArrayListOfDoublesWritable;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.map.HMapSIW;
 import edu.umd.cloud9.io.pair.PairOfFloatInt;
 import edu.umd.cloud9.io.pair.PairOfLongInt;
-import edu.umd.cloud9.io.pair.PairOfLongString;
-import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 import edu.umd.hooka.Vocab;
 import edu.umd.hooka.alignment.HadoopAlign;
@@ -58,26 +55,8 @@ import edu.umd.hooka.ttables.TTable_monolithic_IFAs;
 public class BruteForcePwsim extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(BruteForcePwsim.class);
 
-    /* SignatureeMapper
-     * 
-     * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
-     * 
-     * Pulls out sentences from text input using a regex. 
-     * Emits one NHASH-length minhash signature per sentence.
-     * Each hash is NHASHOUTPUTBITS long. (So signature is NHASH*NHASHOUTPUTBITS long.)
-     * Sentences are shingled by individual words. 
-     * If sentences are less than MINLEN words, then they are skipped.
-     * 
-     * 
-     * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
-     * input text and nsentence is the number of the sentence in the line. (starting from 0)
-     * 
-     */
-
     private static class SignatureMapper extends MapReduceBase implements
-    Mapper<PairOfLongInt, PairOfStrings, Signature, DocSentence> {
-    //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
-        // Sampling variables
+    Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, ArrayListOfDoublesWritable> {
         
         static long rseed;
 
@@ -97,12 +76,8 @@ public class BruteForcePwsim extends Configured implements Tool {
         static Tokenizer fTokenizer;
         //static Random rSample;
         static int MAXSamples = 100000;
-        static int s = 0;
         static float samples[]; 
-        int m;
 
-        static String mode;
-        
         // The minhash signature
         
         
@@ -110,160 +85,65 @@ public class BruteForcePwsim extends Configured implements Tool {
         static long seeds[];
         
         static int sigorder[]; 
-        static long minhash[];
 
-        static int nHash; // Total number of hashes per sentence
-        static int K; // Length of hash vector
-        static int N; // Number of hashes per input sentence (N < NHASH)
-        static int NHASHOUTPUTBITS;
         static int MINLEN;
         static int MAXLEN;
         //static int NSENTENCE = 3; // Number of sentences to match at a time
-        static MultiplyShiftHash hashfamily;
-        static Signature outsig = new Signature(K);
         // The minhash signature
         
-        static ArrayList<ArrayList<HashSet<String>>> sampleTranslationSets = new ArrayList<ArrayList<HashSet<String>>>();
+        static HashMap<PairOfLongInt,ArrayList<HashSet<String>>> sampleTranslationSets = new HashMap<PairOfLongInt,ArrayList<HashSet<String>>>();
         
         static HashSet<String> wordset = new HashSet<String>();
-        static HashSet<String> sigMap = new HashSet<String>();
-        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<Signature, DocSentence> output,
+        
+        public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, ArrayListOfDoublesWritable> output,
                     Reporter reporter) throws IOException {
             
-            String outstr;
             String lang = p.getLeftElement();
             String line = p.getRightElement();
             //System.out.println("key : " + key);
             //System.out.println("val : " + p);
             String[] tokens;
-            int tokenct = 0;
             HMapSIW tokencts = new HMapSIW();
-            DocSentence idOut;
-            Text outWord;
             tokencts.clear();
-            //System.out.println("nSamples = " + nSamples);
 
             // the "english" case
             if(lang.equals(eLang)){
                 
                 tokens = eTokenizer.processContent(line);
                 if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
-                /*
-                System.out.print("eline " + line + "\n");
-                System.out.print("etokens ");
-                for(String t : tokens){
-                    System.out.print(t + " ");
-                }
-                System.out.println();
-                */
-                tokenct = 0;
-                //outstr = "";
+
                 for (String token : tokens) {
-                    if (!tokencts.containsKey(token)) { // if this is first time we saw token in this sentence
-                       //if(tokenct != 0) outstr += ",";
-                       //outstr += token;
-                        tokenct++;
-                    }
                     tokencts.increment(token);
                 }
                 
-                // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-                idOut = new DocSentence(key.getLeftElement(),key.getRightElement(),eLang);
-                //System.out.println("idout = " + idOut);
-                doMinhash(idOut,tokencts.keySet(),output);
-            
-            }else if(lang.equals(fLang)){
-                
-                tokens = fTokenizer.processContent(line);
-                if(tokens.length < MINLEN || tokens.length > MAXLEN) return;
-
-                sigMap.clear();
-                
-                for(int l=0;l<nSamples;l++){
-                    tokenct = 0;
-                    tokencts.clear();
-                    wordset.clear();
-                    outstr = "";
-                    for (String ftoken : tokens) {
-                        if (!tokencts.containsKey(ftoken)) { // if this is first time we saw token in this sentence
-                            int f = fVocabSrc.get(ftoken);
-                            if(f != -1){
-                                List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
-                                float pr = samples[s%MAXSamples];
-                                s++;
-                                String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
-                                //System.out.println("fword = " + ftoken + ", eword = " + eWord);
-                                wordset.add(eWord);
-                                if(tokenct != 0) outstr += ",";
-                                outstr += eWord;
-                                tokenct++;
-                            }else{
-                                wordset.add(ftoken);
-                                if(tokenct != 0) outstr += ",";
-                                outstr += ftoken;
-                                tokenct++;
-                            }
-                        }
-                        tokencts.increment(ftoken);
-                    }
-                    
-                    
-                    if(!sigMap.contains(outstr) && tokenct >= MINLEN && tokenct <= MAXLEN){
-                    //if(tokenct >= MINLEN && tokenct <= MAXLEN){
-                        idOut = new DocSentence(key.getLeftElement(),key.getRightElement(),fLang);
-                        doMinhash(idOut,wordset,output);
-                    }
-                    sigMap.add(outstr);
-                    
-
-                }
-            }
-
-
-        }
-        
-        public static void doMinhash(DocSentence idOut, Set<String> set, OutputCollector<Signature, DocSentence> output) throws IOException{
-            //int tokenct = 0;
-            //HMapSIW sent = new HMapSIW();
-                        
-            String hashval[] = new String[nHash];
-            // Process F sentence;
-            for(int i=0;i<nHash;i++){
-                minhash[i] = Long.MAX_VALUE;
-            }
-            //sent.clear();
-            for (String token : set) {
-                String tokenstr = token;
-              //  if (!sent.containsKey(tokenstr)) { // if this is first time we saw token in this sentence
-                    //tokenct++;
-                    long hash[] = hashfamily.hash(tokenstr);
-                    for(int j=0;j<nHash;j++){
-                        if(hash[j] < minhash[j]){
-                            minhash[j] = hash[j];
-                            hashval[j] = tokenstr;
+                ArrayListOfDoublesWritable outScores = new ArrayListOfDoublesWritable();
+                for(PairOfLongInt docIdSentenceCt : sampleTranslationSets.keySet()){
+                    ArrayList<HashSet<String>> transList = sampleTranslationSets.get(docIdSentenceCt);
+                    double maxsim = 0.0;
+                    for(HashSet<String> trans : transList){
+                        double sim = jaccardSim(tokencts.keySet(),trans);
+                        if(sim > maxsim){
+                            maxsim = sim;
                         }
                     }
-
-                //    sent.increment(tokenstr);
-                //}
-            }
-            // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-            //if(tokenct > MINLEN && tokenct < MAXLEN){
-                // generate N k-minhash-signatures
-                //  start from same seed, otherwise doesn't work so well
-            int r=0;
-                for(int j=0; j<N; j++){
-                    outsig = new Signature(K);
-                    for(int i=0; i<K; i++){
-                        int x = sigorder[r]; //r.nextInt(nHash);
-                        r++;
-                        outsig.set(i, minhash[x]);
-                    }
-                    //System.out.println("fsig " + outsig);
-                    output.collect(outsig, idOut);
+                    outScores.add(maxsim);
+                    
                 }
+                output.collect(key, outScores);
+            }
         }
         
+        public static double jaccardSim(Set<String> x, Set<String> y){
+            int sharect = 0;
+            for(String w : x){
+                if(y.contains(w)){
+                    sharect++;
+                }
+            }
+            int total = x.size() + y.size() - sharect;
+            return sharect*1.0/total;
+        }
+
         public static String sampleTranslateDistribution(List<PairOfFloatInt> eSProbs, float p, Vocab eVocab){
             Iterator<PairOfFloatInt> it = eSProbs.iterator();
             PairOfFloatInt probe = null;
@@ -282,54 +162,47 @@ public class BruteForcePwsim extends Configured implements Tool {
         public void configure(JobConf job) {
             rseed = job.getLong("rseed", 112345);
             Random r = new Random(rseed);            
-            configureMinhash(job, r);
             configureSampling(job,r);
+            readSampleDocs(job);
         }
 
-        public void configureMinhash(JobConf job, Random r){
-            nHash = job.getInt("NHASH", 20);
-            NHASHOUTPUTBITS = job.getInt("NHASHOUTPUTBITS", 30);
-            MINLEN = job.getInt("MINLEN", 10);
-            MAXLEN = job.getInt("MAXLEN", 100);
-            K = job.getInt("K",  10);
-            N = job.getInt("N", 10);
-            seeds = new long[nHash];
-            int ct = 0;
-            while(ct < nHash){
-                seeds[ct] = r.nextLong();
-                ct++;
-            }
-            
-            long sigseed = r.nextLong();
-            Random rsig = new Random(sigseed);
-            sigorder = new int[N*K];
-            for(int i=0;i<N*K;i++){
-                sigorder[i] = rsig.nextInt(nHash);
-            }
-            hashfamily = new MultiplyShiftHash(NHASHOUTPUTBITS,seeds);
-            minhash = new long[nHash];
-            System.out.println("N = " + N);
-            System.out.println("K = " + K);
-            System.out.println("nHash = " + nHash);
-            System.out.println("nSamples = " + nSamples);
-        }
-
-        public void readinSamplesDocs(JobConf job) {
-            String docSampleFile = job.get("docsamplefile");
-            HashSet<String> sentenceSet = new HashSet<String>();
-
+        public void readSampleDocs(JobConf job) {
+            String docSampleFile = job.get("sampleDocs");
+            HashSet<String> tokenSet;
+            int scount = 0;
             try{
                 FileSystem fs = FileSystem.get(job);
                 FSDataInputStream in = fs.open(new Path(docSampleFile));
                 SequenceFile.Reader reader;
                 reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
                 
-                Text sentence = new Text();
+                PairOfStrings sentence = new PairOfStrings();
                 PairOfLongInt docIdSentenceCt = new PairOfLongInt();
-
                 while(reader.next(docIdSentenceCt, sentence)){
-                    String s = sentence.toString();
-                    sentenceSet.add(s);
+                    String s = sentence.getRightElement();
+                    String[] tokens = fTokenizer.processContent(s);
+                    ArrayList<HashSet<String>> sampleTranslationSet = new ArrayList<HashSet<String>>();
+                    for(int l=0;l<nSamples;l++){
+                        tokenSet = new HashSet<String>(); 
+                        for (String ftoken : tokens) {
+                            if (!tokenSet.contains(ftoken)) { // if this is first time we saw token in this sentence
+                                int f = fVocabSrc.get(ftoken);
+                                if(f != -1){
+                                    List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
+                                    float pr = samples[scount%MAXSamples];
+                                    scount++;    
+                                    String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
+                                    wordset.add(eWord);
+                                 }else{
+                                     wordset.add(ftoken);
+                                 }
+                             }
+                         }
+                         sampleTranslationSet.add(wordset);
+                     }
+                    sampleTranslationSets.put(docIdSentenceCt,sampleTranslationSet);
+                    sentence = new PairOfStrings();
+                    docIdSentenceCt = new PairOfLongInt();
 
                 }
                 reader.close();
@@ -339,34 +212,8 @@ public class BruteForcePwsim extends Configured implements Tool {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            int s = 0;
-            HashSet<String> tokenSet;
-            ArrayList<HashSet<String>> sampleTranslationSet = new ArrayList<HashSet<String>>();
-            for(String str: sentenceSet){
-                String[] tokens = fTokenizer.processContent(str);
-                
-                for(int l=0;l<nSamples;l++){
-                    tokenSet = new HashSet<String>(); 
-                    for (String ftoken : tokens) {
-                        if (!tokenSet.contains(ftoken)) { // if this is first time we saw token in this sentence
-                            int f = fVocabSrc.get(ftoken);
-                            if(f != -1){
-                                List<PairOfFloatInt> eSProbs = f2eProbs.get(f).getTranslationsWithProbsAsList(0.0f);
-                                float pr = samples[s%MAXSamples];
-                                s++;    
-                                String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
-                                wordset.add(eWord);
-                             }else{
-                                 wordset.add(ftoken);
-                             }
-                        }
-                   }
-                    sampleTranslationSet.add(wordset);
-                }
-                sampleTranslationSets.add(sampleTranslationSet);
-            }
 
-
+            
         }
         
         public void configureSampling(JobConf job, Random r){
@@ -422,90 +269,9 @@ public class BruteForcePwsim extends Configured implements Tool {
         
     }
 
-    /**
-     * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
-     *
-     */
-    /*
-    private static class SignatureReducer extends MapReduceBase implements Reducer<ArrayListOfLongsWritable, PairOfStringInt, PairOfStringInt, PairOfStringInt> {
-
-        // collect all sentences that have hashed to the same hash signature
-        //static final ArrayListWritable<PairOfStringInt> nearDuplicateSentenceList = new ArrayListWritable<PairOfStringInt>();
-        ArrayList<PairOfStringInt> sentenceList = new ArrayList<PairOfStringInt>();
-        @Override
-        public void reduce(ArrayListOfLongsWritable key, Iterator<PairOfStringInt> values,
-                OutputCollector<PairOfStringInt, PairOfStringInt> output, Reporter reporter)
-                        throws IOException {
-            sentenceList.clear();
-
-            while (values.hasNext()) {
-                PairOfStringInt val = values.next().clone();
-                sentenceList.add(val);
-            }
-            
-            if(sentenceList.size() == 1) return;
-
-            for(int i=0;i<sentenceList.size();i++){
-                for(int j=i+1;j<sentenceList.size();j++){
-                    output.collect(sentenceList.get(i), sentenceList.get(j));
-            
-                }
-            }
-        }
-    }
-    */
-    /**
-     * Emits groups of sentences that have the same hash signature. Only emit if there is more than one value for the key. 
-     *
-     */
-    private static class SignatureReducer extends MapReduceBase implements Reducer<Signature, DocSentence, Signature, DocSentence> {
-
-        // collect all sentences that have hashed to the same hash signature
-        static ArrayListWritable<DocSentence> nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
-        static final HashSet<String> valset = new HashSet<String>();
-        @Override
-        public void reduce(Signature key, Iterator<DocSentence> values,
-                OutputCollector<Signature, DocSentence> output, Reporter reporter)
-                        throws IOException {
-            DocSentence valout;
-            nearDuplicateSentenceList = new ArrayListWritable<DocSentence>();
-            valset.clear();
-            //System.out.println("In Reducer: ");
-            //System.out.println("key: " + key);
-            //System.out.print("values: ");
-            while (values.hasNext()) {
-                DocSentence id = values.next();
-                String valstr = id.toString();
-                if(!valset.contains(valstr)){
-                    valout = new DocSentence(id.getId(),id.getSentence(),id.getLanguage());
-                    nearDuplicateSentenceList.add(valout);
-                }
-                valset.add(valstr);
-            }
-            //System.out.println();
-            //System.out.println(nearDuplicateSentenceList.size());
-            //System.out.println("key " + key);
-            //System.out.println("output " + nearDuplicateSentenceList);
-            if(nearDuplicateSentenceList.size() == 1) return;
-            //System.out.println("nearDuplicateSentenceList " + nearDuplicateSentenceList);
-            for(DocSentence ds : nearDuplicateSentenceList){
-                output.collect(key, ds);
-            }
-
-        }
-    }
-    
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_REDUCERS = "numReducers";
-    
-    private static final String SINGLELANG = "single";
-    
-    //Minhash options
-    private static final String NHASH_IN = "nHash";
-    private static final String K_IN = "k";
-    private static final String N_IN = "n";
-    private static final String HASHBITS = "bits";
     
     //Sampling Options
     private static final String eVocabSrcOption = "eVocabSrc";
@@ -522,7 +288,8 @@ public class BruteForcePwsim extends Configured implements Tool {
     private static final String f2eProbsOption = "f2eprobs";
     private static final String nSamplesOption = "M";
 
-    
+    // Sample docs
+    private static final String sampleDocsOption = "sampledocs";
     
     @SuppressWarnings("static-access")
     @Override
@@ -535,16 +302,6 @@ public class BruteForcePwsim extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("input").create(INPUT));
         
-        // Minhsh Options
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("number of hashes").create(NHASH_IN));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("length of minhash signature vector").create(K_IN));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("number of signatures").create(N_IN));
-        options.addOption(OptionBuilder.withArgName("num").hasArg()
-                .withDescription("size of hash in bits").create(HASHBITS));
-
         // Sampling Options
         options.addOption(OptionBuilder.withArgName("string")
                 .hasArg().withDescription("e language").create(eLangOption));
@@ -575,8 +332,10 @@ public class BruteForcePwsim extends Configured implements Tool {
         options.addOption(OptionBuilder.withArgName("integer")
                 .hasArg().withDescription("n samples").create(nSamplesOption));
         
-        options.addOption(OptionBuilder.hasArg(false).withDescription("mode").create(SINGLELANG));
+        // Sample Docs
         
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("sampled documents").create(sampleDocsOption));
         
         
         CommandLine cmdline;
@@ -589,15 +348,14 @@ public class BruteForcePwsim extends Configured implements Tool {
         }
 
         if (!cmdline.hasOption(OUTPUT) || !cmdline.hasOption(INPUT)
-                || !cmdline.hasOption(NHASH_IN) || !cmdline.hasOption(K_IN) || !cmdline.hasOption(N_IN)
-                || !cmdline.hasOption(HASHBITS) || !cmdline.hasOption(nSamplesOption)
+                || !cmdline.hasOption(nSamplesOption)
                 || !cmdline.hasOption(eVocabSrcOption) || !cmdline.hasOption(fVocabSrcOption) 
                 || !cmdline.hasOption(eVocabTgtOption) || !cmdline.hasOption(fVocabTgtOption)
                 || !cmdline.hasOption(e2fProbsOption) || !cmdline.hasOption(f2eProbsOption)
                 || !cmdline.hasOption(eLangOption) || !cmdline.hasOption(fLangOption) 
                 || !cmdline.hasOption(eStopWordsOption) || !cmdline.hasOption(fStopWordsOption) 
                 || !cmdline.hasOption(eTokensOption) || !cmdline.hasOption(fTokensOption)
-                || !cmdline.hasOption(nSamplesOption)
+                || !cmdline.hasOption(nSamplesOption) || !cmdline.hasOption(sampleDocsOption)
                 
                 ) {
             HelpFormatter formatter = new HelpFormatter();
@@ -610,11 +368,6 @@ public class BruteForcePwsim extends Configured implements Tool {
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 4;
-
-        int nHash = Integer.parseInt(cmdline.getOptionValue(NHASH_IN));
-        int k = Integer.parseInt(cmdline.getOptionValue(K_IN));
-        int n = Integer.parseInt(cmdline.getOptionValue(N_IN));
-        int nBits = Integer.parseInt(cmdline.getOptionValue(HASHBITS)); 
 
         String eLang = cmdline.getOptionValue(eLangOption);
         String fLang = cmdline.getOptionValue(fLangOption);
@@ -630,28 +383,17 @@ public class BruteForcePwsim extends Configured implements Tool {
         String f2eProbsPath = cmdline.getOptionValue(f2eProbsOption);
         int nSamples = Integer.parseInt(cmdline.getOptionValue(nSamplesOption));
 
+        String sampleDocsFile = cmdline.getOptionValue(sampleDocsOption);
         
         
         LOG.info("Tool name: " + this.getClass().getName());
         LOG.info(" - nput file: " + inputPath);
         LOG.info(" - output file: " + outputPath);
-        LOG.info(" - number hashes: " + nHash);
-        LOG.info(" - hash bits: " + nBits);
-        LOG.info(" - hash sig length: " + k);
-        LOG.info(" - num hash sigs: " + n);
 
         JobConf conf = new JobConf(getConf(), BruteForcePwsim.class);
-        conf.setJobName(String.format("MinhashCLIR[%s: %s]", OUTPUT, outputPath));
+        conf.setJobName(String.format("BruteForcePwsim[%s: %s]", OUTPUT, outputPath));
 
         conf.setLong("rseed", 1123456);
-        //conf.setInt("NHASH", 20);
-        conf.setInt("NHASH", nHash);
-        //conf.setInt("NHASHOUTPUTBITS", 30);
-        conf.setInt("NHASHOUTPUTBITS", nBits);
-        //conf.setInt("K",  10);
-        conf.setInt("K",  k);
-        //conf.setInt("N", 10);
-        conf.setInt("N", n);
         conf.setInt("nSamples", nSamples);
 
         conf.set("eLang", eLang);
@@ -667,23 +409,18 @@ public class BruteForcePwsim extends Configured implements Tool {
         conf.set("probTablef2eFile", f2eProbsPath);
         conf.set("probTablee2fFile", e2fProbsPath);
 
-        if(cmdline.hasOption(SINGLELANG)){
-            conf.set("mode", "single");
-        }
+        conf.set("sampleDocs", sampleDocsFile);
         
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(reduceTasks);
+        conf.setNumReduceTasks(0);
 
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
         conf.setMapperClass(SignatureMapper.class);
-        conf.setReducerClass(SignatureReducer.class);
         
-        //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
         conf.setOutputFormat(SequenceFileOutputFormat.class);
-        //conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "2048");
@@ -692,12 +429,9 @@ public class BruteForcePwsim extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx8000m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
         
-        conf.setMapOutputKeyClass(Signature.class);
-        conf.setMapOutputValueClass(DocSentence.class);
+        conf.setMapOutputKeyClass(PairOfLongInt.class);
+        conf.setMapOutputValueClass(ArrayListOfDoublesWritable.class);
         
-        conf.setOutputKeyClass(Signature.class);
-        conf.setOutputValueClass(DocSentence.class);
-
         // Delete the output directory if it exists already.
         Path outputDir = new Path(outputPath);
         FileSystem.get(conf).delete(outputDir, true);
