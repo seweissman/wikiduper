@@ -61,7 +61,7 @@ public class SampleSentences extends Configured implements Tool {
     private static class SampleMapper extends MapReduceBase implements
     Mapper<PairOfLongInt, PairOfStrings, PairOfLongInt, PairOfStrings> {
 
-        static long rseed;
+        //static long rseed;
         static Random r;
         static String sampleLang;
         static long nSamples;
@@ -81,8 +81,8 @@ public class SampleSentences extends Configured implements Tool {
         
 
         public void configure(JobConf job) {
-            rseed = job.getLong("rseed", 112345);
-            r = new Random(rseed);    
+            //rseed = job.getLong("rseed", 112345);
+            r = new Random();
             count = job.getLong("count", 1000000);
             sampleLang = job.get("sampleLang","de");
             nSamples = job.getInt("nSamples", 1000);
@@ -179,7 +179,7 @@ public class SampleSentences extends Configured implements Tool {
         LOG.info(" Count from job 1 = " + count);
         // Job 2
 
-        conf.setLong("rseed", 1123456);
+        //conf.setLong("rseed", 1123456);
         conf.setLong("count", count);
         conf.setInt("nSamples", nSamples);
         
