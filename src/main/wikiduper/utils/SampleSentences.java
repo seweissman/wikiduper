@@ -153,10 +153,8 @@ public class SampleSentences extends Configured implements Tool {
         Path outputDir = new Path("tmppath");
         FileSystem.get(conf).delete(outputDir, true);
         
-        JobClient.runJob(conf);
-        String jobID = args[0];
-        JobClient jobClient = new JobClient(new JobConf(getConf())); 
-        RunningJob job = jobClient.getJob(JobID.forName(conf.getJobName()));
+        RunningJob job = JobClient.runJob(conf);
+
         Counters counters = job.getCounters();
         long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS);
         
