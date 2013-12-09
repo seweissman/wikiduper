@@ -201,7 +201,9 @@ public class BruteForcePwsim extends Configured implements Tool {
                                 }
                             }
                             sampleTranslationSet.add(tokenSet);
+                            System.out.println("Tokens: " + tokenSet.size());
                         }
+                        System.out.println("Number of translations: " + sampleTranslationSet.size());
                         sampleTranslationSets.put(docIdSentenceCt,sampleTranslationSet);
                         sentence = new PairOfStrings();
                         docIdSentenceCt = new PairOfLongInt();
@@ -218,6 +220,8 @@ public class BruteForcePwsim extends Configured implements Tool {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
+            System.out.println("Number of sets: " + sampleTranslationSets.size());
+
 
         }
         
