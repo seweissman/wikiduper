@@ -100,6 +100,7 @@ public class BruteForcePwsim extends Configured implements Tool {
             tokencts.clear();
 
             // the "english" case
+            System.out.println("Lang " + lang + " Line " + line);
             if(lang.equals(eLang)){
                 
                 tokens = eTokenizer.processContent(line);
@@ -122,7 +123,7 @@ public class BruteForcePwsim extends Configured implements Tool {
                     outScores.add(maxsim);
                     
                 }
-                System.out.println("outScores " + outScores);
+                //System.out.println("outScores " + outScores);
                 output.collect(key, outScores);
             }
         }
