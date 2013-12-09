@@ -63,20 +63,15 @@ public class SampleSentences extends Configured implements Tool {
 
         //static long rseed;
         static Random r;
-        static String sampleLang;
         static long nSamples;
         static long count;
 
         public void map(PairOfLongInt key, PairOfStrings p, OutputCollector<PairOfLongInt, PairOfStrings> output,
                     Reporter reporter) throws IOException {
             
-            String lang = p.getLeftElement();
-            //if(lang.equals(sampleLang)){
-                if(Math.abs(r.nextLong())%count <= nSamples){
-                    output.collect(key, p);
-                }
-                
-            //}
+            if(Math.abs(r.nextLong())%count <= nSamples){
+                output.collect(key, p);
+            }
         }
         
 
@@ -84,7 +79,6 @@ public class SampleSentences extends Configured implements Tool {
             //rseed = job.getLong("rseed", 112345);
             r = new Random();
             count = job.getLong("count", 1000000);
-            sampleLang = job.get("sampleLang","de");
             nSamples = job.getInt("nSamples", 1000);
         }
         
@@ -179,7 +173,6 @@ public class SampleSentences extends Configured implements Tool {
         LOG.info(" Count from job 1 = " + count);
         // Job 2
 
-        //conf.setLong("rseed", 1123456);
         conf.setLong("count", count);
         conf.setInt("nSamples", nSamples);
         
@@ -187,7 +180,6 @@ public class SampleSentences extends Configured implements Tool {
         conf.setNumReduceTasks(0);
         
         conf.setMapperClass(SampleMapper.class);
-        //conf.setReducerClass(SignatureReducer.class);
 
         conf.setJobName(String.format("SampleSentences-2[%s: %s]", OUTPUT, outputPath));
 
