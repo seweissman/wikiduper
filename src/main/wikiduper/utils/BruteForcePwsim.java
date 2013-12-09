@@ -194,13 +194,13 @@ public class BruteForcePwsim extends Configured implements Tool {
                                         float pr = samples[scount%MAXSamples];
                                         scount++;    
                                         String eWord = sampleTranslateDistribution(eSProbs, pr, eVocabTgt);
-                                        wordset.add(eWord);
+                                        tokenSet.add(eWord);
                                     }else{
-                                        wordset.add(ftoken);
+                                        tokenSet.add(ftoken);
                                     }
                                 }
                             }
-                            sampleTranslationSet.add(wordset);
+                            sampleTranslationSet.add(tokenSet);
                         }
                         sampleTranslationSets.put(docIdSentenceCt,sampleTranslationSet);
                         sentence = new PairOfStrings();
