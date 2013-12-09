@@ -47,7 +47,6 @@ public class SampleSentences extends Configured implements Tool {
             String lang = p.getLeftElement();
             if(lang.equals(sampleLang)){
                     output.collect(key, p);
-                
             }
         }
         
@@ -183,7 +182,7 @@ public class SampleSentences extends Configured implements Tool {
         RunningJob job = JobClient.runJob(conf);
 
         Counters counters = job.getCounters();
-        long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS);
+        long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_OUTPUT_RECORDS);
         long maps = counters.getCounter(JobCounter.TOTAL_LAUNCHED_MAPS);
         LOG.info(" Count from job 1 = " + count);
         LOG.info(" Maps = " + maps);
