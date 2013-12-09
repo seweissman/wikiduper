@@ -67,7 +67,6 @@ public class SampleSentences extends Configured implements Tool {
                 limit = 1;
             }
             limit = count/nSamples;
-
         }
 
         
@@ -156,8 +155,12 @@ public class SampleSentences extends Configured implements Tool {
 
         Counters counters = job.getCounters();
         long count = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS);
+        long splitbytes = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.SPLIT_RAW_BYTES);
+        long bytes = counters.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_BYTES);
+        long maps = bytes/splitbytes;
         LOG.info(" Count from job 1 = " + count);
-        
+        LOG.info(" Number of maps from job 1 = " + count);
+        LOG.info(" Split guess = " + maps);
         // Job 2
 
         conf.setLong("rseed", 1123456);
