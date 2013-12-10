@@ -1,25 +1,7 @@
 package wikiduper.clir.minhashwiki.eval;
 
-/*
- * Cloud9: A MapReduce Library for Hadoop
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You may
- * obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
- */
-
-
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +14,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -43,11 +24,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -57,34 +36,10 @@ import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
 import wikiduper.wikipedia.WikipediaPage;
-import wikiduper.wikipedia.language.EnglishWikipediaPage;
-import wikiduper.wikipedia.language.GermanWikipediaPage;
-import edu.umd.cloud9.io.array.ArrayListOfLongsWritable;
-import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfInts;
-import edu.umd.cloud9.io.pair.PairOfLongInt;
-import edu.umd.cloud9.io.pair.PairOfStringInt;
-import edu.umd.cloud9.io.pair.PairOfStrings;
+
 
 public class WikiSentence2Doc extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(WikiSentence2Doc.class);
-
-    /* SignatureeMapper
-     * 
-     * Parameters that can be tweaked: NHASH, NHASHOUTPUTBITS, MINLEN
-     * 
-     * Pulls out sentences from text input using a regex. 
-     * Emits one NHASH-length minhash signature per sentence.
-     * Each hash is NHASHOUTPUTBITS long. (So signature is NHASH*NHASHOUTPUTBITS long.)
-     * Sentences are shingled by individual words. 
-     * If sentences are less than MINLEN words, then they are skipped.
-     * 
-     * 
-     * Output values are (offset,nsentence) where offset is the byte offset of the input line in the
-     * input text and nsentence is the number of the sentence in the line. (starting from 0)
-     * 
-     */
-
     
   private static enum PageTypes {
         TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
@@ -111,9 +66,6 @@ public class WikiSentence2Doc extends Configured implements Tool {
                         "\\s*       # Trailing white space or new line\n",
                         Pattern.MULTILINE | Pattern.COMMENTS);
         
-        
-        //public void map(LongWritable key, WikipediaPage p, OutputCollector<ArrayListOfLongsWritable, PairOfStringInt> output,
-          //      Reporter reporter) throws IOException {
         
         public static WikiClean cleaner;
         

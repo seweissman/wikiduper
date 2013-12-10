@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
@@ -39,7 +38,7 @@ import edu.umd.cloud9.io.array.ArrayListOfIntsWritable;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
 
-import wikiduper.application.MergeClusters;
+import wikiduper.utils.MergeClusters;
 
 /**
  * A class for heuristically classifying clusters as templates, identical

@@ -23,7 +23,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.application.MergeClusters;
+import wikiduper.utils.MergeClusters;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
 public class PreProcessInput extends Configured implements Tool {

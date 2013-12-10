@@ -35,7 +35,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.application.MergeClusters;
+import wikiduper.utils.MergeClusters;
 
 public class ClassifyClusters extends Configured implements Tool {
     public static enum ClusterTypes {
