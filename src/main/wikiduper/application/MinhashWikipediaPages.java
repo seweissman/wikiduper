@@ -63,6 +63,11 @@ public class MinhashWikipediaPages extends Configured implements Tool {
     private static enum PageTypes {
         TOTAL, REDIRECT, DISAMBIGUATION, EMPTY, ARTICLE, STUB, NON_ARTICLE
     };
+    private static enum Sentences { 
+        NSENTENCESGOOD,NSENTENCESBAD
+    };
+    
+
     
     private static class SignatureMapper extends MapReduceBase implements
     Mapper<IntWritable, WikipediaPage, Signature, DocSentence> {
@@ -166,44 +171,46 @@ public class MinhashWikipediaPages extends Configured implements Tool {
 
                 if(sentence.length() >= SHINGLELEN){
 
-                for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
-                    String shingle = sentence.substring(i, i+SHINGLELEN);
-                    long hash[] = hashfamily.hash(shingle);
-                    // Update the minhash signature
-                    for(int j=0;j<hash.length;j++){
-                        if(hash[j] < MINHASH[j]){
-                            MINHASH[j] = hash[j];
-                            hashval[j] = shingle;
-                        }
+                    for(int i=0;i<sentence.length() - SHINGLELEN + 1; i++){
+                        String shingle = sentence.substring(i, i+SHINGLELEN);
+                        long hash[] = hashfamily.hash(shingle);
+                        //  Update the minhash signature
+                        for(int j=0;j<hash.length;j++){
+                            if(hash[j] < MINHASH[j]){
+                                MINHASH[j] = hash[j];
+                                hashval[j] = shingle;
+                            }
                         //System.out.println("word: " + word + " " + hashes[j]);
-                    }
-                    // Keep track of the word ct to avoid short sentences
-                    shinglect++;
-                }
-                
-                // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
-                if(shinglect > MINLEN && shinglect < MAXLEN){                    
-                    DOCSENT.setId(Long.valueOf(p.getDocid()));
-                    DOCSENT.setSentence(sentencect);
-                    DOCSENT.setLanguage(language);
-                    // generate N k-minhash-signatures
-                    // start from same seed, otherwise doesn't work so well
-                    Random r = new Random(sigseed);
-                    for(int j=0; j<N; j++){
-                        for(int i=0; i<K; i++){
-                            int x = r.nextInt(NHASH);
-                            SIG.set(i, MINHASH[x]);
                         }
-                        //context.write(SIG, DOCSENT);
-                        output.collect(SIG, DOCSENT);
+                        // Keep track of the word ct to avoid short sentences
+                        shinglect++;
                     }
+                
+                    // If the sentence meets min shingle ct requirements, emit the signature and the sentence/doc ID
+                    if(shinglect > MINLEN && shinglect < MAXLEN){                    
+                        DOCSENT.setId(Long.valueOf(p.getDocid()));
+                        DOCSENT.setSentence(sentencect);
+                        DOCSENT.setLanguage(language);
+                        // generate N k-minhash-signatures
+                        // start from same seed, otherwise doesn't work so well
+                        Random r = new Random(sigseed);
+                        for(int j=0; j<N; j++){
+                            for(int i=0; i<K; i++){
+                                int x = r.nextInt(NHASH);
+                                SIG.set(i, MINHASH[x]);
+                            }
+                            //context.write(SIG, DOCSENT);
+                            output.collect(SIG, DOCSENT);
+                        }
 
+                    }
                 }
-            }
                 sentencect++;
+                reporter.incrCounter(Sentences.NSENTENCESGOOD, 1);
             }
             
             }catch(Throwable e){
+                reporter.incrCounter(Sentences.NSENTENCESBAD, 1);
                 System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + sentencect);
             }
         }
