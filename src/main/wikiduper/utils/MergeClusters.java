@@ -153,7 +153,7 @@ public class MergeClusters extends Configured implements Tool {
                 //System.out.println("bucket = " + bucket);
                 //System.out.println("lastbucket = " + lastbucket);
                 linect++;
-                if(ct % 1000 == 0) System.out.println("Count:"+ct);
+                if(ct % 10000 == 0) System.out.println("Count:"+ct);
                 if(linect % 100000 == 0) System.out.println(linect+"\t"+ct+"\t"+newnodect);
                 
                 if(lastbucket != null && !(bucket.equals(lastbucket))){
