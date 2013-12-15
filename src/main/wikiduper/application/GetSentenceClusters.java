@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -55,6 +54,7 @@ import org.wikiclean.WikiClean;
 import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
+import wikiduper.utils.DocSentence;
 import wikiduper.wikipedia.WikipediaPage;
 import edu.umd.cloud9.io.array.ArrayListWritable;
 import edu.umd.cloud9.io.pair.PairOfLongString;
@@ -162,16 +162,17 @@ public class GetSentenceClusters extends Configured implements Tool {
                 FSDataInputStream in = fs.open(new Path(docMapFile));
                 SequenceFile.Reader reader;
                 reader = new SequenceFile.Reader(job, SequenceFile.Reader.stream(in));
-                PairOfLongString docid = new PairOfLongString();
-
-                ArrayListWritable<PairOfLongs> sentlist = new ArrayListWritable<PairOfLongs>();
-                while(reader.next(docid, sentlist)){
-                    docmap.put(docid.getLeftElement(), new TreeMap<Long, Long>());
-                    for(PairOfLongs p : sentlist){
-                        if(docmap.get(docid.getLeftElement()).containsKey(p.getLeftElement())){
-                            System.out.println("Sentence in more than one cluster: " + p);
+                IntWritable cluster = new IntWritable();
+                ArrayListWritable<DocSentence> sentlist = new ArrayListWritable<DocSentence>();
+                while(reader.next(cluster, sentlist)){
+                    for(DocSentence ds : sentlist){
+                        if(!docmap.containsKey(ds.getId())){
+                            docmap.put(ds.getId(), new TreeMap<Long, Long>());
                         }
-                        docmap.get(docid.getLeftElement()).put(p.getLeftElement(), p.getRightElement());
+                        if(docmap.get(ds.getId()).containsKey(ds.getSentence())){
+                            System.out.println("Sentence in more than one cluster: " + ds);
+                        }
+                        docmap.get(ds.getId()).put((long) ds.getSentence(), (long) cluster.get());
                     }
                 }
                 reader.close();
@@ -181,13 +182,7 @@ public class GetSentenceClusters extends Configured implements Tool {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            /*
-           for(int d : docmap.keySet()){
-                for(Entry<Integer, Integer> e : docmap.get(d).entrySet()){
-                    System.out.println(e.getKey() + " " + e.getValue());
-                }
-            }
-            */
+
 
         }
     }
