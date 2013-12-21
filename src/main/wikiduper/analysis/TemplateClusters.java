@@ -317,6 +317,7 @@ public class TemplateClusters extends Configured implements Tool {
           // Update one time at the end of each file input loop to add remaining cluster            
             //getClusterWordCounts(clustersentences,clusterwordct);
             LongWritable clusterIdOut = new LongWritable();
+            IntWritable clusterSizeOut = new IntWritable();
             clusterIdOut.set(clustcurr);
             ArrayList<HashSet<String>> sentencewordmap = new ArrayList<HashSet<String>>();
             getClusterWordCounts(clustertitlesentences,clusterwordct, sentencewordmap);
@@ -336,15 +337,18 @@ public class TemplateClusters extends Configured implements Tool {
             if(clustersentences.size() == 1){
                 identicalCt++;
                 nontemplateSentencesCt += clustersentences.size();
-                identicalWriter.append(clusterIdOut, clustersentences.size());
+                clusterSizeOut.set(clustersentences.size());
+                identicalWriter.append(clusterIdOut, clusterSizeOut);
             }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                 templateCt++;
                 templateSentencesCt += clustersentences.size();
-                templateWriter.append(clusterIdOut, clustersentences.size());
+                clusterSizeOut.set(clustersentences.size());
+                templateWriter.append(clusterIdOut, clusterSizeOut);
             }else{
                 otherCt++;
                 nontemplateSentencesCt += clustersentences.size();
-                otherWriter.append(clusterIdOut, clustersentences.size());
+                clusterSizeOut.set(clustersentences.size());
+                otherWriter.append(clusterIdOut, clusterSizeOut);
             }
 
             if(DEBUG){
