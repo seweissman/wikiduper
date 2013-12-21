@@ -187,7 +187,7 @@ public class TemplateClusters extends Configured implements Tool {
             
             FileSystem fs = FileSystem.get(conf);
             SequenceFile.Writer templateWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(templateOut)),
-                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(IntWritable.class));
             SequenceFile.Writer identicalWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(identicalOut)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(IntWritable.class));
             SequenceFile.Writer otherWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(otherOut)),
@@ -242,6 +242,7 @@ public class TemplateClusters extends Configured implements Tool {
                     }
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
+                    IntWritable clusterSizeOut = new IntWritable();
                     double score = scoreClusterWords(clusterwordct, sentencewordmap, 
                             clustersentences.size(), clustertitlesentences.size(), clustcurr, 
                             scoresWriter,isTemplate);
@@ -250,15 +251,18 @@ public class TemplateClusters extends Configured implements Tool {
                     if(clustersentences.size() == 1){
                         identicalCt++;
                         nontemplateSentencesCt += clustersentences.size();
-                        identicalWriter.append(clusterIdOut, clustersentences.size());
+                        clusterSizeOut.set(clustersentences.size());
+                        identicalWriter.append(clusterIdOut, clusterSizeOut);
                     }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                         templateCt++;
                         templateSentencesCt += clustersentences.size();
-                        templateWriter.append(clusterIdOut, clustersentences.size());
+                        clusterSizeOut.set(clustersentences.size());
+                        templateWriter.append(clusterIdOut, clusterSizeOut);
                     }else{
                         otherCt++;
                         nontemplateSentencesCt += clustersentences.size();
-                        otherWriter.append(clusterIdOut, clustersentences.size());
+                        clusterSizeOut.set(clustersentences.size());
+                        otherWriter.append(clusterIdOut, clusterSizeOut);
                     }
                     if(DEBUG){
                        System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
