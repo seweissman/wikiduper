@@ -143,8 +143,6 @@ public class TemplateClusters extends Configured implements Tool {
         String templateOut = conf.get(TEMPLATE_OUT);
         String identicalOut = conf.get(IDENTICAL_OUT);
         String otherOut = conf.get(OTHER_OUT);
-        String otherOut2 = conf.get(OTHER_OUT)+"2";
-        String speciesOut = conf.get(OTHER_OUT)+".species";
         String scoresOut = conf.get(SCORES_OUT);
 
         System.out.println("scoresOut " + scoresOut);
@@ -174,7 +172,6 @@ public class TemplateClusters extends Configured implements Tool {
         int nontemplateSentencesCt = 0;
         int identicalCt = 0;
         int otherCt = 0;
-        int speciesCt = 0;
         int otherCt2 = 0;
         
         
@@ -192,13 +189,9 @@ public class TemplateClusters extends Configured implements Tool {
             SequenceFile.Writer templateWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(templateOut)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer identicalWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(identicalOut)),
-                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(IntWritable.class));
             SequenceFile.Writer otherWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(otherOut)),
-                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
-            SequenceFile.Writer otherWriter2  = SequenceFile.createWriter(conf, Writer.file(new Path(otherOut2)),
-                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
-            SequenceFile.Writer speciesWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(speciesOut)),
-                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(IntWritable.class));
             SequenceFile.Writer scoresWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(scoresOut)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(ArrayListOfIntsWritable.class));
             
@@ -238,10 +231,7 @@ public class TemplateClusters extends Configured implements Tool {
                     getClusterWordCounts(clustertitlesentences,clusterwordct, sentencewordmap);
                     int category = -1;
                     int isTemplate = -1;
-                    int isSpecies = 0;
-                    if(speciesList(clustersentences)){
-                        isSpecies = 1;
-                    }
+
                     if(clustercategorymap.containsKey(clustcurr)){
                         category = clustercategorymap.get(clustcurr);
                         if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
@@ -254,49 +244,21 @@ public class TemplateClusters extends Configured implements Tool {
                     clusterIdOut.set(clustcurr);
                     double score = scoreClusterWords(clusterwordct, sentencewordmap, 
                             clustersentences.size(), clustertitlesentences.size(), clustcurr, 
-                            scoresWriter,isTemplate, isSpecies);
+                            scoresWriter,isTemplate);
                         
                     // identical case
                     if(clustersentences.size() == 1){
                         identicalCt++;
                         nontemplateSentencesCt += clustersentences.size();
-                        for(String s : cluster){
-                            Text textout = new Text();
-                            textout.set(s);
-                            identicalWriter.append(clusterIdOut, textout);
-                        }
+                        identicalWriter.append(clusterIdOut, clustersentences.size());
                     }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                         templateCt++;
                         templateSentencesCt += clustersentences.size();
-                        for(String s : cluster){
-                            Text textout = new Text();
-                            textout.set(s);
-                            templateWriter.append(clusterIdOut, textout);
-                        }
-                    }else if(isSpecies == 1){
-                        speciesCt++;
-                        nontemplateSentencesCt += clustersentences.size();
-                        for(String s : cluster){
-                            Text textout = new Text();
-                            textout.set(s);
-                            speciesWriter.append(clusterIdOut, textout);
-                        }
-                    }else if(clustersentences.size() == 2){
-                        otherCt2++;
-                        nontemplateSentencesCt += clustersentences.size();
-                        for(String s : cluster){
-                            Text textout = new Text();
-                            textout.set(s);
-                            otherWriter2.append(clusterIdOut, textout);
-                        }
+                        templateWriter.append(clusterIdOut, clustersentences.size());
                     }else{
                         otherCt++;
                         nontemplateSentencesCt += clustersentences.size();
-                        for(String s : cluster){
-                            Text textout = new Text();
-                            textout.set(s);
-                            otherWriter.append(clusterIdOut, textout);
-                        }
+                        otherWriter.append(clusterIdOut, clustersentences.size());
                     }
                     if(DEBUG){
                        System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
@@ -356,10 +318,6 @@ public class TemplateClusters extends Configured implements Tool {
             getClusterWordCounts(clustertitlesentences,clusterwordct, sentencewordmap);
             int category = -1;
             int isTemplate = -1;
-            int isSpecies = 0;
-            if(speciesList(clustersentences)){
-                isSpecies = 1;
-            }
             if(clustercategorymap.containsKey(clustcurr)){
                 category = clustercategorymap.get(clustcurr);
                 if(category == ClassifyClusters.ClusterTypes.TEMPLATE.ordinal()){
@@ -369,49 +327,20 @@ public class TemplateClusters extends Configured implements Tool {
                 }
             }
             double score = scoreClusterWords(clusterwordct, sentencewordmap, clustersentences.size(), clustertitlesentences.size(), clustcurr,
-                    scoresWriter, isTemplate, isSpecies);
+                    scoresWriter, isTemplate);
             
-            // identical case
             if(clustersentences.size() == 1){
                 identicalCt++;
                 nontemplateSentencesCt += clustersentences.size();
-                for(String s : cluster){
-                    Text textout = new Text();
-                    textout.set(s);
-                    identicalWriter.append(clusterIdOut, textout);
-                }
+                identicalWriter.append(clusterIdOut, clustersentences.size());
             }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                 templateCt++;
                 templateSentencesCt += clustersentences.size();
-                for(String s : cluster){
-                    Text textout = new Text();
-                    textout.set(s);
-                    templateWriter.append(clusterIdOut, textout);
-                }
-            }else if(isSpecies == 1){
-                speciesCt++;
-                nontemplateSentencesCt += clustersentences.size();
-                for(String s : cluster){
-                    Text textout = new Text();
-                    textout.set(s);
-                    speciesWriter.append(clusterIdOut, textout);
-                }
-            }else if(clustersentences.size() == 2){
-                otherCt2++;
-                nontemplateSentencesCt += clustersentences.size();
-                for(String s : cluster){
-                    Text textout = new Text();
-                    textout.set(s);
-                    otherWriter2.append(clusterIdOut, textout);
-                }
+                templateWriter.append(clusterIdOut, clustersentences.size());
             }else{
                 otherCt++;
                 nontemplateSentencesCt += clustersentences.size();
-                for(String s : cluster){
-                    Text textout = new Text();
-                    textout.set(s);
-                    otherWriter.append(clusterIdOut, textout);
-                }
+                otherWriter.append(clusterIdOut, clustersentences.size());
             }
 
             if(DEBUG){
@@ -439,8 +368,6 @@ public class TemplateClusters extends Configured implements Tool {
         templateWriter.close();
         identicalWriter.close();
         otherWriter.close();
-        otherWriter2.close();
-        speciesWriter.close();
         scoresWriter.close();
 
         System.out.println("N lines: " + linect);
@@ -454,7 +381,6 @@ public class TemplateClusters extends Configured implements Tool {
         System.out.println("N non-template sentences: " + nontemplateSentencesCt);
         System.out.println("N other clusters: " + otherCt);
         System.out.println("N other pair clusters: " + otherCt2);
-        System.out.println("N species clusters: " + speciesCt);
         
         
         }catch (IOException e) {
@@ -496,13 +422,6 @@ public class TemplateClusters extends Configured implements Tool {
         */
         reader.close();
         return clustercategorymap;            
-    }
-
-    private boolean speciesList(TreeSet<String> clustersentences) {
-        for(String s : clustersentences){
-            if(!s.matches(".*is a species.*")) return false;
-        }
-        return true;
     }
 
     private static void getClusterWordCounts(Set<String> clustersentences,
@@ -547,7 +466,7 @@ public class TemplateClusters extends Configured implements Tool {
     // Some Java 6 -> 7 incompatibility issues here
     static Pattern propernoun = Pattern.compile("\\p{Lu}(\\w|\\p{Lu}|-|—)+('s)?"); //, Pattern.UNICODE_CHARACTER_CLASS);
     private double scoreClusterWordsAlt(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
-            int clusterid, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
+            int clusterid, SequenceFile.Writer scoresWriter, int isTemplate) throws IOException{
         // TODO Auto-generated method stub
         
         int numberct = 0;
@@ -614,7 +533,6 @@ public class TemplateClusters extends Configured implements Tool {
         scoreList.add(nTitleSentenceUnique);
         scoreList.add(totalct);
         scoreList.add(isTemplate);
-        scoreList.add(isSpecies);
 
         scoresWriter.append(clusterIdOut, scoreList);
         double score;
@@ -630,7 +548,7 @@ public class TemplateClusters extends Configured implements Tool {
 
     
     private static double scoreClusterWords(HashMap<String, Integer> clusterwordct, ArrayList<HashSet<String>> sentencewordmap, int nSentenceUnique, int nTitleSentenceUnique, 
-            long clustcurr, SequenceFile.Writer scoresWriter, int isTemplate, int isSpecies) throws IOException{
+            long clustcurr, SequenceFile.Writer scoresWriter, int isTemplate) throws IOException{
         // TODO Auto-generated method stub
         
         int numberct = 0;
@@ -676,7 +594,6 @@ public class TemplateClusters extends Configured implements Tool {
         scoreList.add(nTitleSentenceUnique);
         scoreList.add(totalct);
         scoreList.add(isTemplate);
-        scoreList.add(isSpecies);
 
         scoresWriter.append(clusterIdOut, scoreList);
         double score;

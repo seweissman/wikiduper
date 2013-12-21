@@ -1,5 +1,7 @@
 package wikiduper.utils;
 
+import java.util.HashSet;
+
 public class UnionFindSet {
     public DocSentence data;
     UnionFindSet parent;
@@ -8,7 +10,6 @@ public class UnionFindSet {
         this.data = d;
         this.parent = this;
     }
-    
     
     public static UnionFindSet find(UnionFindSet s){
         UnionFindSet testparent = s;
@@ -40,31 +41,19 @@ public class UnionFindSet {
         testparent.parent = head1;
         return head1;
     }
-    /*
+
     @Override
     public int hashCode(){
-        String str = id + "," + sentence + "," + language;
-        return str.hashCode();
+        return this.data.hashCode();
     }
+    
     @Override
     public boolean equals(Object o){
-        if(!(o instanceof DocSentence)){
+        if(!(o instanceof UnionFindSet)){
             return false;
         }
-        DocSentence otherdoc = (DocSentence) o;
-        return (otherdoc.id==this.id) && otherdoc.language.equals(this.language) && (otherdoc.sentence==this.sentence);
+        UnionFindSet s = (UnionFindSet) o;
+        return s.data.equals(this.data);
     }
-
-    
-    public int compareTo(UnionFindSet s) {
-        s.datafor(int i=0;i<length;i++){
-            if(sig[i] < s.get(i)) return -1;
-            if(sig[i] > s.get(i)) return 1;
-        }
-        return 0;
-
-    }
-    */
-
       
 }

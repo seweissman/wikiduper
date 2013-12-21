@@ -92,9 +92,7 @@ public class MergeClusters extends Configured implements Tool {
             TreeMap<Integer, HashSet<DocSentence>> clustermap = new TreeMap<Integer, HashSet<DocSentence>>();
             //TreeMap<Integer, HashSet<ArrayListOfLongsWritable>> clustermap = new TreeMap<Integer, HashSet<ArrayListOfLongsWritable>>();
             // map from doc id to sentence numbers
-            TreeMap<PairOfLongString, TreeSet<PairOfLongs>> docmap = new TreeMap<PairOfLongString, TreeSet<PairOfLongs>>();
             readBuckets(filein,conf,clustermap);
-            HashSet<String> langSet = new HashSet<String>();
             // Renumber components
             int componentct = 0;
             FileSystem fs = FileSystem.get(conf);
