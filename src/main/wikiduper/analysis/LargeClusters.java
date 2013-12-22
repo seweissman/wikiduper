@@ -18,7 +18,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Writer;
@@ -54,6 +53,8 @@ public class LargeClusters extends Configured implements Tool {
                     .hasArg().withDescription("minhash pipeline output").create(INPUT));
             options.addOption(OptionBuilder.withArgName("path")
                     .hasArg().withDescription("output file for identical clusters").create(OUTPUT));
+            options.addOption(OptionBuilder.withArgName("path")
+                    .hasArg().withDescription("output file for identical clusters").create(THRESHOLD));
 
             CommandLine cmdline;
             CommandLineParser parser = new GnuParser();
