@@ -178,7 +178,7 @@ public class LargeClusters extends Configured implements Tool {
                 largeidenticalct++;
             }
 
-            if(clustersize > threshold && clustersentences.size() < .1*threshold && clustersentences.size() > 1){
+            if(clustersize > threshold && clustersentences.size() < .5*threshold && clustersentences.size() > 1){
                 largect++;
                 LongWritable clusterIdOut = new LongWritable();
                 clusterIdOut.set(clustcurr);
