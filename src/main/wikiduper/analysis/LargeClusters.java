@@ -93,6 +93,7 @@ public class LargeClusters extends Configured implements Tool {
     public void getLargeClusters(String filein, String fileout, int threshold, JobConf conf){
         
         int largect = 0;
+        int largeidenticalct = 0;
         //ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
         HashSet<String> clustersentences = new HashSet<String>();
         int clustersize = 0;        
@@ -133,7 +134,11 @@ public class LargeClusters extends Configured implements Tool {
                         maxclustersize = clustersize;
                     }
 
-                    if(clustersize > threshold && clustersentences.size() < 10){
+                    if(clustersize > threshold && clustersentences.size() == 1){
+                        largeidenticalct++;
+                    }
+
+                    if(clustersize > threshold && clustersentences.size() < .1*threshold && clustersentences.size() > 1){
                         largect++;
                         LongWritable clusterIdOut = new LongWritable();
                         clusterIdOut.set(clustcurr);
@@ -169,7 +174,11 @@ public class LargeClusters extends Configured implements Tool {
                 // For some reason it doesn't know when the input stream is done??
                }
 
-            if(clustersize > threshold && clustersentences.size() < 10){
+            if(clustersize > threshold && clustersentences.size() == 1){
+                largeidenticalct++;
+            }
+
+            if(clustersize > threshold && clustersentences.size() < .1*threshold && clustersentences.size() > 1){
                 largect++;
                 LongWritable clusterIdOut = new LongWritable();
                 clusterIdOut.set(clustcurr);
@@ -195,6 +204,7 @@ public class LargeClusters extends Configured implements Tool {
         
         System.out.println("Max cluster size: " + maxclustersize);
         System.out.println("Number of large clusters: " + largect);
+        System.out.println("Number of large identical clusters: " + largeidenticalct);
         
         
         }catch (IOException e) {
