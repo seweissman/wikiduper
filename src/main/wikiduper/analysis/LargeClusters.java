@@ -151,6 +151,7 @@ public class LargeClusters extends Configured implements Tool {
 
                     clustersize = 0;
                     //cluster.clear();
+                    clustersentences.clear();
                     clusterct++;
                 }
                     
@@ -186,6 +187,7 @@ public class LargeClusters extends Configured implements Tool {
 
             clustersize = 0;
             //cluster.clear();
+            clustersentences.clear();
             clusterct++;
         }
         
