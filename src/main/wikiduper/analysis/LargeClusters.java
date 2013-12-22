@@ -89,6 +89,7 @@ public class LargeClusters extends Configured implements Tool {
     
     public void getLargeClusters(String filein, String fileout, int threshold, JobConf conf){
         
+        int largect = 0;
         ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
         int clustersize = 0;        
         int clusterct = 0;
@@ -127,6 +128,7 @@ public class LargeClusters extends Configured implements Tool {
                     }
 
                     if(clustersize > threshold){
+                        largect++;
                         LongWritable clusterIdOut = new LongWritable();
                         clusterIdOut.set(clustcurr);
                     
@@ -154,6 +156,7 @@ public class LargeClusters extends Configured implements Tool {
                }
 
             if(clustersize > threshold){
+                largect++;
                 LongWritable clusterIdOut = new LongWritable();
                 clusterIdOut.set(clustcurr);
                 for(PairOfStrings s : cluster){
@@ -170,6 +173,7 @@ public class LargeClusters extends Configured implements Tool {
         clusterWriter.close();
         
         System.out.println("Max cluster size: " + maxclustersize);
+        System.out.println("Number of large clusters: " + largect);
         
         
         }catch (IOException e) {
