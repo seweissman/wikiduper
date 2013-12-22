@@ -154,7 +154,8 @@ public class TemplateClusters extends Configured implements Tool {
         //HashSet<String> sentenceset = new HashSet<String>();
         
         // Per cluster data structures
-        ArrayList<String> cluster = new ArrayList<String>();
+        //ArrayList<String> cluster = new ArrayList<String>();
+        int clustersize = 0;
         HashSet<String> clustertitles = new HashSet<String>();
         TreeSet<String> clustersentences = new TreeSet<String>();
         TreeSet<String> clustertitlesentences = new TreeSet<String>();
@@ -204,7 +205,7 @@ public class TemplateClusters extends Configured implements Tool {
                 SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.stream(in));
                 clusterid = new LongWritable();
                 PairOfStrings articlesentence = new PairOfStrings();
-            
+
             while(reader.next(clusterid, articlesentence)){
                 String linetext = articlesentence.toString()
                         .replace("\n", " ")
@@ -221,9 +222,8 @@ public class TemplateClusters extends Configured implements Tool {
                 if(!(clustcurr == clusterid.get())){
                     if(clusterct % 10000 == 0) System.err.println("clusterct = " + clusterct);
                     // Once we've found a new cluster Update each histogram
-                    int size = cluster.size();
-                    if(size > maxclustersize){
-                        maxclustersize = size;
+                    if(clustersize > maxclustersize){
+                        maxclustersize = clustersize;
                     }
 
                     //getClusterWordCounts(clustersentences,clusterwordct);
@@ -251,21 +251,21 @@ public class TemplateClusters extends Configured implements Tool {
                     if(clustersentences.size() == 1){
                         identicalCt++;
                         nontemplateSentencesCt += clustersentences.size();
-                        clusterSizeOut.set(clustersentences.size());
+                        clusterSizeOut.set(clustersize);
                         identicalWriter.append(clusterIdOut, clusterSizeOut);
                     }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                         templateCt++;
                         templateSentencesCt += clustersentences.size();
-                        clusterSizeOut.set(clustersentences.size());
+                        clusterSizeOut.set(clustersize);
                         templateWriter.append(clusterIdOut, clusterSizeOut);
                     }else{
                         otherCt++;
                         nontemplateSentencesCt += clustersentences.size();
-                        clusterSizeOut.set(clustersentences.size());
+                        clusterSizeOut.set(clustersize);
                         otherWriter.append(clusterIdOut, clusterSizeOut);
                     }
                     if(DEBUG){
-                       System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + cluster.size());
+                       System.out.println("Cluster " + clustcurr + "(" + clusterct + ") size: " + clustersize);
                        System.out.println("score: " + score);
                         /*
                          System.out.println("CLUSTER TYPE TEMPLTE = " + ClassifyClusters.ClusterTypes.TEMPLATE.ordinal());
@@ -287,7 +287,7 @@ public class TemplateClusters extends Configured implements Tool {
                     }
 
                             // Clear per cluster data structures
-                    cluster.clear();
+                    clustersize = 0;
                     clustersentences.clear();
                     clustertitlesentences.clear();
                     clustertitles.clear();
@@ -296,7 +296,7 @@ public class TemplateClusters extends Configured implements Tool {
                 }
                     
                 clustcurr = clusterid.get();
-                cluster.add(articlesentence.toString());
+                clustersize++;
                 clustersentences.add(sentence);
                 clustertitlesentences.add(title + " " + sentence);
                 clustertitles.add(title);
@@ -337,22 +337,22 @@ public class TemplateClusters extends Configured implements Tool {
             if(clustersentences.size() == 1){
                 identicalCt++;
                 nontemplateSentencesCt += clustersentences.size();
-                clusterSizeOut.set(clustersentences.size());
+                clusterSizeOut.set(clustersize);
                 identicalWriter.append(clusterIdOut, clusterSizeOut);
             }else if(clustersentences.size() >= count_threshold && score >= score_threshold){
                 templateCt++;
                 templateSentencesCt += clustersentences.size();
-                clusterSizeOut.set(clustersentences.size());
+                clusterSizeOut.set(clustersize);
                 templateWriter.append(clusterIdOut, clusterSizeOut);
             }else{
                 otherCt++;
                 nontemplateSentencesCt += clustersentences.size();
-                clusterSizeOut.set(clustersentences.size());
+                clusterSizeOut.set(clustersize);
                 otherWriter.append(clusterIdOut, clusterSizeOut);
             }
 
             if(DEBUG){
-                System.out.println("Cluster " + clusterct + " size: " + cluster.size());
+                System.out.println("Cluster " + clusterct + " size: " + clustersize);
                 System.out.println("score: " + score);
                 int i=0;
                 int samplect = 10;
@@ -365,7 +365,7 @@ public class TemplateClusters extends Configured implements Tool {
             }
             
             // Clear per cluster data structures
-            cluster.clear();
+            clustersize = 0;
             clustersentences.clear();
             clustertitlesentences.clear();
             clustertitles.clear();
