@@ -5,6 +5,7 @@ package wikiduper.analysis;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -21,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Writer;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -91,7 +93,8 @@ public class LargeClusters extends Configured implements Tool {
     public void getLargeClusters(String filein, String fileout, int threshold, JobConf conf){
         
         int largect = 0;
-        ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
+        //ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
+        HashSet<String> clustersentences = new HashSet<String>();
         int clustersize = 0;        
         int clusterct = 0;
         long clustcurr = -1;
@@ -102,8 +105,10 @@ public class LargeClusters extends Configured implements Tool {
             
             
             FileSystem fs = FileSystem.get(conf);
+            //SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
+            //      Writer.keyClass(LongWritable.class), Writer.valueClass(PairOfStrings.class));
             SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
-                    Writer.keyClass(LongWritable.class), Writer.valueClass(PairOfStrings.class));
+                  Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
            
         System.out.println("filein = " + filein);
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
@@ -133,19 +138,26 @@ public class LargeClusters extends Configured implements Tool {
                         LongWritable clusterIdOut = new LongWritable();
                         clusterIdOut.set(clustcurr);
                     
+                        /*
                         for(PairOfStrings s : cluster){                    
                             clusterWriter.append(clusterIdOut, s);
+                        }
+                        */
+                        for(String s : clustersentences){
+                            Text sout = new Text(s);
+                            clusterWriter.append(clusterIdOut, sout);
                         }
                     }
 
                     clustersize = 0;
-                    cluster.clear();
+                    //cluster.clear();
                     clusterct++;
                 }
                     
                 clustcurr = clusterid.get();
                 clustersize++;
-                cluster.add(articlesentence);
+                //cluster.add(articlesentence);
+                clustersentences.add(articlesentence.getRightElement());
                 
                 clusterid = new LongWritable();
                 articlesentence = new PairOfStrings();
@@ -160,14 +172,20 @@ public class LargeClusters extends Configured implements Tool {
                 largect++;
                 LongWritable clusterIdOut = new LongWritable();
                 clusterIdOut.set(clustcurr);
+                /*
                 for(PairOfStrings s : cluster){
                     clusterWriter.append(clusterIdOut, s);
+                }
+                */
+                for(String s : clustersentences){
+                    Text sout = new Text(s);
+                    clusterWriter.append(clusterIdOut, sout);
                 }
             }
 
 
             clustersize = 0;
-            cluster.clear();
+            //cluster.clear();
             clusterct++;
         }
         
