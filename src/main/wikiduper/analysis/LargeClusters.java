@@ -111,7 +111,7 @@ public class LargeClusters extends Configured implements Tool {
             //      Writer.keyClass(LongWritable.class), Writer.valueClass(PairOfStrings.class));
             SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
-            SequenceFile.Writer nonUniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".small")),
+            SequenceFile.Writer nonUniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".nonunique")),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
            
         System.out.println("filein = " + filein);
