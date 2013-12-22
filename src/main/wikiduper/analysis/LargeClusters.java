@@ -146,7 +146,7 @@ public class LargeClusters extends Configured implements Tool {
                             clusterIdOut.set(clustcurr);
                     
                             for(String s : clustersentences){
-                                Text sout = new Text(s);
+                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                                 nonUniqueClusterWriter.append(clusterIdOut, sout);
                             }
                         }else{
@@ -155,7 +155,7 @@ public class LargeClusters extends Configured implements Tool {
                             clusterIdOut.set(clustcurr);
                     
                             for(String s : clustersentences){
-                                Text sout = new Text(s);
+                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                                 clusterWriter.append(clusterIdOut, sout);
                             }
                             
@@ -190,7 +190,7 @@ public class LargeClusters extends Configured implements Tool {
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
                     for(String s : clustersentences){
-                        Text sout = new Text(s);
+                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                         nonUniqueClusterWriter.append(clusterIdOut, sout);
                     }
                 }else{
@@ -198,7 +198,7 @@ public class LargeClusters extends Configured implements Tool {
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
                     for(String s : clustersentences){
-                        Text sout = new Text(s);
+                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                         clusterWriter.append(clusterIdOut, sout);
                     }
                 }
