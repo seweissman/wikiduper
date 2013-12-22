@@ -33,8 +33,6 @@ import edu.umd.cloud9.io.pair.PairOfStrings;
 import wikiduper.utils.MergeClusters;
 
 /**
- * A class for heuristically classifying clusters as templates, identical
- * 
  * 
  * @author weissman
  *
@@ -84,12 +82,12 @@ public class LargeClusters extends Configured implements Tool {
 
             conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
 
-            getHistogram(inputPath, outputPath, threshold, conf);
+            getLargeClusters(inputPath, outputPath, threshold, conf);
 
             return 0;
         }
     
-    public void getHistogram(String filein, String fileout, int threshold, JobConf conf){
+    public void getLargeClusters(String filein, String fileout, int threshold, JobConf conf){
         
         ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
         int clustersize = 0;        
@@ -128,13 +126,13 @@ public class LargeClusters extends Configured implements Tool {
                         maxclustersize = clustersize;
                     }
 
-                    LongWritable clusterIdOut = new LongWritable();
-                    clusterIdOut.set(clustcurr);
-                    IntWritable clusterSizeOut = new IntWritable();
-                        
-                    clusterSizeOut.set(clustersize);
-                    for(PairOfStrings s : cluster){                    
-                        clusterWriter.append(clusterIdOut, s);
+                    if(clustersize > threshold){
+                        LongWritable clusterIdOut = new LongWritable();
+                        clusterIdOut.set(clustcurr);
+                    
+                        for(PairOfStrings s : cluster){                    
+                            clusterWriter.append(clusterIdOut, s);
+                        }
                     }
 
                     clustersize = 0;
@@ -155,10 +153,12 @@ public class LargeClusters extends Configured implements Tool {
                 // For some reason it doesn't know when the input stream is done??
                }
 
-            LongWritable clusterIdOut = new LongWritable();
-            clusterIdOut.set(clustcurr);
-            for(PairOfStrings s : cluster){
-                clusterWriter.append(clusterIdOut, s);
+            if(clustersize > threshold){
+                LongWritable clusterIdOut = new LongWritable();
+                clusterIdOut.set(clustcurr);
+                for(PairOfStrings s : cluster){
+                    clusterWriter.append(clusterIdOut, s);
+                }
             }
 
 
