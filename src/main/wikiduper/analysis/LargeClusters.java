@@ -133,7 +133,7 @@ public class LargeClusters extends Configured implements Tool {
                         maxclustersize = clustersize;
                     }
 
-                    if(clustersize > threshold){
+                    if(clustersize > threshold && clustersentences.size() < 10){
                         largect++;
                         LongWritable clusterIdOut = new LongWritable();
                         clusterIdOut.set(clustcurr);
@@ -169,7 +169,7 @@ public class LargeClusters extends Configured implements Tool {
                 // For some reason it doesn't know when the input stream is done??
                }
 
-            if(clustersize > threshold){
+            if(clustersize > threshold && clustersentences.size() < 10){
                 largect++;
                 LongWritable clusterIdOut = new LongWritable();
                 clusterIdOut.set(clustcurr);
