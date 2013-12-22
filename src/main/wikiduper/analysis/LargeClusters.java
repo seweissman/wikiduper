@@ -75,7 +75,7 @@ public class LargeClusters extends Configured implements Tool {
 
             String inputPath = cmdline.getOptionValue(INPUT);
             String outputPath = cmdline.getOptionValue(OUTPUT);
-            int threshold = Integer.valueOf(THRESHOLD);
+            int threshold = Integer.valueOf(cmdline.getOptionValue(THRESHOLD));
             
             LOG.info("Tool name: " + this.getClass().getName());
             
