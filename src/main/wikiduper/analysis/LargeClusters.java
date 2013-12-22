@@ -94,6 +94,7 @@ public class LargeClusters extends Configured implements Tool {
         
         int largect = 0;
         int largeidenticalct = 0;
+        int largenonuniquect = 0;
         //ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
         HashSet<String> clustersentences = new HashSet<String>();
         int clustersize = 0;        
@@ -109,7 +110,9 @@ public class LargeClusters extends Configured implements Tool {
             //SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
             //      Writer.keyClass(LongWritable.class), Writer.valueClass(PairOfStrings.class));
             SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
-                  Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+            SequenceFile.Writer nonUniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".small")),
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
            
         System.out.println("filein = " + filein);
         FileStatus[] infiles = fs.globStatus(new Path(filein + "/part-*"));
@@ -134,23 +137,28 @@ public class LargeClusters extends Configured implements Tool {
                         maxclustersize = clustersize;
                     }
 
-                    if(clustersize > threshold && clustersentences.size() == 1){
-                        largeidenticalct++;
-                    }
-
-                    if(clustersize > threshold && clustersentences.size() < .1*threshold && clustersentences.size() > 1){
-                        largect++;
-                        LongWritable clusterIdOut = new LongWritable();
-                        clusterIdOut.set(clustcurr);
+                    if(clustersize > threshold){
+                        if(clustersentences.size() == 1){
+                            largeidenticalct++;
+                        }else if(clustersentences.size() < .5*threshold){
+                            largenonuniquect++;
+                            LongWritable clusterIdOut = new LongWritable();
+                            clusterIdOut.set(clustcurr);
                     
-                        /*
-                        for(PairOfStrings s : cluster){                    
-                            clusterWriter.append(clusterIdOut, s);
-                        }
-                        */
-                        for(String s : clustersentences){
-                            Text sout = new Text(s);
-                            clusterWriter.append(clusterIdOut, sout);
+                            for(String s : clustersentences){
+                                Text sout = new Text(s);
+                                nonUniqueClusterWriter.append(clusterIdOut, sout);
+                            }
+                        }else{
+                            largect++;
+                            LongWritable clusterIdOut = new LongWritable();
+                            clusterIdOut.set(clustcurr);
+                    
+                            for(String s : clustersentences){
+                                Text sout = new Text(s);
+                                clusterWriter.append(clusterIdOut, sout);
+                            }
+                            
                         }
                     }
 
@@ -174,22 +182,25 @@ public class LargeClusters extends Configured implements Tool {
                 // For some reason it doesn't know when the input stream is done??
                }
 
-            if(clustersize > threshold && clustersentences.size() == 1){
-                largeidenticalct++;
-            }
-
-            if(clustersize > threshold && clustersentences.size() < .5*threshold && clustersentences.size() > 1){
-                largect++;
-                LongWritable clusterIdOut = new LongWritable();
-                clusterIdOut.set(clustcurr);
-                /*
-                for(PairOfStrings s : cluster){
-                    clusterWriter.append(clusterIdOut, s);
-                }
-                */
-                for(String s : clustersentences){
-                    Text sout = new Text(s);
-                    clusterWriter.append(clusterIdOut, sout);
+            if(clustersize > threshold){
+                if(clustersentences.size() == 1){
+                    largeidenticalct++;
+                }else if(clustersentences.size() < .5*threshold){
+                    largenonuniquect++;
+                    LongWritable clusterIdOut = new LongWritable();
+                    clusterIdOut.set(clustcurr);
+                    for(String s : clustersentences){
+                        Text sout = new Text(s);
+                        nonUniqueClusterWriter.append(clusterIdOut, sout);
+                    }
+                }else{
+                    largect++;
+                    LongWritable clusterIdOut = new LongWritable();
+                    clusterIdOut.set(clustcurr);
+                    for(String s : clustersentences){
+                        Text sout = new Text(s);
+                        clusterWriter.append(clusterIdOut, sout);
+                    }
                 }
             }
 
@@ -201,6 +212,7 @@ public class LargeClusters extends Configured implements Tool {
         }
         
         clusterWriter.close();
+        nonUniqueClusterWriter.close();
         
         System.out.println("Max cluster size: " + maxclustersize);
         System.out.println("Number of large clusters: " + largect);
