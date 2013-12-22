@@ -217,6 +217,7 @@ public class LargeClusters extends Configured implements Tool {
         System.out.println("Max cluster size: " + maxclustersize);
         System.out.println("Number of large clusters: " + largect);
         System.out.println("Number of large identical clusters: " + largeidenticalct);
+        System.out.println("Number of large non-unique clusters: " + largenonuniquect);
         
         
         }catch (IOException e) {
