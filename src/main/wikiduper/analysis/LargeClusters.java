@@ -141,6 +141,7 @@ public class LargeClusters extends Configured implements Tool {
                     }
 
                     if(clustersize > threshold){
+                        largect++;
                         if(clustersentences.size() == 1){
                             largeidenticalct++;
                         }else if(clustersentences.size() == clustersize){
@@ -160,7 +161,6 @@ public class LargeClusters extends Configured implements Tool {
                                 nonUniqueClusterWriter.append(clusterIdOut, sout);
                             }
                         }else{
-                            largect++;
                             LongWritable clusterIdOut = new LongWritable();
                             clusterIdOut.set(clustcurr);
                     
@@ -193,6 +193,7 @@ public class LargeClusters extends Configured implements Tool {
                }
 
             if(clustersize > threshold){
+                largect++;
                 if(clustersentences.size() == 1){
                     largeidenticalct++;
                 }else  if(clustersentences.size() == clustersize){
@@ -211,7 +212,6 @@ public class LargeClusters extends Configured implements Tool {
                         nonUniqueClusterWriter.append(clusterIdOut, sout);
                     }
                 }else{
-                    largect++;
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
                     for(String s : clustersentences){
