@@ -95,6 +95,7 @@ public class LargeClusters extends Configured implements Tool {
         int largect = 0;
         int largeidenticalct = 0;
         int largenonuniquect = 0;
+        int largeuniquect = 0;
         //ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
         HashSet<String> clustersentences = new HashSet<String>();
         int clustersize = 0;        
@@ -112,6 +113,8 @@ public class LargeClusters extends Configured implements Tool {
             SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer nonUniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".nonunique")),
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+            SequenceFile.Writer uniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".unique")),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
            
         System.out.println("filein = " + filein);
@@ -140,6 +143,13 @@ public class LargeClusters extends Configured implements Tool {
                     if(clustersize > threshold){
                         if(clustersentences.size() == 1){
                             largeidenticalct++;
+                        }else if(clustersentences.size() == clustersize){
+                            largeuniquect++;
+                            LongWritable clusterIdOut = new LongWritable();
+                            for(String s : clustersentences){
+                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
+                                uniqueClusterWriter.append(clusterIdOut, sout);
+                            }
                         }else if(clustersentences.size() < .5*threshold){
                             largenonuniquect++;
                             LongWritable clusterIdOut = new LongWritable();
@@ -185,6 +195,13 @@ public class LargeClusters extends Configured implements Tool {
             if(clustersize > threshold){
                 if(clustersentences.size() == 1){
                     largeidenticalct++;
+                }else  if(clustersentences.size() == clustersize){
+                    largeuniquect++;
+                    LongWritable clusterIdOut = new LongWritable();
+                    for(String s : clustersentences){
+                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
+                        uniqueClusterWriter.append(clusterIdOut, sout);
+                    }
                 }else if(clustersentences.size() < .5*threshold){
                     largenonuniquect++;
                     LongWritable clusterIdOut = new LongWritable();
@@ -218,6 +235,7 @@ public class LargeClusters extends Configured implements Tool {
         System.out.println("Number of large clusters: " + largect);
         System.out.println("Number of large identical clusters: " + largeidenticalct);
         System.out.println("Number of large non-unique clusters: " + largenonuniquect);
+        System.out.println("Number of large unique clusters: " + largeuniquect);
         
         
         }catch (IOException e) {
