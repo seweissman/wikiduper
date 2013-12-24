@@ -5,6 +5,7 @@ package wikiduper.analysis;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
@@ -97,7 +98,7 @@ public class LargeClusters extends Configured implements Tool {
         int largenonuniquect = 0;
         int largeuniquect = 0;
         //ArrayList<PairOfStrings> cluster = new ArrayList<PairOfStrings>();
-        HashSet<String> clustersentences = new HashSet<String>();
+        HashMap<String,Integer> clustersentences = new HashMap<String,Integer>();
         int clustersize = 0;        
         int clusterct = 0;
         long clustcurr = -1;
@@ -149,7 +150,7 @@ public class LargeClusters extends Configured implements Tool {
                             LongWritable clusterIdOut = new LongWritable();
                             clusterIdOut.set(clustcurr);
                             
-                            for(String s : clustersentences){
+                            for(String s : clustersentences.keySet()){
                                 Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                                 uniqueClusterWriter.append(clusterIdOut, sout);
                             }
@@ -158,17 +159,19 @@ public class LargeClusters extends Configured implements Tool {
                             LongWritable clusterIdOut = new LongWritable();
                             clusterIdOut.set(clustcurr);
                     
-                            for(String s : clustersentences){
-                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
+                            for(String s : clustersentences.keySet()){
+                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + 
+                                        clustersentences.get(s) + "," + s);
                                 nonUniqueClusterWriter.append(clusterIdOut, sout);
                             }
                         }else{
                             LongWritable clusterIdOut = new LongWritable();
                             clusterIdOut.set(clustcurr);
                     
-                            for(String s : clustersentences){
-                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
-                                clusterWriter.append(clusterIdOut, sout);
+                            for(String s : clustersentences.keySet()){
+                                Text sout = new Text(clustersize + "," + clustersentences.size() + "," + 
+                                        clustersentences.get(s) + "," + s);
+                                nonUniqueClusterWriter.append(clusterIdOut, sout);
                             }
                             
                         }
@@ -183,8 +186,11 @@ public class LargeClusters extends Configured implements Tool {
                 clustcurr = clusterid.get();
                 clustersize++;
                 //cluster.add(articlesentence);
-                clustersentences.add(articlesentence.getRightElement());
-                
+                String sentence = articlesentence.getRightElement();
+                if(!clustersentences.containsKey(sentence)){
+                    clustersentences.put(sentence,0);
+                }
+                clustersentences.put(sentence, clustersentences.get(sentence) + 1);
                 clusterid = new LongWritable();
                 articlesentence = new PairOfStrings();
 
@@ -201,7 +207,7 @@ public class LargeClusters extends Configured implements Tool {
                 }else  if(clustersentences.size() == clustersize){
                     largeuniquect++;
                     LongWritable clusterIdOut = new LongWritable();
-                    for(String s : clustersentences){
+                    for(String s : clustersentences.keySet()){
                         Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                         uniqueClusterWriter.append(clusterIdOut, sout);
                     }
@@ -209,16 +215,18 @@ public class LargeClusters extends Configured implements Tool {
                     largenonuniquect++;
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
-                    for(String s : clustersentences){
-                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
+                    for(String s : clustersentences.keySet()){
+                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + 
+                                clustersentences.get(s) + "," + s);
                         nonUniqueClusterWriter.append(clusterIdOut, sout);
                     }
                 }else{
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
-                    for(String s : clustersentences){
-                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
-                        clusterWriter.append(clusterIdOut, sout);
+                    for(String s : clustersentences.keySet()){
+                        Text sout = new Text(clustersize + "," + clustersentences.size() + "," + 
+                                clustersentences.get(s) + "," + s);
+                        nonUniqueClusterWriter.append(clusterIdOut, sout);
                     }
                 }
             }
