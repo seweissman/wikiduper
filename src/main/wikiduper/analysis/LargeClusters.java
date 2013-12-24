@@ -147,11 +147,13 @@ public class LargeClusters extends Configured implements Tool {
                         }else if(clustersentences.size() == clustersize){
                             largeuniquect++;
                             LongWritable clusterIdOut = new LongWritable();
+                            clusterIdOut.set(clustcurr);
+                            
                             for(String s : clustersentences){
                                 Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                                 uniqueClusterWriter.append(clusterIdOut, sout);
                             }
-                        }else if(clustersentences.size() < .5*threshold){
+                        }else if(clustersentences.size() < .5*clustersize){
                             largenonuniquect++;
                             LongWritable clusterIdOut = new LongWritable();
                             clusterIdOut.set(clustcurr);
