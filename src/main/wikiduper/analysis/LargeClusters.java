@@ -171,7 +171,7 @@ public class LargeClusters extends Configured implements Tool {
                             for(String s : clustersentences.keySet()){
                                 Text sout = new Text(clustersize + "," + clustersentences.size() + "," + 
                                         clustersentences.get(s) + "," + s);
-                                nonUniqueClusterWriter.append(clusterIdOut, sout);
+                                clusterWriter.append(clusterIdOut, sout);
                             }
                             
                         }
@@ -226,7 +226,7 @@ public class LargeClusters extends Configured implements Tool {
                     for(String s : clustersentences.keySet()){
                         Text sout = new Text(clustersize + "," + clustersentences.size() + "," + 
                                 clustersentences.get(s) + "," + s);
-                        nonUniqueClusterWriter.append(clusterIdOut, sout);
+                        clusterWriter.append(clusterIdOut, sout);
                     }
                 }
             }
