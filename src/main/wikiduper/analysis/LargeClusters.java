@@ -211,7 +211,7 @@ public class LargeClusters extends Configured implements Tool {
                         Text sout = new Text(clustersize + "," + clustersentences.size() + "," + s);
                         uniqueClusterWriter.append(clusterIdOut, sout);
                     }
-                }else if(clustersentences.size() < .5*threshold){
+                }else if(clustersentences.size() < .5*clustersize){
                     largenonuniquect++;
                     LongWritable clusterIdOut = new LongWritable();
                     clusterIdOut.set(clustcurr);
