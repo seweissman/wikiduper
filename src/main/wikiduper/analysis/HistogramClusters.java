@@ -350,6 +350,7 @@ public class HistogramClusters extends Configured implements Tool {
         histkeys.append(",");
         histkeys.append("\"");
         histkeys.append(rangel);
+        histkeys.append("+");
        // histkeys.append("-");
        // histkeys.append(rangeh);
         histkeys.append("\"");
