@@ -313,11 +313,13 @@ public class HistogramClusters extends Configured implements Tool {
                 int rangel = i-binsize;
                 int rangeh = i-1;
                 histkeys.append(",");
+                if(i%1000 == 0){
                 histkeys.append("\"");
                 histkeys.append(rangel);
                 //histkeys.append("-");
                 //histkeys.append(rangeh);
                 histkeys.append("\"");
+                }
             histvals.append(",");
 //            histvals.append("{");
             histvals.append(sum);
