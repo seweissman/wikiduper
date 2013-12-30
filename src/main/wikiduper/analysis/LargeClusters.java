@@ -113,6 +113,8 @@ public class LargeClusters extends Configured implements Tool {
             //      Writer.keyClass(LongWritable.class), Writer.valueClass(PairOfStrings.class));
             SequenceFile.Writer clusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
+            SequenceFile.Writer clusterSizeWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout)),
+                    Writer.keyClass(LongWritable.class), Writer.valueClass(LongWritable.class));
             SequenceFile.Writer nonUniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".nonunique")),
                     Writer.keyClass(LongWritable.class), Writer.valueClass(Text.class));
             SequenceFile.Writer uniqueClusterWriter  = SequenceFile.createWriter(conf, Writer.file(new Path(fileout+".unique")),
@@ -140,7 +142,8 @@ public class LargeClusters extends Configured implements Tool {
                     if(clustersize > maxclustersize){
                         maxclustersize = clustersize;
                     }
-
+                    LongWritable sizeout = new LongWritable(clustersize);
+                    clusterSizeWriter.append(sizeout,sizeout);
                     if(clustersize > threshold){
                         largect++;
                         if(clustersentences.size() == 1){
@@ -199,7 +202,8 @@ public class LargeClusters extends Configured implements Tool {
             }catch (EOFException e) {
                 // For some reason it doesn't know when the input stream is done??
                }
-
+            LongWritable sizeout = new LongWritable(clustersize);
+            clusterSizeWriter.append(sizeout,sizeout);
             if(clustersize > threshold){
                 largect++;
                 if(clustersentences.size() == 1){
@@ -239,6 +243,8 @@ public class LargeClusters extends Configured implements Tool {
         }
         
         clusterWriter.close();
+        clusterSizeWriter.close();
+        uniqueClusterWriter.close();
         nonUniqueClusterWriter.close();
         
         System.out.println("Max cluster size: " + maxclustersize);
