@@ -314,7 +314,7 @@ public class HistogramClusters extends Configured implements Tool {
                 int rangeh = i-1;
                 histkeys.append(",");
                 histkeys.append("\"");
-                if((i-binsize)%100 == 0){
+                if(((i+1)-binsize)%100 == 0){
                     histkeys.append(rangel);
                 //histkeys.append("-");
                 //histkeys.append(rangeh);
