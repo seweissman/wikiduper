@@ -310,7 +310,7 @@ public class HistogramClusters extends Configured implements Tool {
             sumtitle+=b;
             
             if((i+1)%binsize == 0){
-                int rangel = i-binsize;
+                int rangel = i+1-binsize;
                 int rangeh = i-1;
                 histkeys.append(",");
                 histkeys.append("\"");
