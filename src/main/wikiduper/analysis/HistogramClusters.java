@@ -309,7 +309,7 @@ public class HistogramClusters extends Configured implements Tool {
             b = titlehistogram.containsKey(i) ? titlehistogram.get(i) : 0;
             sumtitle+=b;
             
-            if(i%binsize == 0){
+            if((i+1)%binsize == 0){
                 int rangel = i-binsize;
                 int rangeh = i-1;
                 histkeys.append(",");
