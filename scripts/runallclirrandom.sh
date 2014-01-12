@@ -29,51 +29,58 @@ etokens=${ivoryDataDir}/token/${elang}-token.bin
 
 nbits=100
 ntables=10
-threshold=40
+threshold=30
+overlap=10000
+window=2000
 
-# echo "hadoop fs -rm -r ${eindex}"
-# hadoop fs -rm -r ${eindex}
+echo "hadoop fs -rm -r ${eindex}"
+hadoop fs -rm -r ${eindex}
 
-# echo "hadoop fs -rm -r ${findex}"
-# hadoop fs -rm -r ${findex}
+echo "hadoop fs -rm -r ${findex}"
+hadoop fs -rm -r ${findex}
 
-# echo "etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingE -xml=${ein} -compressed=${ecompressed} -index=${eindex} -lang=${elang} -tokenizermodel=${etokens} -collectionvocab=${evocabtgt} -e_stopword=${estopwords}"
-# etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingE -xml=${ein} -compressed=${ecompressed} -index=${eindex} -lang=${elang} -tokenizermodel=${etokens} -collectionvocab=${evocabtgt} -e_stopword=${estopwords}
+echo "etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingE -xml=${ein} -compressed=${ecompressed} -index=${eindex} -lang=${elang} -tokenizermodel=${etokens} -collectionvocab=${evocabtgt} -e_stopword=${estopwords}"
+etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingE -xml=${ein} -compressed=${ecompressed} -index=${eindex} -lang=${elang} -tokenizermodel=${etokens} -collectionvocab=${evocabtgt} -e_stopword=${estopwords}
 
-# echo "etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingF -xml=${fin} -compressed=${fcompressed} -index=${findex} -targetindex=${eindex} -lang=${flang} -target_lang=${elang} -tokenizermodel=${ftokens} -e_tokenizermodel=${etokens} -f_f2e_vocab=${fvocabsrc} -e_f2e_vocab=${evocabtgt} -f2e_ttable=${f2eprobs} -e_e2f_vocab=${evocabsrc} -f_e2f_vocab=${fvocabtgt} -e2f_ttable=${e2fprobs} -e_stopword=${estopwords} -f_stopword=${fstopwords}"
-# etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingF -xml=${fin} -compressed=${fcompressed} -index=${findex} -targetindex=${eindex} -lang=${flang} -target_lang=${elang} -tokenizermodel=${ftokens} -e_tokenizermodel=${etokens} -f_f2e_vocab=${fvocabsrc} -e_f2e_vocab=${evocabtgt} -f2e_ttable=${f2eprobs} -e_e2f_vocab=${evocabsrc} -f_e2f_vocab=${fvocabtgt} -e2f_ttable=${e2fprobs} -e_stopword=${estopwords} -f_stopword=${fstopwords}
+echo "etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingF -xml=${fin} -compressed=${fcompressed} -index=${findex} -targetindex=${eindex} -lang=${flang} -target_lang=${elang} -tokenizermodel=${ftokens} -e_tokenizermodel=${etokens} -f_f2e_vocab=${fvocabsrc} -e_f2e_vocab=${evocabtgt} -f2e_ttable=${f2eprobs} -e_e2f_vocab=${evocabsrc} -f_e2f_vocab=${fvocabtgt} -e2f_ttable=${e2fprobs} -e_stopword=${estopwords} -f_stopword=${fstopwords}"
+etc/hadoop-cluster.sh ivory.app.PreprocessWikipedia -mode=crosslingF -xml=${fin} -compressed=${fcompressed} -index=${findex} -targetindex=${eindex} -lang=${flang} -target_lang=${elang} -tokenizermodel=${ftokens} -e_tokenizermodel=${etokens} -f_f2e_vocab=${fvocabsrc} -e_f2e_vocab=${evocabtgt} -f2e_ttable=${f2eprobs} -e_e2f_vocab=${evocabsrc} -f_e2f_vocab=${fvocabtgt} -e2f_ttable=${e2fprobs} -e_stopword=${estopwords} -f_stopword=${fstopwords}
 
-# echo "etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${findex} -num_bits=${nbits} -type=random"
-# etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${findex} -num_bits=${nbits} -type=random
+echo "etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${findex} -num_bits=${nbits} -type=random"
+etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${findex} -num_bits=${nbits} -type=random
 
-# echo "hdfs dfs -cp ${findex}/randomvectors_D=${nbits}/ ${eindex}/"
-# hdfs dfs -cp ${findex}/randomvectors_D=${nbits}/ ${eindex}/
+echo "hdfs dfs -cp ${findex}/randomvectors_D=${nbits}/ ${eindex}/"
+hdfs dfs -cp ${findex}/randomvectors_D=${nbits}/ ${eindex}/
 
-# echo "etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${eindex} -num_bits=${nbits} -type=random"
-# etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${eindex} -num_bits=${nbits} -type=random
+echo "etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${eindex} -num_bits=${nbits} -type=random"
+etc/hadoop-cluster.sh ivory.lsh.driver.RunComputeSignatures -index=${eindex} -num_bits=${nbits} -type=random
 
-# echo "etc/hadoop-cluster.sh ivory.lsh.pwsim.GenerateChunkedPermutedTables  -sourceindex=${findex} -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=10000 -B=2000"
-# etc/hadoop-cluster.sh ivory.lsh.pwsim.GenerateChunkedPermutedTables  -sourceindex=${findex} -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=10000 -B=2000
+echo "etc/hadoop-cluster.sh ivory.lsh.pwsim.GenerateChunkedPermutedTables  -sourceindex=${findex} -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=${overlap} -B=${window}"
+etc/hadoop-cluster.sh ivory.lsh.pwsim.GenerateChunkedPermutedTables  -sourceindex=${findex} -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=${overlap} -B=${window}
 
-# echo "etc/hadoop-cluster.sh ivory.lsh.pwsim.cl.CLSlidingWindowPwsim -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=10000 -B=2000 -T=${threshold}"
-# etc/hadoop-cluster.sh ivory.lsh.pwsim.cl.CLSlidingWindowPwsim -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=10000 -B=2000 -T=${threshold}
+echo "etc/hadoop-cluster.sh ivory.lsh.pwsim.cl.CLSlidingWindowPwsim -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=${overlap} -B=${window} -T=${threshold}"
+etc/hadoop-cluster.sh ivory.lsh.pwsim.cl.CLSlidingWindowPwsim -index=${eindex} -num_bits=${nbits} -type=random -Q=${ntables} -overlap=${overlap} -B=${window} -T=${threshold}
 
 echo "etc/hadoop-cluster.sh ivory.lsh.eval.SampleIntDocVectors -index=${findex} -size=1000 -docnos=${findex}/sample-docnos"
 etc/hadoop-cluster.sh ivory.lsh.eval.SampleIntDocVectors -index=${findex} -size=1000 -docnos=${findex}/sample-docnos
 
-echo "etc/hadoop-cluster.sh ivory.lsh.eval.FilterResults -input=${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000 -output=pwsim.enwiki.index/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000-filtered -docnos=${findex}/sample-docnos"
-etc/hadoop-cluster.sh ivory.lsh.eval.FilterResults -input=${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000 -output=pwsim.enwiki.index/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000-filtered -docnos=${findex}/sample-docnos
+echo "etc/hadoop-cluster.sh ivory.lsh.eval.FilterResults -input=${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=${window} -output=${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=${window}-filtered -docnos=${findex}/sample-docnos"
+etc/hadoop-cluster.sh ivory.lsh.eval.FilterResults -input=${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=${window} -output=${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=${window}-filtered -docnos=${findex}/sample-docnos
 
 echo "etc/hadoop-cluster.sh ivory.lsh.eval.BruteForcePwsim  -input=${eindex}/wt-int-doc-vectors  -sample=${findex}/wt-int-doc-vectors_sample=1000/part-00000 -output=${eindex}/groundtruth_T=0.3 -cosineT=0.3 -type=intdocvector"
 etc/hadoop-cluster.sh ivory.lsh.eval.BruteForcePwsim  -input=${eindex}/wt-int-doc-vectors  -sample=${findex}/wt-int-doc-vectors_sample=1000/part-00000 -output=${eindex}/groundtruth_T=0.3 -cosineT=0.3 -type=intdocvector
 
-echo "hadoop dfs -get ${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000-filtered/part-00000 ./pwsim-filtered_${threshold}-${nbits}-${ntables}-2000"
-hadoop dfs -get ${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000-filtered/part-00000 ./pwsim-filtered_${threshold}-${nbits}-${ntables}-2000
+echo "hadoop dfs -get ${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=${window}-filtered/part-00000 ./pwsim-filtered_${threshold}-${nbits}-${ntables}-${window}"
+hadoop dfs -get ${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=${window}-filtered/part-00000 ./pwsim-filtered_${threshold}-${nbits}-${ntables}-${window}
+
+echo "rm -rf ./ground_0.3"
+rm -rf ./ground_0.3
+
 echo "hadoop dfs -get ${eindex}/groundtruth_T=0.3/part-00000 ./ground_0.3"
 hadoop dfs -get ${eindex}/groundtruth_T=0.3/part-00000 ./ground_0.3
+
 cd etc
-echo "perl etc/eval.pl ground_0.3 pwsim-filtered_${threshold}-${nbits}-${ntables}-2000"
-perl eval.pl ../ground_0.3 ../pwsim-filtered_${threshold}-${nbits}-${ntables}-2000
+echo "perl etc/eval.pl ../ground_0.3 ../pwsim-filtered_${threshold}-${nbits}-${ntables}-${window}"
+perl eval.pl ../ground_0.3 ../pwsim-filtered_${threshold}-${nbits}-${ntables}-${window}
 
 # #etc/hadoop-cluster.sh edu.umd.cloud9.util.CombineSequenceFiles  ${eindex}/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000  pwsim.results/similardocs_random_maxdst=${threshold}_D=${nbits}_Q=${ntables}_B=2000.single  100 1 edu.umd.cloud9.io.pair.PairOfInts org.apache.hadoop.io.IntWritable sequence
 

@@ -36,18 +36,26 @@ nhash=${10}
 
 output=${11}
 preprocout=${output}.preproc
+sampleout=${output}.sample
+samplescoreout=${output}.samplescore
 mhoutput=${output}.mh
 mergeoutput=${output}.clusters
 sentenceoutput=${output}.${samples}-${bits}-${k}-${n}-${nhash}.sentences
 
-echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.PreprocessWikiInput -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack}  -output ${preprocout}"
-etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.PreprocessWikiInput -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack} -output ${preprocout}
-echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${k} -M ${samples} -n ${n} -nHash ${nhash} -numReducers 20 -output ${output} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens} -input ${preprocout}"
-etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${k} -M ${samples} -n ${n} -nHash ${nhash} -numReducers 20 -output ${mhoutput} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens} -input ${preprocout}
-echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MergeClusters -input ${mhoutput} -output ${mergeoutput}"
-etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MergeClusters -input ${mhoutput} -output ${mergeoutput}
-echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -input ${preprocout} -elang ${elang} -flang ${flang} -output ${sentenceoutput}"
-etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -input ${preprocout} -elang ${elang} -flang ${flang} -output ${sentenceoutput}
+# echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.PreprocessWikiInput -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack}  -output ${preprocout}"
+# etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.PreprocessWikiInput -elang ${elang} -ewiki ${epack} -flang ${flang} -fwiki ${fpack} -output ${preprocout}
+# echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${k} -M ${samples} -n ${n} -nHash ${nhash} -numReducers 20 -output ${output} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens} -input ${preprocout}"
+# etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MinhashCLIR -bits ${bits} -k ${k} -M ${samples} -n ${n} -nHash ${nhash} -numReducers 20 -output ${mhoutput} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens} -input ${preprocout}
+# echo "etc/hadoop-cluster.sh wikiduper.utils.MergeClusters -input ${mhoutput} -output ${mergeoutput}"
+# etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.MergeClusters -input ${mhoutput} -output ${mergeoutput}
+# echo "etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -input ${preprocout} -elang ${elang} -flang ${flang} -output ${sentenceoutput}"
+# etc/hadoop-cluster.sh wikiduper.clir.minhashwiki.GetSentenceClusters -clustermap ${mergeoutput} -input ${preprocout} -elang ${elang} -flang ${flang} -output ${sentenceoutput}
 
-echo "etc/hadoop-text.sh ${sentenceoutput} > sentencesout/${sentenceoutput}.txt"
-etc/hadoop-text.sh ${sentenceoutput} > sentencesout/${sentenceoutput}.txt
+# echo "etc/hadoop-text.sh ${sentenceoutput}/part* > sentencesout/${sentenceoutput}.txt"
+# etc/hadoop-text.sh ${sentenceoutput}/part* > sentencesout/${sentenceoutput}.txt
+
+echo "etc/hadoop-cluster.sh wikiduper.utils.SampleSentences -input ${preprocout} -output ${sampleout} -lang ${flang} -samples 1000"
+etc/hadoop-cluster.sh wikiduper.utils.SampleSentences -input ${preprocout} -output ${sampleout} -lang ${flang} -samples 1000
+
+echo "etc/hadoop-cluster.sh wikiduper.utils.BruteForcePwsim -input ${preprocout} -M ${samples} -sampledocs ${sampleout} -output ${samplescoreout} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens}"
+etc/hadoop-cluster.sh wikiduper.utils.BruteForcePwsim -input ${preprocout} -M ${samples} -sampledocs ${sampleout} -output ${samplescoreout} -fVocabSrc ${fvocabsrc} -fVocabTgt ${fvocabtgt} -eVocabSrc ${evocabsrc} -eVocabTgt ${evocabtgt} -e2fprobs ${e2fprobs} -f2eprobs ${f2eprobs} -fLang ${flang} -eLang ${elang} -fStopWords ${fstopwords} -eStopWords ${estopwords} -fTokens ${ftokens} -eTokens ${etokens}
