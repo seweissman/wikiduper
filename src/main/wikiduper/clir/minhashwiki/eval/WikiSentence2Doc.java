@@ -155,10 +155,14 @@ public class WikiSentence2Doc extends Configured implements Tool {
         }
     }
     
+    
+    
     private static class LanguageReducer extends MapReduceBase implements
         Reducer<DocSentence, PairOfStrings, Text, Text> {
-
+        static int partition;
         static int id=1;
+        static final Text titleOut = new Text();
+        static final Text pageOut = new Text();
         
            public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<Text, Text> output,
                     Reporter reporter) throws IOException {
@@ -167,12 +171,15 @@ public class WikiSentence2Doc extends Configured implements Tool {
                    PairOfStrings titlesentence = values.next();
                    String sentence = titlesentence.getRightElement();
                    String title = titlesentence.getLeftElement();
-                   Text titleOut = new Text();
                    titleOut.set(title);
-                   Text outPage = new Text();
-                   String xmlPage = makePageText(sentence,title.toString(),id);
-                   outPage.set(xmlPage);
-                   output.collect(titleOut,outPage);
+                   String xmlPage;
+                   if(partition % 2 == 0){
+                       xmlPage = makePageText(sentence,title.toString(),2*id);
+                   }else{
+                       xmlPage = makePageText(sentence,title.toString(),2*id + 1);
+                   }
+                   pageOut.set(xmlPage);
+                   output.collect(titleOut,pageOut);
                    id++;
                  }
             }
@@ -206,23 +213,36 @@ public class WikiSentence2Doc extends Configured implements Tool {
             return text;
         }
         
+        public void configure(JobConf job) {
+            partition = job.getInt("mapred.task.partition",0);
+          } 
+        
     }
     
     private static class IDReducer extends MapReduceBase implements
     Reducer<DocSentence, PairOfStrings, IntWritable, DocSentence> {
 
     static int id=1;
-    
+    static int partition;
        public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<IntWritable, DocSentence> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
                IntWritable idOut = new IntWritable();
-               idOut.set(id);
+               String xmlPage;
+               if(partition % 2 == 0){
+                   idOut.set(2*id);
+               }else{
+                   idOut.set(2*id+1);
+               }
                output.collect(idOut,ds);
                id++;
              }
         }
+       
+       public void configure(JobConf job) {
+           partition = job.getInt("mapred.task.partition",0);
+         } 
     }    
     
     private static final String eINPUT = "ewiki";
@@ -297,7 +317,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(1);
+        conf.setNumReduceTasks(2);
 
         conf.setMapperClass(LanguageMapper.class);
         conf.setReducerClass(LanguageReducer.class);
@@ -349,25 +369,25 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         JobClient.runJob(conf);
 
-        conf = new JobConf(getConf(), WikiSentence2Doc.class);
+        //conf = new JobConf(getConf(), WikiSentence2Doc.class);
         conf.setJobName(String.format("WikiSentence2DocMap[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
-        conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(1);
+        //conf.setNumMapTasks(20);
+        //conf.setNumReduceTasks(2);
 
         conf.setMapperClass(LanguageMapper.class);
         conf.setReducerClass(IDReducer.class);
         
-        conf.setInputFormat(SequenceFileInputFormat.class);
-        conf.setOutputFormat(SequenceFileOutputFormat.class);
+        //conf.setInputFormat(SequenceFileInputFormat.class);
+        //conf.setOutputFormat(SequenceFileOutputFormat.class);
         
         // Set heap space - using old API
-        conf.set("mapred.job.map.memory.mb", "6144");
-        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
-        conf.set("mapred.job.reduce.memory.mb", "6144");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
-        //conf.set("mapred.child.java.opts", "-Xmx2048m");
+        //conf.set("mapred.job.map.memory.mb", "6144");
+        //conf.set("mapred.map.child.java.opts", "-Xmx6144m");
+        //conf.set("mapred.job.reduce.memory.mb", "6144");
+        //conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+
 
         conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(DocSentence.class);
