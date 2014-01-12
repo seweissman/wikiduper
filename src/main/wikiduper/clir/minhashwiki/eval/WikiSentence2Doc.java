@@ -27,6 +27,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -303,8 +304,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
-        //conf.setOutputFormat(SequenceFileOutputFormat.class);
-        conf.setOutputFormat(TextOutputFormat.class);
+        conf.setOutputFormat(SequenceFileOutputFormat.class);
+        //conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "6144");
@@ -348,7 +349,26 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         JobClient.runJob(conf);
 
+        conf = new JobConf(getConf(), WikiSentence2Doc.class);
+        conf.setJobName(String.format("WikiSentence2DocMap[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
+                fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
+
+        conf.setNumMapTasks(20);
+        conf.setNumReduceTasks(1);
+
+        conf.setMapperClass(LanguageMapper.class);
         conf.setReducerClass(IDReducer.class);
+        
+        conf.setInputFormat(SequenceFileInputFormat.class);
+        conf.setOutputFormat(SequenceFileOutputFormat.class);
+        
+        // Set heap space - using old API
+        conf.set("mapred.job.map.memory.mb", "6144");
+        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
+        conf.set("mapred.job.reduce.memory.mb", "6144");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+        //conf.set("mapred.child.java.opts", "-Xmx2048m");
+
         conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(DocSentence.class);
         conf.setMapOutputKeyClass(DocSentence.class);
