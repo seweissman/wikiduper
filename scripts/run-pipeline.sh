@@ -27,8 +27,8 @@ echo hadoop fs -get $pairs
 hadoop fs -get $pairs
 echo hadoop fs -rm -r $clusters
 hadoop fs -rm -r $clusters
-echo etc/run.sh wikiduper.application.MergeClusters -input $pairs -output $clusters
-etc/run.sh wikiduper.application.MergeClusters -input $pairs -output $clusters
+echo etc/run.sh wikiduper.utils.MergeClusters -input $pairs -output $clusters
+etc/run.sh wikiduper.utils.MergeClusters -input $pairs -output $clusters
 echo hadoop fs -put $clusters
 hadoop fs -put $clusters
 echo etc/hadoop-cluster.sh wikiduper.application.GetSentenceClusters -input $wikipack -wiki_language en -clustermap $clusters -output $2 -numReducers $nReducers
