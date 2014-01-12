@@ -138,6 +138,7 @@ public class BruteForcePwsim extends Configured implements Tool {
             int total = x.size() + y.size() - sharect;
             return sharect*1.0/total;
         }
+        
 
         public static String sampleTranslateDistribution(List<PairOfFloatInt> eSProbs, float p, Vocab eVocab){
             Iterator<PairOfFloatInt> it = eSProbs.iterator();

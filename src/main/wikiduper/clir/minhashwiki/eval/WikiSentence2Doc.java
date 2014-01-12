@@ -21,6 +21,7 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MapFileOutputFormat;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -35,6 +36,9 @@ import org.wikiclean.WikiClean;
 import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
+import edu.umd.cloud9.io.pair.PairOfStrings;
+
+import wikiduper.utils.DocSentence;
 import wikiduper.wikipedia.WikipediaPage;
 
 
@@ -46,7 +50,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
     };
     
     private static class LanguageMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, Text, Text> {
+    Mapper<IntWritable, WikipediaPage, DocSentence, PairOfStrings> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
         
         static String lang;
@@ -69,7 +73,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         public static WikiClean cleaner;
         
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<Text, Text> output,
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, PairOfStrings> output,
                     Reporter reporter) throws IOException {
                
                
@@ -118,14 +122,16 @@ public class WikiSentence2Doc extends Configured implements Tool {
                     // For each sentence in the input text:
                     while(m.find()){
                         String sentence = m.group(1);
-                        Text titleOut = new Text();
-                        titleOut.set(title);
-                        Text sentenceOut = new Text();
-                        sentenceOut.set(sentence);
-                        if (p.getTitle().length() <= 0.3*p.getContent().length()) {
-                             output.collect(titleOut,sentenceOut);
+                        //if (p.getTitle().length() <= 0.3*p.getContent().length()) {
+                            DocSentence ds = new DocSentence();
+                            ds.setId(Long.valueOf(p.getDocid()));
+                            ds.setSentence(sentencect);
+                            ds.setLanguage(lang);
+                            PairOfStrings titlesentence = new PairOfStrings();
+                            titlesentence.set(title, sentence);
+                             output.collect(ds,titlesentence);
                              sentencect++;
-                        }
+                        //}
                     }
             
                 }catch(Throwable e){
@@ -150,20 +156,23 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class LanguageReducer extends MapReduceBase implements
-        Reducer<Text, Text, Text, Text> {
+        Reducer<DocSentence, PairOfStrings, Text, Text> {
 
         static int id=1;
         
-           public void reduce(Text title, Iterator<Text> values, OutputCollector<Text, Text> output,
+           public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<Text, Text> output,
                     Reporter reporter) throws IOException {
                
                while(values.hasNext()){
-                   Text value = values.next();
-                   String sentence = value.toString();
+                   PairOfStrings titlesentence = values.next();
+                   String sentence = titlesentence.getRightElement();
+                   String title = titlesentence.getLeftElement();
+                   Text titleOut = new Text();
+                   titleOut.set(title);
                    Text outPage = new Text();
                    String xmlPage = makePageText(sentence,title.toString(),id);
                    outPage.set(xmlPage);
-                   output.collect(title,outPage);
+                   output.collect(titleOut,outPage);
                    id++;
                  }
             }
@@ -199,11 +208,29 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
     }
     
+    private static class IDReducer extends MapReduceBase implements
+    Reducer<DocSentence, PairOfStrings, IntWritable, DocSentence> {
+
+    static int id=1;
+    
+       public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<IntWritable, DocSentence> output,
+                Reporter reporter) throws IOException {
+           
+           while(values.hasNext()){
+               IntWritable idOut = new IntWritable();
+               idOut.set(id);
+               output.collect(idOut,ds);
+               id++;
+             }
+        }
+    }    
     
     private static final String eINPUT = "ewiki";
     private static final String fINPUT = "fwiki";
     private static final String eOUTPUT = "eout";
     private static final String fOUTPUT = "fout";
+    private static final String eMAP = "emap";
+    private static final String fMAP = "fmap";
     private static final String eLANGUAGE_OPTION = "elang";
     private static final String fLANGUAGE_OPTION = "flang";
     
@@ -219,6 +246,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 .hasArg().withDescription("output path").create(eOUTPUT));
         options.addOption(OptionBuilder.withArgName("path")
                 .hasArg().withDescription("output path").create(fOUTPUT));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("map output path").create(eMAP));
+        options.addOption(OptionBuilder.withArgName("path")
+                .hasArg().withDescription("map output path").create(fMAP));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
                 .withDescription("two-letter language code").create(eLANGUAGE_OPTION));
         options.addOption(OptionBuilder.withArgName("en|sv|de|cs|es|zh|ar|tr").hasArg()
@@ -247,6 +278,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         String fInputPath = cmdline.getOptionValue(fINPUT);
         String eOutputPath = cmdline.getOptionValue(eOUTPUT);
         String fOutputPath = cmdline.getOptionValue(fOUTPUT);
+        String eMapOutputPath = cmdline.getOptionValue(eMAP);
+        String fMapOutputPath = cmdline.getOptionValue(fMAP);
         String eLanguage = cmdline.getOptionValue(eLANGUAGE_OPTION);
         String fLanguage = cmdline.getOptionValue(fLANGUAGE_OPTION);
         
@@ -286,6 +319,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         FileSystem fs = FileSystem.get(conf);        
         Path eOutPath = new Path(eOutputPath);
         Path fOutPath = new Path(fOutputPath);
+        Path eMapOutPath = new Path(eMapOutputPath);
+        Path fMapOutPath = new Path(fMapOutputPath);
         
         // Job 1
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
@@ -311,6 +346,32 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         JobClient.runJob(conf);
 
+        conf.setReducerClass(IDReducer.class);
+
+        // Job 3
+        FileInputFormat.setInputPaths(conf, new Path(eInputPath));
+        FileOutputFormat.setOutputPath(conf, eMapOutPath);
+        
+        conf.set("wiki.language", eLanguage);
+
+        // Delete the output directory if it exists already.
+        fs.delete(eMapOutPath, true);
+
+        JobClient.runJob(conf);
+
+        
+        // Job 4
+
+        FileInputFormat.setInputPaths(conf, new Path(fInputPath));
+        FileOutputFormat.setOutputPath(conf, fMapOutPath);
+        
+        conf.set("wiki.language", fLanguage);
+
+        // Delete the output directory if it exists already.
+        fs.delete(fMapOutPath, true);
+        
+        JobClient.runJob(conf);
+        
         return 0;
     }
 
