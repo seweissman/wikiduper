@@ -144,7 +144,7 @@ public int compareTo(Object o) {
     }
     DocSentence ds = (DocSentence) o;
     if(language.compareTo(ds.getLanguage()) == 0){
-        if(Long.compare(id, ds.getId()) == 0){
+        if(Long.valueOf(id).compareTo(ds.getId()) == 0){
             return Long.valueOf(sentence).compareTo(getSentence());
         }else{
             return Long.valueOf(id).compareTo(ds.getId());
