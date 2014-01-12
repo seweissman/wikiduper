@@ -312,10 +312,12 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
-        conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(PairOfStrings.class);
+
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
+        
         FileSystem fs = FileSystem.get(conf);        
         Path eOutPath = new Path(eOutputPath);
         Path fOutPath = new Path(fOutputPath);
@@ -349,6 +351,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setReducerClass(IDReducer.class);
         conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(DocSentence.class);
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
         
         // Job 3
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
