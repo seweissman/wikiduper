@@ -21,7 +21,6 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.MapFileOutputFormat;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -313,7 +312,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.set("mapred.job.reduce.memory.mb", "6144");
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
-        
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
         FileSystem fs = FileSystem.get(conf);        
@@ -347,7 +347,9 @@ public class WikiSentence2Doc extends Configured implements Tool {
         JobClient.runJob(conf);
 
         conf.setReducerClass(IDReducer.class);
-
+        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputValueClass(DocSentence.class);
+        
         // Job 3
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
         FileOutputFormat.setOutputPath(conf, eMapOutPath);
