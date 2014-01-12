@@ -136,6 +136,7 @@ public boolean equals(Object o){
     DocSentence otherdoc = (DocSentence) o;
     return (otherdoc.id==this.id) && otherdoc.language.equals(this.language) && (otherdoc.sentence==this.sentence);
 }
+
 @Override
 public int compareTo(Object o) {
     if(!(o instanceof DocSentence)){
@@ -144,9 +145,9 @@ public int compareTo(Object o) {
     DocSentence ds = (DocSentence) o;
     if(language.compareTo(ds.getLanguage()) == 0){
         if(Long.compare(id, ds.getId()) == 0){
-            return Long.compare(sentence, ds.getSentence());
+            return Long.valueOf(sentence).compareTo(getSentence());
         }else{
-            return Long.compare(id, ds.getId());
+            return Long.valueOf(id).compareTo(ds.getId());
         }
     }else{
         return language.compareTo(ds.getLanguage());
