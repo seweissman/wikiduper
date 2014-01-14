@@ -381,10 +381,11 @@ public class WikiSentence2Doc extends Configured implements Tool {
         //conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
 
 
-        conf.setOutputKeyClass(IntWritable.class);
-        conf.setOutputValueClass(DocSentence.class);
         conf.setMapOutputKeyClass(DocSentence.class);
         conf.setMapOutputValueClass(PairOfStrings.class);
+        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputValueClass(DocSentence.class);
+
         
         // Job 3
         /*
