@@ -173,7 +173,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                    String title = titlesentence.getLeftElement();
                    titleOut.set(title);
                    String xmlPage;
-                   xmlPage = makePageText(sentence,title.toString(),10*id + (partition % 10));
+                   xmlPage = makePageText(sentence,title.toString(),20*id + (partition % 20));
                    pageOut.set(xmlPage);
                    output.collect(titleOut,pageOut);
                    id++;
@@ -225,7 +225,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
            
            while(values.hasNext()){
                IntWritable idOut = new IntWritable();
-               idOut.set(10*id + (partition % 10));
+               idOut.set(20*id + (partition % 20));
                output.collect(idOut,ds);
                id++;
              }
@@ -308,7 +308,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(10);
+        conf.setNumReduceTasks(20);
 
         conf.setMapperClass(LanguageMapper.class);
         conf.setReducerClass(LanguageReducer.class);
