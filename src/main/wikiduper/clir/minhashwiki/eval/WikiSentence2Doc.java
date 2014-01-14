@@ -386,6 +386,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setMapOutputValueClass(PairOfStrings.class);
         
         // Job 3
+        /*
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
         FileOutputFormat.setOutputPath(conf, eMapOutPath);
         
@@ -395,7 +396,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         fs.delete(eMapOutPath, true);
 
         JobClient.runJob(conf);
-
+        */
         
         // Job 4
 
