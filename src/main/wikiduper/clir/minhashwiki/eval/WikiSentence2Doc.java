@@ -312,10 +312,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(20);
+        conf.setNumReduceTasks(0);
 
-        conf.setMapperClass(LanguageMapper.class);
-        conf.setReducerClass(LanguageReducer.class);
+        //conf.setMapperClass(LanguageMapper.class);
+        //conf.setReducerClass(LanguageReducer.class);
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
@@ -329,10 +329,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
 
-        conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(Text.class);
-        conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(PairOfStrings.class);
+        //conf.setOutputKeyClass(Text.class);
+        //conf.setOutputValueClass(Text.class);
+        //conf.setMapOutputKeyClass(DocSentence.class);
+        //conf.setMapOutputValueClass(PairOfStrings.class);
         
         FileSystem fs = FileSystem.get(conf);        
         Path eOutPath = new Path(eOutputPath);
