@@ -219,13 +219,17 @@ public class WikiSentence2Doc extends Configured implements Tool {
     Reducer<DocSentence, PairOfStrings, IntWritable, DocSentence> {
 
     static int id=1;
+    static IntWritable idOut = new IntWritable();
+    static DocSentence dsOut = new DocSentence();
     static int partition;
        public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<IntWritable, DocSentence> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
-               IntWritable idOut = new IntWritable();
                idOut.set(20*id + (partition % 20));
+               dsOut.setId(ds.getId());
+               dsOut.setLanguage(ds.getLanguage());
+               dsOut.setSentence(ds.getSentence());
                output.collect(idOut,ds);
                id++;
              }
@@ -345,7 +349,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         // Delete the output directory if it exists already.
         fs.delete(eOutPath, true);
 
-        JobClient.runJob(conf);
+        //JobClient.runJob(conf);
 
         
         // Job 2
@@ -358,14 +362,11 @@ public class WikiSentence2Doc extends Configured implements Tool {
         // Delete the output directory if it exists already.
         fs.delete(fOutPath, true);
         
-        JobClient.runJob(conf);
+        //JobClient.runJob(conf);
 
         //conf = new JobConf(getConf(), WikiSentence2Doc.class);
         conf.setJobName(String.format("WikiSentence2DocMap[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
-
-        //conf.setNumMapTasks(20);
-        //conf.setNumReduceTasks(2);
 
         conf.setMapperClass(LanguageMapper.class);
         conf.setReducerClass(IDReducer.class);
