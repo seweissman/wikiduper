@@ -10,13 +10,12 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
  * 
  */
-public class DocSentence implements WritableComparable {
+public class DocSentence implements WritableComparable<DocSentence> {
  
   private long id;
   private long sentence;
@@ -138,11 +137,7 @@ public boolean equals(Object o){
 }
 
 @Override
-public int compareTo(Object o) {
-    if(!(o instanceof DocSentence)){
-        return 0;
-    }
-    DocSentence ds = (DocSentence) o;
+public int compareTo(DocSentence ds) {
     if(language.compareTo(ds.getLanguage()) == 0){
         if(Long.valueOf(id).compareTo(ds.getId()) == 0){
             return Long.valueOf(sentence).compareTo(getSentence());
