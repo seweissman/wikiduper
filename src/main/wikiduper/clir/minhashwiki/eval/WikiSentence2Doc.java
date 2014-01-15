@@ -320,8 +320,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
-        conf.setOutputFormat(SequenceFileOutputFormat.class);
-        //conf.setOutputFormat(TextOutputFormat.class);
+        //conf.setOutputFormat(SequenceFileOutputFormat.class);
+        conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "6144");
@@ -370,7 +370,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setMapperClass(LanguageMapper.class);
-        conf.setReducerClass(IDReducer.class);
+        //conf.setReducerClass(IDReducer.class);
         
         //conf.setInputFormat(SequenceFileInputFormat.class);
         //conf.setOutputFormat(SequenceFileOutputFormat.class);
