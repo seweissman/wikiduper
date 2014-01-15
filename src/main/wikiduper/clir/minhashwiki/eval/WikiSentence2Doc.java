@@ -421,7 +421,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(20);
+        conf.setNumReduceTasks(16);
 
         conf.setMapOutputKeyClass(DocSentence.class);
         conf.setMapOutputValueClass(IntWritable.class);
@@ -437,8 +437,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         //conf.setOutputFormat(TextOutputFormat.class);
         
         // Set heap space - using old API
-        conf.set("mapred.job.map.memory.mb", "6144");
-        conf.set("mapred.map.child.java.opts", "-Xmx6144m");
+        conf.set("mapred.job.map.memory.mb", "4096");
+        conf.set("mapred.map.child.java.opts", "-Xmx4096m");
         conf.set("mapred.job.reduce.memory.mb", "4096");
         conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
