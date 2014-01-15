@@ -324,13 +324,13 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDReducer extends MapReduceBase implements
-    Reducer<DocSentence, PairOfStrings, IntWritable, DocSentence> {
+    Reducer<DocSentence, IntWritable, IntWritable, DocSentence> {
 
     static int id=1;
     static IntWritable idOut = new IntWritable();
     static DocSentence dsOut = new DocSentence();
     //static int partition;
-       public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<IntWritable, DocSentence> output,
+       public void reduce(DocSentence ds, Iterator<IntWritable> values, OutputCollector<IntWritable, DocSentence> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
@@ -424,7 +424,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setNumReduceTasks(20);
 
         conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(PairOfStrings.class);
+        conf.setMapOutputValueClass(IntWritable.class);
         conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(DocSentence.class);
         
