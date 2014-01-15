@@ -112,7 +112,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
             Matcher m;
             
             int sentencect = 0;
-            if(Long.parseLong(p.getDocid()) > 10000) return;
+            if(Long.parseLong(p.getDocid()) > 100) return;
             for(String line: lines){
                 //System.out.println(p.getDocid() + "\n>>>>>>>>CONTENT\n" + line + "\nCONTENT<<<<<<<<<<\n");
                 m = sentenceregex.matcher(line);
