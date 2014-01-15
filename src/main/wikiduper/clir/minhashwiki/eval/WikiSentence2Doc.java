@@ -223,23 +223,24 @@ public class WikiSentence2Doc extends Configured implements Tool {
     static int id=1;
     static IntWritable idOut = new IntWritable();
     static DocSentence dsOut = new DocSentence();
-    static int partition;
+    //static int partition;
        public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<IntWritable, DocSentence> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
-               idOut.set(20*id + (partition % 20));
+               //idOut.set(20*id + (partition % 20));
+               idOut.set(id);
                dsOut.setId(ds.getId());
                dsOut.setLanguage(ds.getLanguage());
                dsOut.setSentence(ds.getSentence());
-               output.collect(idOut,ds);
+               output.collect(idOut,dsOut);
                id++;
              }
         }
        
-       public void configure(JobConf job) {
-           partition = job.getInt("mapred.task.partition",0);
-         } 
+       //public void configure(JobConf job) {
+         //  partition = job.getInt("mapred.task.partition",0);
+         //} 
     }    
     
     private static final String eINPUT = "ewiki";
