@@ -117,7 +117,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 m = sentenceregex.matcher(line);
 
                 // Assume a whole Wikipedia article has been passed to the mapper; track sentence number by counting
-                try{
+                //try{
                     //if(!m.matches()) continue;
                     // For each sentence in the input text:
                     while(m.find()){
@@ -134,12 +134,13 @@ public class WikiSentence2Doc extends Configured implements Tool {
                         //}
                     }
             
-                }catch(Throwable e){
+               /* }catch(Throwable e){
                     System.err.println(e.toString());
                     e.printStackTrace();
                     System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid());
                 //System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + p.toString());
                 }
+                */
             }
         }
         
@@ -380,11 +381,12 @@ public class WikiSentence2Doc extends Configured implements Tool {
         //conf.set("mapred.job.reduce.memory.mb", "6144");
         //conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
 
-
+        //conf.setOutputKeyClass(IntWritable.class);
+        //conf.setOutputValueClass(DocSentence.class);
+        
         conf.setMapOutputKeyClass(DocSentence.class);
         conf.setMapOutputValueClass(PairOfStrings.class);
-        conf.setOutputKeyClass(IntWritable.class);
-        conf.setOutputValueClass(DocSentence.class);
+
 
         
         // Job 3
