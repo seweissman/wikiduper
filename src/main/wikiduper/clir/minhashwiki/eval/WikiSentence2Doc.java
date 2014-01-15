@@ -333,8 +333,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         // Set heap space - using old API
         conf.set("mapred.job.map.memory.mb", "6144");
         conf.set("mapred.map.child.java.opts", "-Xmx6144m");
-        conf.set("mapred.job.reduce.memory.mb", "6144");
-        conf.set("mapred.reduce.child.java.opts", "-Xmx6144m");
+        conf.set("mapred.job.reduce.memory.mb", "12144");
+        conf.set("mapred.reduce.child.java.opts", "-Xmx12144m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
 
         //conf.setOutputKeyClass(Text.class);
