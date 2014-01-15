@@ -313,12 +313,12 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(20);
+        conf.setNumReduceTasks(0);
 
         conf.setMapOutputKeyClass(DocSentence.class);
         conf.setMapOutputValueClass(PairOfStrings.class);
-        conf.setOutputKeyClass(IntWritable.class);
-        conf.setOutputValueClass(DocSentence.class);
+        //conf.setOutputKeyClass(IntWritable.class);
+        //conf.setOutputValueClass(DocSentence.class);
         
         //conf.setMapperClass(LanguageMapper.class);
         //conf.setReducerClass(LanguageReducer.class);
@@ -375,7 +375,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setMapperClass(LanguageMapper.class);
-        conf.setReducerClass(IDReducer.class);
+        //conf.setReducerClass(IDReducer.class);
         
         //conf.setInputFormat(SequenceFileInputFormat.class);
         //conf.setOutputFormat(SequenceFileOutputFormat.class);
