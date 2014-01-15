@@ -315,6 +315,9 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setNumMapTasks(20);
         conf.setNumReduceTasks(0);
 
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
+        
         //conf.setMapperClass(LanguageMapper.class);
         //conf.setReducerClass(LanguageReducer.class);
         
@@ -384,11 +387,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         //conf.setOutputKeyClass(IntWritable.class);
         //conf.setOutputValueClass(DocSentence.class);
         
-        conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(PairOfStrings.class);
 
-
-        
         // Job 3
         /*
         FileInputFormat.setInputPaths(conf, new Path(eInputPath));
