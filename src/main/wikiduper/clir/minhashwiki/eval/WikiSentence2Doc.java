@@ -112,6 +112,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
             Matcher m;
             
             int sentencect = 0;
+            if(Long.getLong(p.getDocid()) > 10000) return;
             for(String line: lines){
                 //System.out.println(p.getDocid() + "\n>>>>>>>>CONTENT\n" + line + "\nCONTENT<<<<<<<<<<\n");
                 m = sentenceregex.matcher(line);
@@ -313,12 +314,12 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(0);
+        conf.setNumReduceTasks(20);
 
-        conf.setOutputKeyClass(DocSentence.class);
-        conf.setOutputValueClass(PairOfStrings.class);
-        //conf.setOutputKeyClass(IntWritable.class);
-        //conf.setOutputValueClass(DocSentence.class);
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
+        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputValueClass(DocSentence.class);
         
         //conf.setMapperClass(LanguageMapper.class);
         //conf.setReducerClass(LanguageReducer.class);
@@ -375,7 +376,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
         conf.setMapperClass(LanguageMapper.class);
-        //conf.setReducerClass(IDReducer.class);
+        conf.setReducerClass(IDReducer.class);
         
         //conf.setInputFormat(SequenceFileInputFormat.class);
         //conf.setOutputFormat(SequenceFileOutputFormat.class);
