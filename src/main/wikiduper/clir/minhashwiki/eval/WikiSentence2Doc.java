@@ -420,8 +420,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setJobName(String.format("WikiSentence2Doc[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
-        conf.setNumMapTasks(20);
-        conf.setNumReduceTasks(16);
+        conf.setNumMapTasks(10);
+        conf.setNumReduceTasks(4);
 
         conf.setMapOutputKeyClass(DocSentence.class);
         conf.setMapOutputValueClass(IntWritable.class);
