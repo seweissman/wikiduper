@@ -36,6 +36,7 @@ import org.wikiclean.WikiClean;
 import org.wikiclean.WikiClean.WikiLanguage;
 import org.wikiclean.WikiCleanBuilder;
 
+import edu.umd.cloud9.io.pair.PairOfLongs;
 import edu.umd.cloud9.io.pair.PairOfStrings;
 
 import wikiduper.utils.DocSentence;
@@ -158,8 +159,9 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDMapper extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, DocSentence, IntWritable> {
-    //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+//    Mapper<IntWritable, WikipediaPage, DocSentence, IntWritable> {
+        Mapper<IntWritable, WikipediaPage, PairOfLongs, IntWritable> {
+
         
         static String lang;
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
@@ -181,9 +183,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         public static WikiClean cleaner;
         public static IntWritable ONE = new IntWritable(1);
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, IntWritable> output,
-                    Reporter reporter) throws IOException {
-               
+        //public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, IntWritable> output,
+          //      Reporter reporter) throws IOException {
+        public void map(IntWritable key, WikipediaPage p, OutputCollector<PairOfLongs, IntWritable> output,
+                Reporter reporter) throws IOException {   
                
             if (p.isRedirect()) {
                 reporter.incrCounter(PageTypes.REDIRECT, 1);
@@ -232,10 +235,12 @@ public class WikiSentence2Doc extends Configured implements Tool {
                     while(m.find()){
                         String sentence = m.group(1);
                         //if (p.getTitle().length() <= 0.3*p.getContent().length()) {
-                            DocSentence ds = new DocSentence();
-                            ds.setId(Long.valueOf(p.getDocid()));
-                            ds.setSentence(sentencect);
-                            ds.setLanguage(lang);
+                            //DocSentence ds = new DocSentence();
+                        PairOfLongs ds = new PairOfLongs();
+                        ds.set(Long.valueOf(p.getDocid()), sentencect);
+                            //ds.setId(Long.valueOf(p.getDocid()));
+                            //ds.setSentence(sentencect);
+                            //ds.setLanguage(lang);
                              output.collect(ds,ONE);
                              sentencect++;
                         //}
@@ -324,21 +329,26 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDReducer extends MapReduceBase implements
-    Reducer<DocSentence, IntWritable, IntWritable, DocSentence> {
+    //Reducer<DocSentence, IntWritable, IntWritable, DocSentence> {
+    Reducer<PairOfLongs, IntWritable, IntWritable, PairOfLongs> {
 
     static int id=1;
     static IntWritable idOut = new IntWritable();
-    static DocSentence dsOut = new DocSentence();
+    //static DocSentence dsOut = new DocSentence();
+    static PairOfLongs dsOut = new PairOfLongs();
     //static int partition;
-       public void reduce(DocSentence ds, Iterator<IntWritable> values, OutputCollector<IntWritable, DocSentence> output,
+    //public void reduce(DocSentence ds, Iterator<IntWritable> values, OutputCollector<IntWritable, DocSentence> output,
+      //      Reporter reporter) throws IOException {
+        public void reduce(PairOfLongs ds, Iterator<IntWritable> values, OutputCollector<IntWritable, PairOfLongs> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
                //idOut.set(20*id + (partition % 20));
                idOut.set(id);
-               dsOut.setId(ds.getId());
-               dsOut.setLanguage(ds.getLanguage());
-               dsOut.setSentence(ds.getSentence());
+               dsOut.set(ds.getLeftElement(), ds.getRightElement());
+               //dsOut.setId(ds.getId());
+               //dsOut.setLanguage(ds.getLanguage());
+               //dsOut.setSentence(ds.getSentence());
                output.collect(idOut,dsOut);
                id++;
              }
@@ -428,13 +438,18 @@ public class WikiSentence2Doc extends Configured implements Tool {
         //conf.setOutputKeyClass(IntWritable.class);
         //conf.setOutputValueClass(DocSentence.class);
         
-        conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(Text.class);
-        conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(PairOfStrings.class);
+        conf.setMapOutputKeyClass(PairOfLongs.class);
+        conf.setMapOutputValueClass(IntWritable.class);
+        conf.setOutputKeyClass(IntWritable.class);
+        conf.setOutputValueClass(PairOfLongs.class);
         
-        conf.setMapperClass(LanguageMapper.class);
-        conf.setReducerClass(LanguageReducer.class);
+        //conf.setOutputKeyClass(Text.class);
+        //conf.setOutputValueClass(Text.class);
+        //conf.setMapOutputKeyClass(DocSentence.class);
+        //conf.setMapOutputValueClass(PairOfStrings.class);
+        
+        //conf.setMapperClass(LanguageMapper.class);
+        //conf.setReducerClass(LanguageReducer.class);
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
@@ -483,8 +498,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setJobName(String.format("WikiSentence2DocMap[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
-        //conf.setMapperClass(IDMapper.class);
-        //conf.setReducerClass(IDReducer.class);
+        conf.setMapperClass(IDMapper.class);
+        conf.setReducerClass(IDReducer.class);
         
         //conf.setInputFormat(SequenceFileInputFormat.class);
         //conf.setOutputFormat(SequenceFileOutputFormat.class);
