@@ -287,7 +287,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         
         public static WikiClean cleaner;
-        public static Text ONE = new Text("1");
+        public static IntWritable ONE = new IntWritable(1);
         //public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, IntWritable> output,
           //      Reporter reporter) throws IOException {
         public void map(IntWritable key, WikipediaPage p, OutputCollector<PairOfLongs, IntWritable> output,
