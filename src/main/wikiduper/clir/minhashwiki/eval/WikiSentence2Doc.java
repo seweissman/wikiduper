@@ -158,6 +158,114 @@ public class WikiSentence2Doc extends Configured implements Tool {
         }
     }
     
+    private static class IDMapper2 extends MapReduceBase implements
+    Mapper<IntWritable, WikipediaPage, DocSentence, PairOfStrings> {
+    //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+        
+        static String lang;
+        //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
+        static final Pattern sentenceregex = Pattern.compile(
+                "# Match a sentence ending in punctuation or EOS.\n" +
+                        "[\\s]*    # Leading white space\n" + 
+                        "([A-Z\"]    # First char capital letter or quotation\n" +
+                        "[^.!?\\n]*      # Greedily consume up to punctuation.\n" +
+                        "(?:          # Group for unrolling the loop.\n" +
+                        "  [.!?]      # (special) inner punctuation ok if\n" +
+                        "  (?!['\"]?\\s|$)  # not followed by ws or EOS.\n" +
+                        "  [^.!?]*    # Greedily consume up to punctuation.\n" +
+                        ")*           # Zero or more (special normal*)\n" +
+                        "[.!?]?       # Optional ending punctuation.\n" +
+                        "['\"]?)       # Optional closing quote.\n" +
+                        "\\s*       # Trailing white space or new line\n",
+                        Pattern.MULTILINE | Pattern.COMMENTS);
+        
+        
+        public static WikiClean cleaner;
+        
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, PairOfStrings> output,
+                    Reporter reporter) throws IOException {
+               
+               
+            if (p.isRedirect()) {
+                reporter.incrCounter(PageTypes.REDIRECT, 1);
+
+            } else if (p.isDisambiguation()) {
+                reporter.incrCounter(PageTypes.DISAMBIGUATION, 1);
+            } else if (p.isEmpty()) {
+                reporter.incrCounter(PageTypes.EMPTY, 1);
+            } else if (p.isArticle()) {
+                reporter.incrCounter(PageTypes.ARTICLE, 1);
+
+                if (p.isStub()) {
+                    reporter.incrCounter(PageTypes.STUB, 1);
+                }
+            } else {
+                reporter.incrCounter(PageTypes.NON_ARTICLE, 1);
+            }
+            
+            if(!p.isArticle() || p.isEmpty()) return;
+            String raw = p.getRawXML();
+            String content = cleaner.clean(raw);
+            String title = p.getTitle();
+            //System.out.println(lang + " " + key + " TITLE = " + p.getTitle());
+            if(content == null) return;
+            if(p.getDocid() == null) return;
+            String cleancontent = content
+                    //.replace("\n", " ")
+                    .replace("  ", " ")
+                    .replace(",","")
+                    .replace("(b.", "(b")
+                    .replace("(d.", "(d");
+            
+            String lines[] = cleancontent.split("\n");
+            Matcher m;
+            
+            int sentencect = 0;
+            if(Long.parseLong(p.getDocid()) > 100) return;
+            for(String line: lines){
+                //System.out.println(p.getDocid() + "\n>>>>>>>>CONTENT\n" + line + "\nCONTENT<<<<<<<<<<\n");
+                m = sentenceregex.matcher(line);
+
+                // Assume a whole Wikipedia article has been passed to the mapper; track sentence number by counting
+                //try{
+                    //if(!m.matches()) continue;
+                    // For each sentence in the input text:
+                    while(m.find()){
+                        String sentence = m.group(1);
+                        //if (p.getTitle().length() <= 0.3*p.getContent().length()) {
+                            DocSentence ds = new DocSentence();
+                            ds.setId(Long.valueOf(p.getDocid()));
+                            ds.setSentence(sentencect);
+                            ds.setLanguage(lang);
+                            PairOfStrings titlesentence = new PairOfStrings();
+                            titlesentence.set(title, sentence);
+                             output.collect(ds,titlesentence);
+                             sentencect++;
+                        //}
+                    }
+            
+               /* }catch(Throwable e){
+                    System.err.println(e.toString());
+                    e.printStackTrace();
+                    System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid());
+                //System.err.println("WARNING: Possible stack overflow from regex at docid " + p.getDocid() + " and sentence # " + p.toString());
+                }
+                */
+            }
+        }
+        
+        public void configure(JobConf job) {
+            
+            lang = job.get("wiki.language", "en");
+            WikiLanguage wikilang = WikiLanguage.valueOf(lang.toUpperCase());
+            cleaner =  new WikiCleanBuilder()
+                        .withLanguage(wikilang)
+                        .withTitle(true)
+                        .withFooter(false).build();
+
+        }
+    }
+    
     private static class IDMapper extends MapReduceBase implements
 //    Mapper<IntWritable, WikipediaPage, DocSentence, IntWritable> {
         Mapper<IntWritable, WikipediaPage, PairOfLongs, IntWritable> {
@@ -327,6 +435,66 @@ public class WikiSentence2Doc extends Configured implements Tool {
           } 
         
     }
+    
+    private static class IDReducer2 extends MapReduceBase implements
+    Reducer<DocSentence, PairOfStrings, Text, Text> {
+    static int partition;
+    static int id=1;
+    static final Text titleOut = new Text();
+    static final Text pageOut = new Text();
+    
+       public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<Text, Text> output,
+                Reporter reporter) throws IOException {
+           
+           while(values.hasNext()){
+               PairOfStrings titlesentence = values.next();
+               String sentence = titlesentence.getRightElement();
+               String title = titlesentence.getLeftElement();
+               //titleOut.set(title);
+               titleOut.set(Integer.toString(id));
+               //String xmlPage;
+               //xmlPage = makePageText(sentence,title.toString(),20*id + (partition % 20));
+               pageOut.set(ds.getId()+","+ds.getSentence());
+               output.collect(titleOut,pageOut);
+               id++;
+             }
+        }
+    
+    public static String makePageText(String line,String title,long id){
+        String text = "<page>"
+                +"<title>"
+                + title 
+                + "</title>"
+                + "<ns>0</ns>"
+                + "<id>"
+                + id
+                + "</id>"
+                + "<revision>"
+                + "<id>560581215</id>"
+                + "<parentid>560575666</parentid>"
+                + "<timestamp>2013-06-19T09:39:33Z</timestamp>"
+                + "<contributor>"
+                + "<username>Jerzy</username>"
+                + "<id>21860</id>"
+                + "</contributor>"
+                + "<comment>nothing</comment>"
+                + "<text xml:space=\"preserve\">"
+                + line
+                + "</text>"
+                + "<sha1>04cbg4kl87va6z9u5w5eepb2jtagilz</sha1>"
+                + "<model>wikitext</model>"
+                + "<format>text/x-wiki</format>"
+                + "</revision>"
+                + "</page>";
+        return text;
+    }
+    
+    public void configure(JobConf job) {
+        partition = job.getInt("mapred.task.partition",0);
+      } 
+    
+}
+
     
     private static class IDReducer extends MapReduceBase implements
     //Reducer<DocSentence, IntWritable, IntWritable, DocSentence> {
