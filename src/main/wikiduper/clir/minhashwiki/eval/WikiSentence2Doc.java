@@ -159,10 +159,10 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDMapper2 extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, DocSentence, PairOfStrings> {
+    Mapper<IntWritable, WikipediaPage, DocSentence, IntWritable> {
     //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
-        
         static String lang;
+        public static IntWritable ONE = new IntWritable(1);
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         static final Pattern sentenceregex = Pattern.compile(
                 "# Match a sentence ending in punctuation or EOS.\n" +
@@ -182,7 +182,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         public static WikiClean cleaner;
         
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, PairOfStrings> output,
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, IntWritable> output,
                     Reporter reporter) throws IOException {
                
                
@@ -237,9 +237,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
                             ds.setId(Long.valueOf(p.getDocid()));
                             ds.setSentence(sentencect);
                             ds.setLanguage(lang);
-                            PairOfStrings titlesentence = new PairOfStrings();
-                            titlesentence.set(title, sentence);
-                             output.collect(ds,titlesentence);
+                             output.collect(ds,ONE);
                              sentencect++;
                         //}
                     }
@@ -614,7 +612,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
         conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(PairOfStrings.class);
+        conf.setMapOutputValueClass(IntWritable.class);
         
         //conf.setMapperClass(LanguageMapper.class);
         //conf.setReducerClass(LanguageReducer.class);
