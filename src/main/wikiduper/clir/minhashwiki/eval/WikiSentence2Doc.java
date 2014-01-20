@@ -423,13 +423,18 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setNumMapTasks(10);
         conf.setNumReduceTasks(4);
 
-        conf.setMapOutputKeyClass(DocSentence.class);
-        conf.setMapOutputValueClass(IntWritable.class);
-        conf.setOutputKeyClass(IntWritable.class);
-        conf.setOutputValueClass(DocSentence.class);
+        //conf.setMapOutputKeyClass(DocSentence.class);
+        //conf.setMapOutputValueClass(IntWritable.class);
+        //conf.setOutputKeyClass(IntWritable.class);
+        //conf.setOutputValueClass(DocSentence.class);
         
-        //conf.setMapperClass(LanguageMapper.class);
-        //conf.setReducerClass(LanguageReducer.class);
+        conf.setOutputKeyClass(Text.class);
+        conf.setOutputValueClass(Text.class);
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
+        
+        conf.setMapperClass(LanguageMapper.class);
+        conf.setReducerClass(LanguageReducer.class);
         
         //conf.setInputFormat(WikipediaPageInputFormat.class);
         conf.setInputFormat(SequenceFileInputFormat.class);
@@ -443,11 +448,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.set("mapred.reduce.child.java.opts", "-Xmx4096m");
         //conf.set("mapred.child.java.opts", "-Xmx2048m");
 
-        //conf.setOutputKeyClass(Text.class);
-        //conf.setOutputValueClass(Text.class);
-        //conf.setMapOutputKeyClass(DocSentence.class);
-        //conf.setMapOutputValueClass(PairOfStrings.class);
-        
+
         FileSystem fs = FileSystem.get(conf);        
         Path eOutPath = new Path(eOutputPath);
         Path fOutPath = new Path(fOutputPath);
@@ -482,8 +483,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setJobName(String.format("WikiSentence2DocMap[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
-        conf.setMapperClass(IDMapper.class);
-        conf.setReducerClass(IDReducer.class);
+        //conf.setMapperClass(IDMapper.class);
+        //conf.setReducerClass(IDReducer.class);
         
         //conf.setInputFormat(SequenceFileInputFormat.class);
         //conf.setOutputFormat(SequenceFileOutputFormat.class);
