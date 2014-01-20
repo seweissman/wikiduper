@@ -606,15 +606,15 @@ public class WikiSentence2Doc extends Configured implements Tool {
         //conf.setOutputKeyClass(IntWritable.class);
         //conf.setOutputValueClass(DocSentence.class);
         
-        conf.setMapOutputKeyClass(PairOfLongs.class);
-        conf.setMapOutputValueClass(IntWritable.class);
-        conf.setOutputKeyClass(IntWritable.class);
-        conf.setOutputValueClass(PairOfLongs.class);
+        //conf.setMapOutputKeyClass(PairOfLongs.class);
+        //conf.setMapOutputValueClass(IntWritable.class);
+        //conf.setOutputKeyClass(IntWritable.class);
+        //conf.setOutputValueClass(PairOfLongs.class);
         
-        //conf.setOutputKeyClass(Text.class);
-        //conf.setOutputValueClass(Text.class);
-        //conf.setMapOutputKeyClass(DocSentence.class);
-        //conf.setMapOutputValueClass(PairOfStrings.class);
+        conf.setOutputKeyClass(Text.class);
+        conf.setOutputValueClass(Text.class);
+        conf.setMapOutputKeyClass(DocSentence.class);
+        conf.setMapOutputValueClass(PairOfStrings.class);
         
         //conf.setMapperClass(LanguageMapper.class);
         //conf.setReducerClass(LanguageReducer.class);
@@ -666,8 +666,8 @@ public class WikiSentence2Doc extends Configured implements Tool {
         conf.setJobName(String.format("WikiSentence2DocMap[%s: %s, %s: %s, %s: %s, %s: %s]", eINPUT, eInputPath, fINPUT, fInputPath, eOUTPUT, eOutputPath,
                 fOUTPUT, fOutputPath, eLANGUAGE_OPTION, eLanguage, fLANGUAGE_OPTION, fLanguage));
 
-        conf.setMapperClass(IDMapper.class);
-        conf.setReducerClass(IDReducer.class);
+        conf.setMapperClass(IDMapper2.class);
+        conf.setReducerClass(IDReducer2.class);
         
         //conf.setInputFormat(SequenceFileInputFormat.class);
         //conf.setOutputFormat(SequenceFileOutputFormat.class);
