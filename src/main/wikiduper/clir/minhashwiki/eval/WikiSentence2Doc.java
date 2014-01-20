@@ -435,19 +435,19 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDReducer2 extends MapReduceBase implements
-    Reducer<DocSentence, PairOfStrings, Text, Text> {
+    Reducer<DocSentence, IntWritable, Text, Text> {
     static int partition;
     static int id=1;
     static final Text titleOut = new Text();
     static final Text pageOut = new Text();
     
-       public void reduce(DocSentence ds, Iterator<PairOfStrings> values, OutputCollector<Text, Text> output,
+       public void reduce(DocSentence ds, Iterator<IntWritable> values, OutputCollector<Text, Text> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
-               PairOfStrings titlesentence = values.next();
-               String sentence = titlesentence.getRightElement();
-               String title = titlesentence.getLeftElement();
+               //PairOfStrings titlesentence = values.next();
+               //String sentence = titlesentence.getRightElement();
+               //String title = titlesentence.getLeftElement();
                //titleOut.set(title);
                titleOut.set(Integer.toString(id));
                //String xmlPage;
