@@ -159,10 +159,9 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDMapper2 extends MapReduceBase implements
-    Mapper<IntWritable, WikipediaPage, DocSentence, IntWritable> {
-    //Mapper<LongWritable, WikipediaPage, ArrayListOfLongsWritable, PairOfStringInt> {
+    Mapper<IntWritable, WikipediaPage, DocSentence, Text> {
         static String lang;
-        public static IntWritable ONE = new IntWritable(1);
+        public static Text ONE = new Text("1");
         //Adapted from http://stackoverflow.com/questions/5553410/regular-expression-match-a-sentence
         static final Pattern sentenceregex = Pattern.compile(
                 "# Match a sentence ending in punctuation or EOS.\n" +
@@ -182,7 +181,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         public static WikiClean cleaner;
         
-           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, IntWritable> output,
+           public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, Text> output,
                     Reporter reporter) throws IOException {
                
                
@@ -288,7 +287,7 @@ public class WikiSentence2Doc extends Configured implements Tool {
         
         
         public static WikiClean cleaner;
-        public static IntWritable ONE = new IntWritable(1);
+        public static Text ONE = new Text("1");
         //public void map(IntWritable key, WikipediaPage p, OutputCollector<DocSentence, IntWritable> output,
           //      Reporter reporter) throws IOException {
         public void map(IntWritable key, WikipediaPage p, OutputCollector<PairOfLongs, IntWritable> output,
@@ -435,13 +434,13 @@ public class WikiSentence2Doc extends Configured implements Tool {
     }
     
     private static class IDReducer2 extends MapReduceBase implements
-    Reducer<DocSentence, IntWritable, Text, Text> {
+    Reducer<DocSentence, Text, Text, Text> {
     static int partition;
     static int id=1;
     static final Text titleOut = new Text();
     static final Text pageOut = new Text();
     
-       public void reduce(DocSentence ds, Iterator<IntWritable> values, OutputCollector<Text, Text> output,
+       public void reduce(DocSentence ds, Iterator<Text> values, OutputCollector<Text, Text> output,
                 Reporter reporter) throws IOException {
            
            while(values.hasNext()){
