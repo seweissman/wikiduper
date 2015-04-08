@@ -36,6 +36,6 @@ For convenience, a script to run the pipeline locally is also provided. This scr
 
 Code licensed under Apache License v2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
-[1] For a descript of minhash see *A. Rajaraman, J. Leskovec, and J. D. Ullman. Mining of Massive Datasets. January 2011.*
+[1]: For a description of the minhash algorithm, see *A. Rajaraman, J. Leskovec, and J. D. Ullman. Mining of Massive Datasets. January 2011.*
 
 
