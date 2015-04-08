@@ -7,7 +7,9 @@ To produce similar sentence clusters run the pipeline script:
 
     scripts/run-pipeline.sh <wiki-dump-file> <output-prefix-string> <nHash> <bits> <k> <n> <l>
 
-(e.g. scripts/run-pipeline.sh enwiki-20130708-pages-articles-multistream.xml enwiki-20130708-sentences 20 60 10 10 12)
+(e.g.,
+     scripts/run-pipeline.sh enwiki-20130708-pages-articles-multistream.xml enwiki-20130708-sentences 20 60 10 10 12
+)
 
 The pipeline script preprocess wikipedia data, runs the minhash algorithm, and performs a transitive closure to merge clusters that share at least one sentence. Finally, it maps clusters back to human-readable sentences.
 
