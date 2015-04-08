@@ -2,6 +2,9 @@
 
 Hadoop package for similar sentence detection on Wikipedia using minhash [1].
 
+
+### Running the code ###
+
 To produce similar sentence clusters, run the pipeline script:
 
     scripts/run-pipeline.sh <wiki-dump-file> <output-prefix-string> <nHash> <bits> <k> <n> <l>
@@ -24,7 +27,7 @@ the parameters of the pipeline script are as follows
 
 The output of the pipeline script is a single text file named with the scheme  *output-prefix-string-nHash-k-n-l-bits*, e.g. enwiki-20130708-sentences-20-10-10-12-60. The text file contains key, value pairs where the key is a cluster number, and the value is a pair giving the title of the artible, followed by the sentence. The file should be grouped by cluster number.
 
-### Parameter Tuning ###
+### Parameter tuning ###
 
 Exact tuning of parameters for minhash is difficult. The authors have found parameters in the range of n=10, k=8, and l=10 to be decent. For fixed k, as n increases, the number of false positives increases, meaning you will have more bad sentence clusters. For fixed n, as k increases, the number of false negatives increases, which means that you will have fewer sentence clusters, but more accuracy. Best practice would be to allow for more false positives, but have a secondary processing step (e.g. an edit distance test) to weed out bad matches.
 
