@@ -1,6 +1,6 @@
 ## Wikiduper ##
 
-Package for similar sentence detection on Wikipedia with hadoop.
+Hadoop package for similar sentence detection on Wikipedia using [minhash] [1].
 
 To produce similar sentence clusters, run the pipeline script:
 
@@ -32,4 +32,10 @@ Exact tuning of parameters for minhash is difficult. The authors have found para
 
 For convenience, a script to run the pipeline locally is also provided. This script is scripts/run-pipeline-local.sh and takes the same arguments as above. The local version of the script uses the local version of hadoop that can be run out of the box without a cluster set-up. A smaller set of test data taken from a larger Wikipedia dump and suitable for use with the local version of the pipeline  can be found in data/Maryland.xml.
 
+### License ###
+
 Code licensed under Apache License v2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+
+[1] For a descript of minhash see *A. Rajaraman, J. Leskovec, and J. D. Ullman. Mining of Massive Datasets. January 2011.*
+
+
