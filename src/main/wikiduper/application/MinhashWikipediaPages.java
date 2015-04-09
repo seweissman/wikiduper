@@ -202,11 +202,10 @@ public class MinhashWikipediaPages extends Configured implements Tool {
                             //context.write(SIG, DOCSENT);
                             output.collect(SIG, DOCSENT);
                         }
-
+                        reporter.incrCounter(Sentences.NSENTENCESGOOD, 1);
                     }
                 }
                 sentencect++;
-                reporter.incrCounter(Sentences.NSENTENCESGOOD, 1);
             }
             
             }catch(Throwable e){
