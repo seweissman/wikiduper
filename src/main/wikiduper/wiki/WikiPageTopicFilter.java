@@ -39,6 +39,10 @@ import wikiduper.wikipedia.language.WikipediaPageFactory;
  * java -cp build:lib/commons-lang-2.6.jar:lib/cloud9-1.4.13.jar:lib/bliki-core-3.0.16.jar:/Users/weissman/apache-ant/apache-ant-1.9.0/lib/ant.jar:lib/hadoop-common-2.0.0-cdh4.2.0.jar 
  *   courseproj.wiki.WikiPageTopicFilter ~/corpora/enwiki-20130403-pages-articles-multistream.xml.bz2 
  *   en ~/corpora/enwiki-20130403-pages-articles-multistream-index.txt.bz2 Maryland > Maryland.txt
+ *
+ * 
+ * java -cp build:lib/commons-lang-2.6.jar:lib/cloud9-1.4.15.jar:lib/bliki-core-3.0.16.jar:lib/ant-1.9.1.jar:lib/hadoop-common-2.0.0-cdh4.2.1.jar wikiduper.wiki.WikiPageTopicFilter data/enwiki-20150304-pages-meta-current1.xml-p000000010p000010000.bz2  en data/enwiki-20150304-pages-articles-multistream-index.txt.bz2 Maryland > Maryland.txt
+ * 
  */
 public class WikiPageTopicFilter {
 
@@ -53,6 +57,7 @@ public class WikiPageTopicFilter {
         WikipediaPage p = WikipediaPageFactory.createWikipediaPage(args[1]);
 
         WikipediaPagesBz2InputStream stream = new WikipediaPagesBz2InputStream(args[0]);
+
         ArrayList<Long> offsetList = new ArrayList<Long>(offsetmap.keySet());
         Collections.sort(offsetList);
         for(long offset: offsetList){
@@ -95,6 +100,10 @@ public class WikiPageTopicFilter {
         while((s = br.readLine()) != null){
             String index[] = s.split(":");
             title = index[2];
+            if(ct % 10000 == 0){
+                System.err.println("Read " + ct + " offsets.");
+            }
+            //System.out.println("Title = " + title);
             if(termpat.matcher(title).matches()){
                 streamoffset = Long.parseLong(index[0]);
                 pageid = index[1];

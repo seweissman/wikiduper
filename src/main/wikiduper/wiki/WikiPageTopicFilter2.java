@@ -17,9 +17,12 @@
 package wikiduper.wiki;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,85 +39,45 @@ import wikiduper.wikipedia.language.WikipediaPageFactory;
 /**
  * To run:
  * 
- * java -cp build:lib/commons-lang-2.6.jar:lib/cloud9-1.4.13.jar:lib/bliki-core-3.0.16.jar:/Users/weissman/apache-ant/apache-ant-1.9.0/lib/ant.jar:lib/hadoop-common-2.0.0-cdh4.2.0.jar 
- *   courseproj.wiki.WikiPageTopicFilter ~/corpora/enwiki-20130403-pages-articles-multistream.xml.bz2 
- *   en ~/corpora/enwiki-20130403-pages-articles-multistream-index.txt.bz2 Maryland > Maryland.txt
+ * java -cp build:lib/commons-lang-2.6.jar:lib/cloud9-1.4.15.jar:lib/bliki-core-3.0.16.jar:lib/ant-1.9.1.jar:lib/hadoop-common-2.0.0-cdh4.2.1.jar 
+ * wikiduper.wiki.WikiPageTopicFilter2 
+ * data/wiki/enwiki-20150304-pages-meta-current1.xml-p000000010p000010000.bz2  
+ * en 
+ * Geography 
+ * geography.txt
+ * 
  */
-public class WikiPageTopicFilter {
+public class WikiPageTopicFilter2 {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 4) {
-            System.err.println("usage: [dump file] [language] [index] [term]");
+            System.err.println("usage: [dump file] [language] [term] [out file]");
             System.exit(-1);
         }
+        String dumpFile = args[0];
+        String language = args[1];
+        String term = args[2];
+        String outFile = args[3];
+        WikipediaPage p = WikipediaPageFactory.createWikipediaPage(language);
 
-        HashMap<Long, HashSet<String>> offsetmap = getTermOffsets(args[2],args[3],1000);
-
-        WikipediaPage p = WikipediaPageFactory.createWikipediaPage(args[1]);
-
-        WikipediaPagesBz2InputStream stream = new WikipediaPagesBz2InputStream(args[0]);
-        ArrayList<Long> offsetList = new ArrayList<Long>(offsetmap.keySet());
-        Collections.sort(offsetList);
-        for(long offset: offsetList){
-            HashSet<String> idSet = offsetmap.get(offset);
-            ArrayList<Long> idList = new ArrayList<Long>();
-            List<String> idListStr = new ArrayList<String>();
-            for(String id: idSet){
-                idList.add(Long.parseLong(id));
-            }
-            Collections.sort(idList);
-            for(Long lid : idList){
-                idListStr.add(lid.toString());
-            }
-            //while (stream.readPage(p,offset,lid.toString()) && !idSet.isEmpty()) {
-            //System.out.println("id = " + lid);
-            ArrayList<String> pages = stream.readPage(p,offset,idListStr);
-            //if(Long.parseLong(p.getDocid())%1000 == 0) System.out.println(p.getDocid()); 
-            for(String page : pages){
-                System.out.println(page.replace("\n", " "));
+        WikipediaPagesBz2InputStream stream = new WikipediaPagesBz2InputStream(dumpFile);
+        Pattern termpat = Pattern.compile(".*" + term + ".*");
+        //DataOutputStream dout = new DataOutputStream(new FileOutputStream(outFile));
+        PrintWriter writer = new PrintWriter(outFile);
+        while(stream.readNext(p)){
+            String title = p.getTitle();
+            String page = p.getRawXML();
+            
+            if(termpat.matcher(title).matches()){
+                writer.write(page);
+//                p.write(new DataOutputStream(dout));
+//                System.out.println(p);
             }
             //}
         }
-
-    }
-
-    private static HashMap<Long,HashSet<String>> getTermOffsets(String indexfile, String term, int maxresults) throws IOException {
-        BufferedReader br = null;
-        FileInputStream fis = new FileInputStream(indexfile);
-        byte[] ignoreBytes = new byte[2];
-        fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
-        br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis)));
-        String s = null;
-        HashMap<Long,HashSet<String>> offsetmap = new HashMap<Long,HashSet<String>>();
-        Pattern termpat = Pattern.compile(".*" + term + ".*");
-        String title;
-        long streamoffset;
-        String pageid;
-        long lastoffset = -1;
-        int ct = 0;
-        while((s = br.readLine()) != null){
-            String index[] = s.split(":");
-            title = index[2];
-            if(termpat.matcher(title).matches()){
-                streamoffset = Long.parseLong(index[0]);
-                pageid = index[1];
-                if(streamoffset != lastoffset){
-                    offsetmap.put(streamoffset, new HashSet<String> ());
-                    offsetmap.get(streamoffset).add(pageid);
-                    lastoffset = streamoffset;
-                }else{
-                    offsetmap.get(streamoffset).add(pageid);
-                }
-                ct++;
-                if(ct > maxresults){
-                    return offsetmap;
-                }
-
-
-            }
-        }
-
-        return offsetmap;
+        writer.close();
+        //dout.close();
+  
     }
 
 
