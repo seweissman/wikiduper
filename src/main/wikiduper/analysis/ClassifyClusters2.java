@@ -27,14 +27,13 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
-import wikiduper.utils.MergeClusters;
 
 public class ClassifyClusters2 {
     public static enum ClusterTypes {
         NOT_SIMILAR, FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     };  
     
-    private static final Logger LOG = Logger.getLogger(MergeClusters.class);
+    private static final Logger LOG = Logger.getLogger(ClassifyClusters2.class);
     //NOT_SIMILAR, FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     private static final String INPUT = "input";
     private static final String N = "n";
