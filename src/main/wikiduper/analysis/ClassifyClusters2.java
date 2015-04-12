@@ -121,7 +121,7 @@ public class ClassifyClusters2 {
         int otherCt = 0;
         int speciesCt = 0;
         int otherCt2 = 0;
-        String articlesentence;
+        String articlesentence = null;
         
         int clusterid;
         try {
