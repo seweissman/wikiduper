@@ -5,6 +5,7 @@ package wikiduper.analysis;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,21 +127,9 @@ public class ClassifyClusters2 {
         int clusterid;
         try {
             PrintWriter classifyWriter = new PrintWriter(classifyOut);
-
-            
             System.out.println("filein = " + filein);
-            File dirin  = new File(filein); // + "/part-*"));
-            File partFiles[] = dirin.listFiles(new FilenameFilter(){
-                @Override
-                    public boolean accept(File dir, String name) {
-                        return name.toLowerCase().contains("part-");
-                }
-            });
-
-            for(File partFile : partFiles){
-                System.out.println(partFile.getPath());
-            try{
-                BufferedReader br = new BufferedReader(new FileReader(partFile));
+            
+            BufferedReader br = new BufferedReader(new FileReader(filein));
             String line;
             while((line = br.readLine()) != null){
                 String linetext = line
@@ -214,51 +204,54 @@ public class ClassifyClusters2 {
                 }else{
                     System.err.println("Bad line " + linect + " : " + articlesentence);
                     System.exit(-1);
-               }
+                }
 
                 
                 linect++;
-
             }
-            br.close();
-          }catch (EOFException e) {
-           // For some reason it doesn't know when the input stream is done??
-          }
             if(sampleSet.contains(clustcurr)){
-          // Update one time at the end of each file input loop to add remaining cluster            
-            int classification = 0;
-            if(clustersentences.size() > 1){
-                for(String s : clustertitlesentences){
-                    System.out.println(s);
+                    // Update one time at the end of each file input loop to add remaining cluster            
+                    int classification = 0;
+                    if(clustersentences.size() > 1){
+                        for(String s : clustertitlesentences){
+                            System.out.println(s);
 
-                }
-                classification = classifyCluster(typecounts,clusterct);
-                if(classification == -1){
-                    classifyWriter.close();
-                    for(int i=0;i<typecounts.length;i++){
-                        System.out.println(clist[i] + " " + typecounts[i]);
-                    }
-                    System.out.println("Number of clusters analyzed: " + clusterct);
-                    System.exit(-1);
-                }
-            }else{
+                        }
+                        classification = classifyCluster(typecounts,clusterct);
+                        if(classification == -1){
+                            classifyWriter.close();
+                            for(int i=0;i<typecounts.length;i++){
+                                System.out.println(clist[i] + " " + typecounts[i]);
+                            }
+                            System.out.println("Number of clusters analyzed: " + clusterct);
+                            System.exit(-1);
+                        }
+                    }else{
                 // sentences are identical
-                typecounts[ClusterTypes.IDENTICAL.ordinal()] += 1;
-                classification = ClusterTypes.IDENTICAL.ordinal();
-            }
-            classifyWriter.println(clustcurr + "\t" + classification);
+                        typecounts[ClusterTypes.IDENTICAL.ordinal()] += 1;
+                        classification = ClusterTypes.IDENTICAL.ordinal();
+                    }
+                    classifyWriter.println(clustcurr + "\t" + classification);
             
-            }
-            // Clear per cluster data structures
-            cluster.clear();
-            clustersentences.clear();
-            clustertitlesentences.clear();
-            clustertitles.clear();
-            clusterwordct.clear();
-            clusterct++;
+                }
+                // Clear per cluster data structures
+                cluster.clear();
+                clustersentences.clear();
+                clustertitlesentences.clear();
+                clustertitles.clear();
+                clusterwordct.clear();
+                clusterct++;
+                classifyWriter.close();
+        }catch (EOFException e) {
+           // For some reason it doesn't know when the input stream is done??
+        } catch (FileNotFoundException ex) {
+            java.util.logging.Logger.getLogger(ClassifyClusters2.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(ClassifyClusters2.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         
-        classifyWriter.close();
+
 
         System.out.println("N lines: " + linect);
         System.out.println("N clusters: " + clusterct);            
@@ -272,12 +265,7 @@ public class ClassifyClusters2 {
         System.out.println("N species clusters: " + speciesCt);
         
         
-    }catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-    }
-    }
-    
+    }    
 
     public static void promptTypes(ClusterTypes clist[]){
         for(int i=0; i< clist.length - 1; i++){
