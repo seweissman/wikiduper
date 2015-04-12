@@ -35,14 +35,12 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.utils.MergeClusters;
-
 public class ClassifyClusters extends Configured implements Tool {
     public static enum ClusterTypes {
         NOT_SIMILAR, FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     };  
     
-    private static final Logger LOG = Logger.getLogger(MergeClusters.class);
+    private static final Logger LOG = Logger.getLogger(ClassifyClusters.class);
     //NOT_SIMILAR, FACTUAL_DRIFT, TEMPLATE, REFERENCE, COPY_EDIT, OTHER, IDENTICAL
     private static final String INPUT = "input";
     private static final String N = "n";
@@ -89,7 +87,7 @@ public class ClassifyClusters extends Configured implements Tool {
             
             LOG.info("Tool name: " + this.getClass().getName());
             
-            JobConf conf = new JobConf(getConf(), MergeClusters.class);
+            JobConf conf = new JobConf(getConf(), ClassifyClusters.class);
             conf.set(INPUT, inputPath);
             conf.set(CLASSIFY_OUT, classifyOutputPath);
             conf.setInt(N, n);
