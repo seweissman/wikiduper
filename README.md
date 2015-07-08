@@ -1,6 +1,6 @@
 ## Wikiduper ##
 
-Hadoop package for similar sentence detection on Wikipedia using minhash [1]. For output sets of similar sentences.
+Hadoop package for similar sentence detection on Wikipedia using minhash [1]. For output sets of similar sentences see "Data sets" section below.
 
 ### Running the code ###
 
