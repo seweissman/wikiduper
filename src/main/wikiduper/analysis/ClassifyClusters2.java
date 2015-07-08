@@ -135,6 +135,7 @@ public class ClassifyClusters2 {
                 String linetext = line
                         .replace("\n", " ")
                         .replaceAll(" ?\\[?http\\S+", "");
+                System.out.println("Line = " + line);
                 Matcher m = linepat.matcher(linetext);
                 String title = "";
                 String sentence = "";

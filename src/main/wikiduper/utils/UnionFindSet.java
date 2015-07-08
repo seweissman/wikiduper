@@ -1,7 +1,5 @@
 package wikiduper.utils;
 
-import java.util.HashSet;
-
 public class UnionFindSet {
     public DocSentence data;
     UnionFindSet parent;

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -26,13 +25,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import wikiduper.utils.DocSentence;
-import wikiduper.utils.Signature;
-import wikiduper.utils.UnionFindSet;
 
 import edu.umd.cloud9.io.array.ArrayListWritable;
-import edu.umd.cloud9.io.pair.PairOfLongString;
-import edu.umd.cloud9.io.pair.PairOfLongs;
 
 public class MergeClusters extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(MergeClusters.class);
@@ -118,7 +112,7 @@ public class MergeClusters extends Configured implements Tool {
 
             writer.close();
             fs.close();
-            System.out.println("N components: " + componentct);
+            System.out.println("N components found: " + componentct);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -151,8 +145,8 @@ public class MergeClusters extends Configured implements Tool {
                 //System.out.println("bucket = " + bucket);
                 //System.out.println("lastbucket = " + lastbucket);
                 linect++;
-                if(ct % 10000 == 0) System.out.println("Count:"+ct);
-                if(linect % 100000 == 0) System.out.println(linect+"\t"+ct+"\t"+newnodect);
+                //if(ct % 10000 == 0) System.out.println("Count:"+ct);
+                //if(linect % 100000 == 0) System.out.println(linect+"\t"+ct+"\t"+newnodect);
                 
                 if(lastbucket != null && !(bucket.equals(lastbucket))){
                     currentSet = null;
@@ -184,7 +178,7 @@ public class MergeClusters extends Configured implements Tool {
           }
         }
         
-        System.out.println("Done reading\n");
+        System.out.println("Done reading buckets.\n");
         //HashMap<DocSentence,HashSet<DocSentence>> clusterMap = new HashMap<DocSentence,HashSet<DocSentence>>();
         HashMap<DocSentence,Integer> clusterNumMap = new HashMap<DocSentence,Integer>();
         int clusterct = 0;
