@@ -1,7 +1,6 @@
 ## Wikiduper ##
 
-Hadoop package for similar sentence detection on Wikipedia using minhash [1].
-
+Hadoop package for similar sentence detection on Wikipedia using minhash [1]. For output sets of similar sentences.
 
 ### Running the code ###
 
@@ -38,6 +37,11 @@ For convenience, a script to run the pipeline locally is also provided. This scr
 ### License ###
 
 Code licensed under Apache License v2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+
+### Data sets ###
+
+Similar sentences from English Wikipedia (20150304) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.19720.svg)](http://dx.doi.org/10.5281/zenodo.19720)
+
 
 ### Notes ###
 
